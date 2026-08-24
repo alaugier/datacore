@@ -37,7 +37,7 @@ Voir architecture complète discutée avec Claude Web (conversation du 24/08/202
 - [x] Init repo, arborescence, .gitignore, README (#1)
 - [x] Étude de faisabilité C1 (#2)
 - [x] Topographie des données C2 (#3)
-- [ ] Architecture AS IS/TO BE C3 (#4)
+- [x] Architecture AS IS/TO BE C3 (#4)
 - [ ] Feuille de route C5 (#6)
 - [ ] Docker-compose (#7)
 - [ ] CI lint + tests (#8)
