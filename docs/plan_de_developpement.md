@@ -47,3 +47,12 @@ Voir architecture complète discutée avec Claude Web (conversation du 24/08/202
 - Une branche par issue, nommée selon la convention ci-dessus.
 - PR obligatoire vers `dev`, jamais de push direct sur `main` ou `dev`.
 - Chaque livrable Markdown/LaTeX doit citer la compétence RNCP couverte (ex. "C1", "C8").
+
+## Référence
+Cahier des charges complet : `docs/reference/Cahier_des_charges_DATA_CORE.docx`
+
+## Mise à jour du Kanban
+Après chaque PR mergée sur une issue :
+1. Fermer l'issue (`gh issue close <n>`) si non fait automatiquement par le merge.
+2. Mettre à jour le statut de l'item Project correspondant via `gh project item-edit`.
+3. Cocher la case correspondante dans la section "État d'avancement" ci-dessus.
