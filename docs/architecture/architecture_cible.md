@@ -141,6 +141,26 @@ et de l'[étude de faisabilité](etude_faisabilite.md#1-contexte) :
 | `src/datacore/governance/` | Registre RGPD, droits d'accès par groupes, procédures de purge, catalogue | C16, C20, C21 |
 | `src/datacore/config/` | Paramétrage, gestion des secrets (clé API, identifiants base) | Transverse (sécurité) |
 
+### 2.5 Alternative écartée — Microsoft Fabric
+
+Microsoft Fabric (OneLake, Lakehouse) a été envisagé puis écarté pour ce
+programme, pour trois raisons :
+
+- **Contrainte pédagogique** : le cahier des charges impose un
+  fonctionnement local, sans compte cloud ni accès externe (« tout
+  fonctionne en local sur votre machine ») — incompatible avec une
+  plateforme SaaS.
+- **Coût et dépendance fournisseur** : solution propriétaire payante
+  au-delà d'un essai gratuit, contraire au principe de sobriété
+  financière et à la stratégie RGESN retenue (§5).
+- **Reproductibilité** : MinIO, conteneurisé en local et compatible API
+  S3, garantit un environnement identique pour tout évaluateur relisant
+  le projet, sans dépendance à un tenant Microsoft/Azure.
+
+Ce choix n'exclut pas la pertinence de Microsoft Fabric dans un contexte
+d'entreprise déjà intégré à l'écosystème Microsoft/Azure — cas de figure
+hors périmètre de ce programme pédagogique.
+
 ---
 
 ## 3. Matrice des flux
