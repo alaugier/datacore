@@ -39,7 +39,7 @@ Voir architecture complète discutée avec Claude Web (conversation du 24/08/202
 - [x] Topographie des données C2 (#3)
 - [x] Architecture AS IS/TO BE C3 (#4)
 - [x] Feuille de route C5 (#6)
-- [ ] Docker-compose (#7)
+- [x] Docker-compose (#7)
 - [ ] CI lint + tests (#8)
 
 ## Règles pour Claude Code

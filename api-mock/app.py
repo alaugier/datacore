@@ -243,4 +243,5 @@ def index():
 
 
 if __name__ == "__main__":
-    app.run(host="127.0.0.1", port=5050, debug=False, threaded=True)
+    host = os.environ.get("API_MOCK_HOST", "127.0.0.1")
+    app.run(host=host, port=5050, debug=False, threaded=True)
