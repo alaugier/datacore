@@ -56,3 +56,13 @@ Après chaque PR mergée sur une issue :
 1. Fermer l'issue (`gh issue close <n>`) si non fait automatiquement par le merge.
 2. Mettre à jour le statut de l'item Project correspondant via `gh project item-edit`.
 3. Cocher la case correspondante dans la section "État d'avancement" ci-dessus.
+
+## Compte rendu de fin de milestone
+À la fermeture du dernier issue d'un milestone, créer/compléter
+docs/comptes_rendus/<milestone>.md avec :
+- Liste des livrables produits (chemins de fichiers)
+- Compétences couvertes (Cx) et preuves associées
+- Décisions techniques et justifications
+- Écarts par rapport au cahier des charges (le cas échéant)
+- Points ouverts / risques pour le milestone suivant
+Commiter ce fichier dans la même PR que la dernière issue du milestone.
