@@ -2,7 +2,7 @@
 
 ## Contexte
 Programme fictif Omega Logistics (3PL), formation Simplon Data Engineer.
-Cahier des charges complet : voir `Cahier_des_charges_DATA_CORE.docx` (fourni hors repo, demander à Alexandre si besoin de référence).
+Cahier des charges complet : voir section "Référence" plus bas.
 Pack technique source : `datacore-dataset` (copié dans `data/raw/`, jamais versionné).
 
 ## Découpage en 4 blocs
