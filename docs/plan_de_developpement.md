@@ -49,6 +49,10 @@ Voir architecture complète discutée avec Claude Web (conversation du 24/08/202
 compte rendu de fin de milestone (livrables, compétences couvertes,
 décisions, points ouverts pour M1).
 
+### M1 — Collecte & Stockage (en cours)
+Ordre de traitement retenu pour C8-C12 et justification :
+voir `docs/architecture/sequencement_bloc2.md` — C8 → C10 → C9 → C11 → C12.
+
 ## Règles pour Claude Code
 - Ne jamais committer `data/raw/*` (voir `.gitignore`).
 - Une branche par issue, nommée selon la convention ci-dessus.
