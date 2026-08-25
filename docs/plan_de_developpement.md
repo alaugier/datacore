@@ -34,6 +34,8 @@ Voir architecture complète discutée avec Claude Web (conversation du 24/08/202
 `docs/{architecture,latex,presentation}`, `tests/{unit,integration,playwright}`, `infra/`.
 
 ## État d'avancement
+
+### M0 — Cadrage & Setup (clos le 25/08/2026)
 - [x] Init repo, arborescence, .gitignore, README (#1)
 - [x] Étude de faisabilité C1 (#2)
 - [x] Topographie des données C2 (#3)
@@ -45,9 +47,16 @@ Voir architecture complète discutée avec Claude Web (conversation du 24/08/202
 - [x] Supervision — rituels et budget C6 (#19)
 - [x] Plan de communication et lancement C7 (#20)
 
-**M0 clos le 25/08/2026** — voir `docs/comptes_rendus/M0.md` pour le
-compte rendu de fin de milestone (livrables, compétences couvertes,
-décisions, points ouverts pour M1).
+Voir `docs/comptes_rendus/M0.md` pour le compte rendu de fin de
+milestone (livrables, compétences couvertes, décisions, points ouverts
+pour M1). Release mergée sur `main` via la PR #25.
+
+### M1 — Collecte & Stockage (en cours)
+- [ ] Extraction automatisée multi-source C8 (#26)
+- [ ] Requêtes SQL d'extraction documentées C9 (#27)
+- [ ] Agrégation et nettoyage des fichiers clients C10 (#28)
+- [ ] Base de données de travail — modélisation MERISE C11 (#29)
+- [ ] API Omega Data — exposition sécurisée C12 (#30)
 
 ## Règles pour Claude Code
 - Ne jamais committer `data/raw/*` (voir `.gitignore`).
