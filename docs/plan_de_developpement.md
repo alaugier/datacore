@@ -42,6 +42,8 @@ Voir architecture complète discutée avec Claude Web (conversation du 24/08/202
 - [x] Docker-compose (#7)
 - [x] CI lint + tests (#8)
 - [x] Veille technique et réglementaire C4 (#18)
+- [ ] Supervision — rituels et budget C6 (#19)
+- [ ] Plan de communication et lancement C7 (#20)
 
 ⚠️ Voir `docs/comptes_rendus/M0.md` §4 : les livrables C6 et C7 attendus
 par le cahier des charges pour le Bloc 1 n'ont pas encore d'issue
