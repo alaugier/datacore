@@ -41,11 +41,13 @@ Voir architecture complète discutée avec Claude Web (conversation du 24/08/202
 - [x] Feuille de route C5 (#6)
 - [x] Docker-compose (#7)
 - [x] CI lint + tests (#8)
+- [ ] Veille technique et réglementaire C4 (#18)
+- [ ] Supervision — rituels et budget C6 (#19)
+- [ ] Plan de communication et lancement C7 (#20)
 
-⚠️ Voir `docs/comptes_rendus/M0.md` §4 : les livrables C4, C6 et C7
-attendus par le cahier des charges pour le Bloc 1 n'ont pas encore
-d'issue GitHub. M0 n'est pas considéré comme clos tant qu'ils ne sont
-pas traités.
+Issues #18-#20 créées le 25/08/2026 suite au constat du compte rendu
+`docs/comptes_rendus/M0.md` §4 : M0 n'est considéré comme clos qu'une
+fois ces 3 livrables produits.
 
 ## Règles pour Claude Code
 - Ne jamais committer `data/raw/*` (voir `.gitignore`).
