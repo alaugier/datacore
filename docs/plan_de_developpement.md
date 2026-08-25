@@ -52,10 +52,23 @@ Voir architecture complète discutée avec Claude Web (conversation du 24/08/202
 Cahier des charges complet : `docs/reference/Cahier_des_charges_DATA_CORE.docx`
 
 ## Mise à jour du Kanban
-Après chaque PR mergée sur une issue :
-1. Fermer l'issue (`gh issue close <n>`) si non fait automatiquement par le merge.
-2. Mettre à jour le statut de l'item Project correspondant via `gh project item-edit`.
-3. Cocher la case correspondante dans la section "État d'avancement" ci-dessus.
+Le champ Status du Project #3 "DATA CORE" compte 6 statuts (étendu le
+24/08/2026, IDs des options en mémoire Claude Code) :
+`Backlog` → `À faire (sprint)` → `En cours` → `En revue (PR)` → `Bloqué` → `Terminé`.
+
+Cycle de vie type d'une issue :
+1. À la prise en charge : assigner l'issue à `alaugier`
+   (`gh issue edit <n> --add-assignee alaugier`) et passer son statut à
+   `En cours`.
+2. À l'ouverture de la PR : passer le statut à `En revue (PR)` (optionnel
+   si la PR est mergée immédiatement après review).
+3. Après merge de la PR :
+   - Fermer l'issue (`gh issue close <n>`) si non fait automatiquement.
+   - Passer le statut à `Terminé` via `gh project item-edit`.
+   - Cocher la case correspondante dans la section "État d'avancement"
+     ci-dessus (dans la même PR que le livrable).
+4. Si le travail est stoppé par une dépendance externe, passer le statut
+   à `Bloqué` plutôt que de le laisser en `En cours`.
 
 ## Compte rendu de fin de milestone
 À la fermeture du dernier issue d'un milestone, créer/compléter
