@@ -58,6 +58,10 @@ pour M1). Release mergée sur `main` via la PR #25.
 - [ ] Base de données de travail — modélisation MERISE C11 (#29)
 - [ ] API Omega Data — exposition sécurisée C12 (#30)
 
+### M1 — Collecte & Stockage (en cours)
+Ordre de traitement retenu pour C8-C12 et justification :
+voir `docs/architecture/sequencement_bloc2.md` — C8 → C10 → C9 → C11 → C12.
+
 ## Règles pour Claude Code
 - Ne jamais committer `data/raw/*` (voir `.gitignore`).
 - Une branche par issue, nommée selon la convention ci-dessus.
