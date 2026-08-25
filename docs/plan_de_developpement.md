@@ -43,11 +43,11 @@ Voir architecture complète discutée avec Claude Web (conversation du 24/08/202
 - [x] CI lint + tests (#8)
 - [x] Veille technique et réglementaire C4 (#18)
 - [x] Supervision — rituels et budget C6 (#19)
-- [ ] Plan de communication et lancement C7 (#20)
+- [x] Plan de communication et lancement C7 (#20)
 
-⚠️ Voir `docs/comptes_rendus/M0.md` §4 : le livrable C7 attendu par le
-cahier des charges pour le Bloc 1 n'a pas encore d'issue GitHub
-traitée. M0 n'est pas considéré comme clos tant qu'il n'est pas traité.
+**M0 clos le 25/08/2026** — voir `docs/comptes_rendus/M0.md` pour le
+compte rendu de fin de milestone (livrables, compétences couvertes,
+décisions, points ouverts pour M1).
 
 ## Règles pour Claude Code
 - Ne jamais committer `data/raw/*` (voir `.gitignore`).
