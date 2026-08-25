@@ -33,7 +33,7 @@ import random
 import time
 from datetime import datetime
 
-from flask import Flask, request, jsonify, Response, abort
+from flask import Flask, Response, abort, jsonify, request
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 FIXTURES_DIR = os.path.join(BASE_DIR, "fixtures")
@@ -43,6 +43,15 @@ app = Flask(__name__)
 
 
 def load_json(name):
+    """Charge un fichier JSON de fixtures.
+
+    Args:
+        name: nom du fichier a charger, relatif a `api-mock/fixtures/`
+            (ex. "transporteurs.json").
+
+    Returns:
+        Le contenu desserialise du fichier JSON.
+    """
     with open(os.path.join(FIXTURES_DIR, name), encoding="utf-8") as f:
         return json.load(f)
 
@@ -50,16 +59,30 @@ def load_json(name):
 TRANSPORTEURS = load_json("transporteurs.json")
 TOURNEES = load_json("tournees.json")
 LIVRAISONS = load_json("livraisons.json")
-LIVRAISONS_BY_TRACKING = {l["tracking_number"]: l for l in LIVRAISONS}
+LIVRAISONS_BY_TRACKING = {liv["tracking_number"]: liv for liv in LIVRAISONS}
 
 
 def require_api_key():
+    """Interrompt la requete avec un 401 si l'en-tete X-API-Key est absent ou invalide."""
     key = request.headers.get("X-API-Key")
     if key != API_KEY:
         abort(401, description="Cle API manquante ou invalide. En-tete attendu : X-API-Key")
 
 
 def paginate(items, req):
+    """Pagine une liste selon les parametres `page`/`per_page` de la requete.
+
+    Args:
+        items: liste complete des elements a paginer.
+        req: objet requete exposant `.args.get(...)` (typiquement
+            `flask.request`, ou un objet compatible dans les tests).
+
+    Returns:
+        dict avec les cles `page`, `per_page`, `total`, `total_pages`
+        et `results` (la tranche d'elements de la page demandee).
+        En cas de parametres invalides, retombe sur page=1, per_page=50.
+        `per_page` est plafonne a 200.
+    """
     try:
         page = max(1, int(req.args.get("page", 1)))
         per_page = min(200, max(1, int(req.args.get("per_page", 50))))
@@ -79,27 +102,36 @@ def paginate(items, req):
 
 @app.errorhandler(401)
 def unauthorized(e):
+    """Serialise les erreurs 401 (cle API manquante/invalide) en JSON."""
     return jsonify({"error": "unauthorized", "message": str(e.description)}), 401
 
 
 @app.errorhandler(404)
 def not_found(e):
+    """Serialise les erreurs 404 (ressource introuvable) en JSON."""
     return jsonify({"error": "not_found", "message": str(e.description)}), 404
 
 
 @app.get("/api/health")
 def health():
-    return jsonify({"status": "ok", "service": "TransFlow API (mock pedagogique)", "time": datetime.utcnow().isoformat()})
+    """Verifie la disponibilite du service (sans authentification)."""
+    return jsonify({
+        "status": "ok",
+        "service": "TransFlow API (mock pedagogique)",
+        "time": datetime.utcnow().isoformat(),
+    })
 
 
 @app.get("/api/transporteurs")
 def get_transporteurs():
+    """Liste l'ensemble des transporteurs fictifs."""
     require_api_key()
     return jsonify(TRANSPORTEURS)
 
 
 @app.get("/api/tournees")
 def get_tournees():
+    """Liste les tournees, filtrables par date et transporteur, paginees."""
     require_api_key()
     items = TOURNEES
     date = request.args.get("date")
@@ -113,6 +145,11 @@ def get_tournees():
 
 @app.get("/api/tournees/<int:tournee_id>")
 def get_tournee(tournee_id):
+    """Recupere le detail d'une tournee par son id (404 si absente).
+
+    Args:
+        tournee_id: identifiant de la tournee, extrait de l'URL.
+    """
     require_api_key()
     t = next((x for x in TOURNEES if x["id"] == tournee_id), None)
     if not t:
@@ -122,8 +159,13 @@ def get_tournee(tournee_id):
 
 @app.get("/api/tournees/<int:tournee_id>/livraisons")
 def get_tournee_livraisons(tournee_id):
+    """Liste les livraisons rattachees a une tournee (404 si aucune).
+
+    Args:
+        tournee_id: identifiant de la tournee, extrait de l'URL.
+    """
     require_api_key()
-    items = [l for l in LIVRAISONS if l["tournee_id"] == tournee_id]
+    items = [liv for liv in LIVRAISONS if liv["tournee_id"] == tournee_id]
     if not items:
         abort(404, description=f"Aucune livraison pour la tournee {tournee_id}")
     return jsonify(items)
@@ -131,35 +173,51 @@ def get_tournee_livraisons(tournee_id):
 
 @app.get("/api/livraisons")
 def get_livraisons():
+    """Liste les livraisons, filtrables par statut, paginees."""
     require_api_key()
     items = LIVRAISONS
     statut = request.args.get("statut")
     if statut:
-        items = [l for l in items if l["statut"].lower() == statut.lower()]
+        items = [liv for liv in items if liv["statut"].lower() == statut.lower()]
     return jsonify(paginate(items, request))
 
 
 @app.get("/api/livraisons/<int:livraison_id>")
 def get_livraison(livraison_id):
+    """Recupere le detail d'une livraison par son id (404 si absente).
+
+    Args:
+        livraison_id: identifiant de la livraison, extrait de l'URL.
+    """
     require_api_key()
-    l = next((x for x in LIVRAISONS if x["id"] == livraison_id), None)
-    if not l:
+    liv = next((x for x in LIVRAISONS if x["id"] == livraison_id), None)
+    if not liv:
         abort(404, description=f"Livraison {livraison_id} introuvable")
-    return jsonify(l)
+    return jsonify(liv)
 
 
 # ---------------------------------------------------------------------
 # Flux capteurs temps reel simule (Server-Sent Events) -- generique,
 # a consommer avec l'outil de son choix (aucun broker impose).
 # ---------------------------------------------------------------------
-ZONES_FROIDES = [("OMG-LYO", "Zone froide A"), ("OMG-LIL", "Zone froide B"), ("OMG-MAR", "Zone froide A")]
+ZONES_FROIDES = [
+    ("OMG-LYO", "Zone froide A"),
+    ("OMG-LIL", "Zone froide B"),
+    ("OMG-MAR", "Zone froide A"),
+]
 
 
 @app.get("/api/stream/capteurs")
 def stream_capteurs():
+    """Diffuse un flux continu de mesures capteurs simulees (Server-Sent Events).
+
+    Anticipe le bloc 4 (data lake OMEGA LAKE, C18-C20) : temperature,
+    geolocalisation et identifiant vehicule, un evenement toutes les 2s.
+    """
     require_api_key()
 
     def event_stream():
+        """Generateur infini d'evenements SSE au format `data: <json>\\n\\n`."""
         while True:
             entrepot, zone = random.choice(ZONES_FROIDES)
             payload = {
@@ -193,11 +251,12 @@ td,th{border:1px solid #ccc;padding:6px 10px;text-align:left}
 
 @app.get("/portail-transporteur/colis")
 def portail_index():
+    """Sert la page HTML listant un echantillon de colis (source a scraper)."""
     sample = random.sample(LIVRAISONS, min(40, len(LIVRAISONS)))
     rows = "".join(
-        f'<li><a href="/portail-transporteur/colis/{l["tracking_number"]}">{l["tracking_number"]}</a> '
-        f'&mdash; {l["statut"]}</li>'
-        for l in sample
+        f'<li><a href="/portail-transporteur/colis/{liv["tracking_number"]}">'
+        f'{liv["tracking_number"]}</a> &mdash; {liv["statut"]}</li>'
+        for liv in sample
     )
     html = f"""<!doctype html><html><head><meta charset="utf-8">
     <title>Portail de suivi transporteur</title>{PORTAL_STYLE}</head>
@@ -209,20 +268,25 @@ def portail_index():
 
 @app.get("/portail-transporteur/colis/<tracking_number>")
 def portail_colis(tracking_number):
-    l = LIVRAISONS_BY_TRACKING.get(tracking_number)
-    if not l:
+    """Sert la fiche HTML de suivi d'un colis (source a scraper), 404 si inconnu.
+
+    Args:
+        tracking_number: numero de suivi du colis, extrait de l'URL.
+    """
+    liv = LIVRAISONS_BY_TRACKING.get(tracking_number)
+    if not liv:
         abort(404, description=f"Colis {tracking_number} introuvable")
-    badge_class = "livree" if l["statut"] == "Livree" else "encours"
+    badge_class = "livree" if liv["statut"] == "Livree" else "encours"
     html = f"""<!doctype html><html><head><meta charset="utf-8">
     <title>Suivi colis {tracking_number}</title>{PORTAL_STYLE}</head>
     <body>
     <h1>Suivi du colis {tracking_number}</h1>
     <table>
-      <tr><th>Statut</th><td><span class="badge {badge_class}">{l['statut']}</span></td></tr>
-      <tr><th>Adresse de livraison</th><td>{l['adresse_livraison']}</td></tr>
-      <tr><th>Heure estimee</th><td>{l['heure_estimee']}</td></tr>
-      <tr><th>Heure reelle</th><td>{l['heure_reelle'] or '-'}</td></tr>
-      <tr><th>Tournee</th><td>{l['tournee_id']}</td></tr>
+      <tr><th>Statut</th><td><span class="badge {badge_class}">{liv['statut']}</span></td></tr>
+      <tr><th>Adresse de livraison</th><td>{liv['adresse_livraison']}</td></tr>
+      <tr><th>Heure estimee</th><td>{liv['heure_estimee']}</td></tr>
+      <tr><th>Heure reelle</th><td>{liv['heure_reelle'] or '-'}</td></tr>
+      <tr><th>Tournee</th><td>{liv['tournee_id']}</td></tr>
     </table>
     <p><a href="/portail-transporteur/colis">&larr; retour a la liste</a></p>
     </body></html>"""
@@ -231,16 +295,19 @@ def portail_colis(tracking_number):
 
 @app.get("/")
 def index():
+    """Page d'accueil : recapitule les endpoints disponibles."""
     return jsonify({
         "service": "DATA CORE - API mock pedagogique (TransFlow + portail transporteur)",
         "documentation": "voir README.md a la racine du projet",
         "endpoints": [
             "/api/health", "/api/transporteurs", "/api/tournees", "/api/tournees/<id>",
             "/api/tournees/<id>/livraisons", "/api/livraisons", "/api/livraisons/<id>",
-            "/api/stream/capteurs", "/portail-transporteur/colis", "/portail-transporteur/colis/<tracking_number>",
+            "/api/stream/capteurs", "/portail-transporteur/colis",
+            "/portail-transporteur/colis/<tracking_number>",
         ],
     })
 
 
 if __name__ == "__main__":
-    app.run(host="127.0.0.1", port=5050, debug=False, threaded=True)
+    host = os.environ.get("API_MOCK_HOST", "127.0.0.1")
+    app.run(host=host, port=5050, debug=False, threaded=True)

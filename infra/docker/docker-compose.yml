@@ -1,0 +1,35 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: datacore-staging-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-datacore_staging}
+      POSTGRES_USER: ${POSTGRES_USER:-datacore}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-datacore}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - datacore-staging-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-datacore} -d ${POSTGRES_DB:-datacore_staging}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api-mock:
+    build:
+      context: ../../api-mock
+      dockerfile: ../infra/docker/api-mock.Dockerfile
+    container_name: datacore-api-mock
+    restart: unless-stopped
+    ports:
+      - "${API_MOCK_PORT:-5050}:5050"
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5050/api/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  datacore-staging-data:
