@@ -35,7 +35,8 @@ Voir architecture complète discutée avec Claude Web (conversation du 24/08/202
 
 `notebooks/` (ajouté le 26/08/2026) : explorations et analyses de
 données reproductibles, en appui des chiffres cités dans les livrables
-(ex. `notebooks/exploration_fichiers_clients.ipynb` pour C10).
+(ex. `notebooks/exploration_fichiers_clients.ipynb` pour C10,
+`notebooks/verification_normalisation_c11.ipynb` pour C11).
 
 ## État d'avancement
 

@@ -169,7 +169,8 @@ dans le MCD ci-dessus — voir §4 (Alembic) pour sa création.
 
 Vérification systématique des 4 tables modélisées par C11, avec
 dépendances fonctionnelles vérifiées empiriquement sur les données
-réelles plutôt que supposées.
+réelles plutôt que supposées. Analyse reproductible :
+[`notebooks/verification_normalisation_c11.ipynb`](../../notebooks/verification_normalisation_c11.ipynb).
 
 ### 3.1 1NF (première forme normale)
 
