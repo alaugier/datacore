@@ -139,26 +139,39 @@ l'agrégation (compétence C10) :
 
 | Client | Fichier | Délimiteur | Colonnes | Format de date observé | Particularité |
 |---|---|---|---|---|---|
-| NordDrive | `norddrive_commandes.csv` | `;` | `ref_commande, date_cde, reference_piece, designation, qte, poids_unitaire_g, entrepot` | mixte `DD-MM-YYYY` / `DD/MM/YYYY` | poids en **grammes** (FluxPro utilise des kg) |
-| FreshMarket | `freshmarket_commandes.csv` | `,` | `id_commande_client, date_reception, code_article, libelle_produit, quantite_commandee, chaine_froid_requise, site_livraison` | mixte `DD-MM-YYYY` / `DD/MM/YYYY` | booléen métier `OUI`/`NON` (chaîne du froid) |
-| MedioTex | `mediotex_commandes.csv` | `,` | `numero_cde, date, sku, description, quantite, entrepot_destination` | mixte `DD/MM/YYYY` / `DD-MM-YYYY` | format le plus proche du modèle FluxPro (`sku` déjà nommé ainsi) |
+| NordDrive | `norddrive_commandes.csv` | `;` | `ref_commande, date_cde, reference_piece, designation, qte, poids_unitaire_g, entrepot` | 3 formats mêlés : `DD/MM/YYYY`, `DD-MM-YYYY`, `YYYY-MM-DD` | poids en **grammes** (FluxPro utilise des kg) |
+| FreshMarket | `freshmarket_commandes.csv` | `,` | `id_commande_client, date_reception, code_article, libelle_produit, quantite_commandee, chaine_froid_requise, site_livraison` | 3 formats mêlés : `DD/MM/YYYY`, `DD-MM-YYYY`, `YYYY-MM-DD` | booléen métier `OUI`/`NON` (chaîne du froid) |
+| MedioTex | `mediotex_commandes.csv` | `,` | `numero_cde, date, sku, description, quantite, entrepot_destination` | 3 formats mêlés : `DD/MM/YYYY`, `DD-MM-YYYY`, `YYYY-MM-DD` | format le plus proche du modèle FluxPro (`sku` déjà nommé ainsi) |
 
-**Qualité des données constatée** (mesurée par sondage sur les identifiants
-de commande de chaque fichier) :
+**Qualité des données constatée.** Un identifiant de commande répété dans
+un fichier correspond très majoritairement à une commande **multi-produits
+légitime** (plusieurs lignes, un produit par ligne — comme
+`lignes_commande` dans FluxPro), pas à un doublon : ce n'est donc pas le
+bon grain de mesure. Le grain pertinent est **(commande, produit)** :
 
-| Fichier | Lignes | Doublons d'identifiant | Cellules vides détectées |
-|---|---|---|---|
-| `norddrive_commandes.csv` | 1 479 | 1 013 | 29 |
-| `freshmarket_commandes.csv` | 1 288 | 847 | 27 |
-| `mediotex_commandes.csv` | 1 496 | 1 003 | 0 |
+| Fichier | Lignes | Couples (commande, produit) uniques | Vrais doublons (couple répété) | Cellules vides détectées |
+|---|---|---|---|---|
+| `norddrive_commandes.csv` | 1 479 | 1 263 | 186 | 29 (colonne `qte`) |
+| `freshmarket_commandes.csv` | 1 288 | 1 110 | 161 | 27 (colonne `quantite_commandee`) |
+| `mediotex_commandes.csv` | 1 496 | 1 260 | 218 | 0 |
 
-Ces doublons et cellules vides confirment, chiffres à l'appui, les
-irritants remontés par Karim BELAÏD en entretien (voir
+Ces vrais doublons correspondent le plus souvent à des lignes en conflit
+(même commande, même produit, **quantité différente** et/ou date reformatée)
+plutôt qu'à des répétitions exactes — cohérent avec les irritants remontés
+par Karim BELAÏD en entretien (voir
 [étude de faisabilité §2.1](etude_faisabilite.md#21-entretien-avec-karim-belaïd--responsable-du-pôle-data))
-et justifient la compétence C10 (règles d'agrégation et de nettoyage) :
-dédoublonnage sur l'identifiant de commande client, unification des
-formats de date, conversion des unités (grammes → kg), normalisation des
-booléens métier, et gestion explicite des valeurs manquantes.
+et justifient la compétence C10 (règles d'agrégation et de nettoyage,
+voir [`src/datacore/processing/clients_cleaning.py`](../../src/datacore/processing/clients_cleaning.py)) :
+dédoublonnage au grain (commande, produit) avec résolution des conflits,
+unification des formats de date, conversion des unités (grammes → kg),
+normalisation des booléens métier, et suppression des lignes à quantité
+manquante.
+
+> Correction du 26/08/2026 : la première version de cette section mesurait
+> le taux de doublons au grain (commande) seul, ce qui surestimait
+> fortement le phénomène (55 à 68 %) en confondant commandes
+> multi-produits et doublons réels. Voir le commit associé pour
+> l'historique.
 
 ### 3.4 Historique volumineux (« système big data »)
 
@@ -252,7 +265,7 @@ dans les fichiers clients constituent des données à caractère personnel,
 | Dimension | Constat |
 |---|---|
 | Complétude des sources | Les cinq types de sources attendus par le référentiel (C8) sont couverts, plus les flux IoT anticipant le bloc 4 |
-| Qualité | Bonne sur FluxPro et TransFlow (données structurées et cohérentes) ; dégradée sur les fichiers clients (doublons 55 à 68 %, formats hétérogènes, quelques valeurs manquantes) |
+| Qualité | Bonne sur FluxPro et TransFlow (données structurées et cohérentes) ; dégradée sur les fichiers clients (13 à 17 % de doublons au grain commande/produit, 3 formats de date mêlés, quelques valeurs manquantes) |
 | Volumétrie | Modeste sur FluxPro/TransFlow (dizaines à milliers de lignes) ; plus significative sur l'historique (25 000 lignes) et les flux IoT (jusqu'à ~3 000 lignes par fichier, flux temps réel non borné) |
 | Interopérabilité | Rapprochement nécessaire entre référentiels : `tracking_number` (FluxPro ↔ TransFlow), codes vs libellés d'entrepôt (FluxPro ↔ historique), `sku` hétérogènes selon les fichiers clients |
 | Sécurité d'accès | Authentification minimale (clé API statique) sur TransFlow, aucune sur les autres sources locales — à renforcer dans l'architecture cible (C3) et l'API de mise à disposition (C12) |

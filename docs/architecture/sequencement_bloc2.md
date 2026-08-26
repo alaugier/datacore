@@ -71,10 +71,16 @@ peut exposer une base qui n'existe pas encore.
 Justification principale : la [topographie des données](topographie_donnees.md)
 (C2) donne une connaissance fiable des *schémas* de chaque source, mais
 pas de leur *contenu réel* une fois extrait et nettoyé — en particulier
-les taux de doublons mesurés (55 à 68 % sur les fichiers clients) montrent
-que la réalité des données dépasse ce qu'un schéma abstrait peut anticiper
-(valeurs de repli, cas de rapprochement entre `tracking_number` FluxPro et
-TransFlow, etc.). Modéliser la base de travail (C11) *après* avoir
+les taux de doublons mesurés (13 à 17 % au grain commande/produit sur les
+fichiers clients, cf. C2 §3.3) montrent que la réalité des données dépasse
+ce qu'un schéma abstrait peut anticiper (valeurs de repli, cas de
+rapprochement entre `tracking_number` FluxPro et TransFlow, etc.). Le
+traitement concret de C10 a d'ailleurs révélé que le premier chiffre
+publié en C2 (mesuré au grain « commande » seul) surestimait fortement le
+phénomène, en confondant commandes multi-produits légitimes et vrais
+doublons — la correction elle-même illustre l'argument : l'analyse
+abstraite ne suffit pas, le contact direct avec la donnée réelle affine
+la compréhension. Modéliser la base de travail (C11) *après* avoir
 concrètement extrait et nettoyé les données limite le risque de devoir
 revoir le schéma MERISE en cours de route. Cet ordre est de plus celui
 suggéré par le cahier des charges, sans qu'aucun argument technique ne
