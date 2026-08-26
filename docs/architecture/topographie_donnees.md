@@ -165,7 +165,14 @@ voir [`src/datacore/processing/clients_cleaning.py`](../../src/datacore/processi
 dédoublonnage au grain (commande, produit) avec résolution des conflits,
 unification des formats de date, conversion des unités (grammes → kg),
 normalisation des booléens métier, et suppression des lignes à quantité
-manquante.
+manquante. Analyse détaillée et reproductible :
+[`notebooks/exploration_fichiers_clients.ipynb`](../../notebooks/exploration_fichiers_clients.ipynb).
+
+Les colonnes `reference_piece` (NordDrive), `code_article` (FreshMarket)
+et `sku` (MedioTex) désignent toutes le même référentiel produit que
+`produits.sku` côté FluxPro (voir glossaire §1) : c'est ce qui permet de
+les unifier sous un champ `sku` commun lors du nettoyage (C10) et, plus
+tard, de les rapprocher de FluxPro dans la base de travail (C11).
 
 > Correction du 26/08/2026 : la première version de cette section mesurait
 > le taux de doublons au grain (commande) seul, ce qui surestimait

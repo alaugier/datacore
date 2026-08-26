@@ -33,6 +33,10 @@ Voir architecture complète discutée avec Claude Web (conversation du 24/08/202
 `src/datacore/{ingestion,processing,storage,api,governance,config}`,
 `docs/{architecture,latex,presentation}`, `tests/{unit,integration,playwright}`, `infra/`.
 
+`notebooks/` (ajouté le 26/08/2026) : explorations et analyses de
+données reproductibles, en appui des chiffres cités dans les livrables
+(ex. `notebooks/exploration_fichiers_clients.ipynb` pour C10).
+
 ## État d'avancement
 
 ### M0 — Cadrage & Setup (clos le 25/08/2026)

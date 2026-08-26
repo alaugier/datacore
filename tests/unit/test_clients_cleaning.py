@@ -10,10 +10,10 @@ import pytest
 
 from datacore.processing.clients_cleaning import (
     clean_and_aggregate,
-    clean_freshmarket,
-    clean_mediotex,
-    clean_norddrive,
     deduplicate,
+    normalize_freshmarket,
+    normalize_mediotex,
+    normalize_norddrive,
     parse_date,
 )
 
@@ -37,7 +37,7 @@ def test_parse_date_rejects_unknown_format():
         parse_date("07.03.2025")
 
 
-def test_clean_norddrive_converts_grams_to_kg():
+def test_normalize_norddrive_converts_grams_to_kg():
     """Le poids NordDrive (grammes) est converti en kg, cohérent avec FluxPro."""
     raw = [
         {
@@ -51,14 +51,14 @@ def test_clean_norddrive_converts_grams_to_kg():
         }
     ]
 
-    cleaned = clean_norddrive(raw)
+    normalized = normalize_norddrive(raw)
 
-    assert cleaned[0]["poids_kg"] == 5.9
-    assert cleaned[0]["client"] == "NordDrive"
-    assert cleaned[0]["quantite"] == 17
+    assert normalized[0]["poids_kg"] == 5.9
+    assert normalized[0]["client"] == "NordDrive"
+    assert normalized[0]["quantite"] == 17
 
 
-def test_clean_norddrive_drops_rows_with_missing_quantite():
+def test_normalize_norddrive_drops_rows_with_missing_quantite():
     """Une ligne sans quantité est une entrée corrompue, écartée."""
     raw = [
         {
@@ -72,10 +72,10 @@ def test_clean_norddrive_drops_rows_with_missing_quantite():
         }
     ]
 
-    assert clean_norddrive(raw) == []
+    assert normalize_norddrive(raw) == []
 
 
-def test_clean_freshmarket_converts_oui_non_to_boolean():
+def test_normalize_freshmarket_converts_oui_non_to_boolean():
     """Le booléen métier OUI/NON est converti en bool Python."""
     raw = [
         {
@@ -89,13 +89,13 @@ def test_clean_freshmarket_converts_oui_non_to_boolean():
         }
     ]
 
-    cleaned = clean_freshmarket(raw)
+    normalized = normalize_freshmarket(raw)
 
-    assert cleaned[0]["chaine_froid_requise"] is True
-    assert cleaned[0]["poids_kg"] is None
+    assert normalized[0]["chaine_froid_requise"] is True
+    assert normalized[0]["poids_kg"] is None
 
 
-def test_clean_mediotex_maps_columns_to_unified_schema():
+def test_normalize_mediotex_maps_columns_to_unified_schema():
     """Les colonnes MedioTex sont correctement projetées sur le schéma unifié."""
     raw = [
         {
@@ -108,11 +108,11 @@ def test_clean_mediotex_maps_columns_to_unified_schema():
         }
     ]
 
-    cleaned = clean_mediotex(raw)
+    normalized = normalize_mediotex(raw)
 
-    assert cleaned[0]["client"] == "MedioTex"
-    assert cleaned[0]["sku"] == "SKU-30027"
-    assert cleaned[0]["date_commande"] == "2026-06-07"
+    assert normalized[0]["client"] == "MedioTex"
+    assert normalized[0]["sku"] == "SKU-30027"
+    assert normalized[0]["date_commande"] == "2026-06-07"
 
 
 def test_deduplicate_keeps_legitimate_multi_product_orders():
