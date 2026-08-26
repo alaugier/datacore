@@ -7,6 +7,7 @@ lui-même.
 """
 from datacore.storage.staging.load_staging import (
     load_commandes_clients,
+    load_lignes_commande_clients,
     load_livraisons,
     load_tournees,
     load_transporteurs,
@@ -14,17 +15,25 @@ from datacore.storage.staging.load_staging import (
 
 
 class FakeCursor:
-    """Curseur factice qui enregistre les appels executemany/execute reçus."""
+    """Curseur factice : enregistre les appels reçus et simule RETURNING id."""
 
     def __init__(self):
         self.executemany_calls = []
         self.execute_calls = []
+        self._next_id = 1
+        self._last_returning_id = None
 
     def executemany(self, sql, records):
         self.executemany_calls.append((sql, list(records)))
 
     def execute(self, sql, params=None):
         self.execute_calls.append((sql, params))
+        if "RETURNING id" in sql:
+            self._last_returning_id = self._next_id
+            self._next_id += 1
+
+    def fetchone(self):
+        return (self._last_returning_id,)
 
 
 class FakeConnection:
@@ -82,8 +91,8 @@ def test_load_tournees_inserts_with_expected_columns():
     assert passed_records == records
 
 
-def test_load_livraisons_inserts_with_expected_columns():
-    """Les livraisons sont insérées avec leur tracking_number et adresse."""
+def test_load_livraisons_inserts_without_statut_column():
+    """Les livraisons sont insérées sans colonne statut (retirée, cf. vue dédiée)."""
     conn = FakeConnection()
     records = [
         {
@@ -91,7 +100,6 @@ def test_load_livraisons_inserts_with_expected_columns():
             "tournee_id": 1,
             "tracking_number": "OMG0000001",
             "adresse_livraison": "11 rue de la Republique, Toulon",
-            "statut": "Livree",
             "heure_estimee": "15:15",
             "heure_reelle": "16:45",
         }
@@ -102,28 +110,50 @@ def test_load_livraisons_inserts_with_expected_columns():
     assert n == 1
     sql, _ = conn.cursor_obj.executemany_calls[0]
     assert "INSERT INTO livraisons" in sql
+    assert "statut" not in sql
 
 
-def test_load_commandes_clients_does_not_reset_sequence():
-    """commandes_clients n'a pas d'id source (généré par la base) : pas de setval nécessaire."""
+def test_load_commandes_clients_deduplicates_headers_by_client_and_commande_id():
+    """Une commande multi-produits ne produit qu'un seul en-tête."""
     conn = FakeConnection()
     records = [
         {
             "client": "NordDrive",
-            "commande_id": "ND-000001",
+            "commande_id": "ND-000549",
             "date_commande": "2026-07-19",
-            "sku": "SKU-10005",
-            "libelle_produit": "Bougie",
-            "quantite": 17,
-            "poids_kg": 5.9,
             "entrepot": "OMG-LIL",
-            "chaine_froid_requise": None,
-        }
+            "sku": "SKU-10005",
+            "quantite": 17,
+        },
+        {
+            "client": "NordDrive",
+            "commande_id": "ND-000549",
+            "date_commande": "2026-07-19",
+            "entrepot": "OMG-LIL",
+            "sku": "SKU-10004",
+            "quantite": 40,
+        },
     ]
 
-    n = load_commandes_clients(conn, records)
+    header_ids = load_commandes_clients(conn, records)
 
-    assert n == 1
-    sql, _ = conn.cursor_obj.executemany_calls[0]
-    assert "INSERT INTO commandes_clients" in sql
-    assert conn.cursor_obj.execute_calls == []
+    assert header_ids == {("NordDrive", "ND-000549"): 1}
+    assert len(conn.cursor_obj.execute_calls) == 1
+
+
+def test_load_lignes_commande_clients_uses_header_ids_mapping():
+    """Chaque ligne référence l'id d'en-tête correspondant à sa commande."""
+    conn = FakeConnection()
+    records = [
+        {"client": "NordDrive", "commande_id": "ND-000549", "sku": "SKU-10005", "quantite": 17},
+        {"client": "NordDrive", "commande_id": "ND-000549", "sku": "SKU-10004", "quantite": 40},
+    ]
+    header_ids = {("NordDrive", "ND-000549"): 42}
+
+    n = load_lignes_commande_clients(conn, records, header_ids)
+
+    assert n == 2
+    sql, passed_rows = conn.cursor_obj.executemany_calls[0]
+    assert "INSERT INTO lignes_commande_clients" in sql
+    assert all(row["commande_client_id"] == 42 for row in passed_rows)
+    assert {row["sku"] for row in passed_rows} == {"SKU-10005", "SKU-10004"}
