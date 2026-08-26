@@ -52,13 +52,12 @@ milestone (livrables, compétences couvertes, décisions, points ouverts
 pour M1). Release mergée sur `main` via la PR #25.
 
 ### M1 — Collecte & Stockage (en cours)
-- [ ] Extraction automatisée multi-source C8 (#26)
+- [x] Extraction automatisée multi-source C8 (#26)
 - [ ] Requêtes SQL d'extraction documentées C9 (#27)
 - [ ] Agrégation et nettoyage des fichiers clients C10 (#28)
 - [ ] Base de données de travail — modélisation MERISE C11 (#29)
 - [ ] API Omega Data — exposition sécurisée C12 (#30)
 
-### M1 — Collecte & Stockage (en cours)
 Ordre de traitement retenu pour C8-C12 et justification :
 voir `docs/architecture/sequencement_bloc2.md` — C8 → C10 → C9 → C11 → C12.
 
