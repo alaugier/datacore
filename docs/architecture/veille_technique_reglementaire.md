@@ -68,7 +68,8 @@ Tour d'horizon des pratiques DataOps de test de qualité de données
 comme Great Expectations ou les tests intégrés à dbt. Ces pratiques
 formalisent un principe déjà identifié empiriquement lors de la
 [topographie des données](topographie_donnees.md#33-fichiers-clients-bruts--formats-hétérogènes)
-(taux de doublons mesurés entre 55 et 68 % sur les fichiers clients).
+(taux de doublons mesurés entre 13 et 17 % au grain commande/produit sur
+les fichiers clients).
 **Décision influencée** : les contrôles qualité (unicité, doublons,
 formats) prévus pour l'agrégation des fichiers clients (bloc 2, C10) et
 pour les pipelines ETL de l'entrepôt (bloc 3, C15) seront formalisés sous

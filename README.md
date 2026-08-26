@@ -58,3 +58,15 @@ Les résultats sont écrits dans `data/interim/` (zone d'atterrissage
 intermédiaire, non versionnée — voir
 `docs/architecture/sequencement_bloc2.md`), en attendant la modélisation
 de la base de travail consolidée (C11).
+
+## Nettoyage des fichiers clients (C10)
+Une fois l'extraction (C8) effectuée, agrège et nettoie les trois
+fichiers clients (dédoublonnage au grain commande/produit, dates et
+unités homogénéisées) en un jeu de données unique :
+
+```bash
+python3 -m datacore.processing.run_cleaning
+```
+
+Écrit `data/interim/clients_consolidated.json` et affiche un rapport de
+nettoyage (lignes lues, entrées corrompues supprimées, doublons résolus).

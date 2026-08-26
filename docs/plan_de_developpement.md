@@ -33,6 +33,10 @@ Voir architecture complète discutée avec Claude Web (conversation du 24/08/202
 `src/datacore/{ingestion,processing,storage,api,governance,config}`,
 `docs/{architecture,latex,presentation}`, `tests/{unit,integration,playwright}`, `infra/`.
 
+`notebooks/` (ajouté le 26/08/2026) : explorations et analyses de
+données reproductibles, en appui des chiffres cités dans les livrables
+(ex. `notebooks/exploration_fichiers_clients.ipynb` pour C10).
+
 ## État d'avancement
 
 ### M0 — Cadrage & Setup (clos le 25/08/2026)
@@ -54,7 +58,7 @@ pour M1). Release mergée sur `main` via la PR #25.
 ### M1 — Collecte & Stockage (en cours)
 - [x] Extraction automatisée multi-source C8 (#26)
 - [ ] Requêtes SQL d'extraction documentées C9 (#27)
-- [ ] Agrégation et nettoyage des fichiers clients C10 (#28)
+- [x] Agrégation et nettoyage des fichiers clients C10 (#28)
 - [ ] Base de données de travail — modélisation MERISE C11 (#29)
 - [ ] API Omega Data — exposition sécurisée C12 (#30)
 

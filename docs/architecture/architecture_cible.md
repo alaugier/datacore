@@ -43,7 +43,7 @@ et de l'[étude de faisabilité](etude_faisabilite.md#1-contexte) :
 |---|---|---|
 | Flux développés site par site, sans standardisation | Historique, absence de gouvernance data | Incidents non détectés en amont, indicateurs non comparables entre sites |
 | Pas de vue consolidée FluxPro ↔ TransFlow | Deux systèmes cloisonnés, rapprochement manuel | Absence de suivi de bout en bout de l'expédition à la livraison |
-| Fichiers clients hétérogènes ressaisis manuellement | Pas de traitement automatisé (C10) | Doublons, valeurs manquantes, temps perdu (chiffré en [C2 §3.3](topographie_donnees.md#33-fichiers-clients-bruts--formats-hétérogènes) : 55 à 68 % de doublons) |
+| Fichiers clients hétérogènes ressaisis manuellement | Pas de traitement automatisé (C10) | Doublons, valeurs manquantes, temps perdu (chiffré en [C2 §3.3](topographie_donnees.md#33-fichiers-clients-bruts--formats-hétérogènes) : 13 à 17 % de doublons au grain commande/produit) |
 | Absence de registre RGPD | Aucune gouvernance formalisée | Non-conformité, risque juridique jugé « zéro tolérance » par la sponsor |
 | Aucun outil de catalogue ou de documentation partagée | Développements artisanaux non documentés | Dépendance aux personnes, perte de connaissance |
 | Pas d'architecture prête pour la donnée massive (IoT) | Systèmes conçus pour la donnée transactionnelle uniquement | Incapacité à absorber la montée en charge annoncée (capteurs, géoloc, vidéo) |
