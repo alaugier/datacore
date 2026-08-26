@@ -70,3 +70,21 @@ python3 -m datacore.processing.run_cleaning
 
 Écrit `data/interim/clients_consolidated.json` et affiche un rapport de
 nettoyage (lignes lues, entrées corrompues supprimées, doublons résolus).
+
+## Requêtes SQL d'extraction (C9)
+Charge l'historique volumineux dans la base de staging (table dédiée
+`historique_expeditions`) :
+
+```bash
+./scripts/load_historique.sh
+```
+
+Les requêtes documentées (commandes, stocks, expéditions FluxPro et
+historique) sont dans `sql/extraction/` — voir
+`docs/architecture/requetes_sql_extraction.md` pour le détail de chacune
+avec un échantillon de résultat. Exécution directe, par exemple :
+
+```bash
+docker compose -f infra/docker/docker-compose.yml exec -T db \
+  psql -U datacore -d datacore_staging < sql/extraction/01_commandes_par_client_periode.sql
+```
