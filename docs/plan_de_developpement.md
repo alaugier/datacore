@@ -59,7 +59,7 @@ pour M1). Release mergée sur `main` via la PR #25.
 - [x] Extraction automatisée multi-source C8 (#26)
 - [x] Requêtes SQL d'extraction documentées C9 (#27)
 - [x] Agrégation et nettoyage des fichiers clients C10 (#28)
-- [ ] Base de données de travail — modélisation MERISE C11 (#29)
+- [x] Base de données de travail — modélisation MERISE C11 (#29)
 - [ ] API Omega Data — exposition sécurisée C12 (#30)
 
 Ordre de traitement retenu pour C8-C12 et justification :

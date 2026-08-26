@@ -88,3 +88,19 @@ avec un échantillon de résultat. Exécution directe, par exemple :
 docker compose -f infra/docker/docker-compose.yml exec -T db \
   psql -U datacore -d datacore_staging < sql/extraction/01_commandes_par_client_periode.sql
 ```
+
+## Base de travail consolidée — modélisation MERISE (C11)
+Crée les tables modélisées pour C11 (`transporteurs`, `tournees`,
+`livraisons`, `commandes_clients`), versionnées via Alembic — voir
+`docs/architecture/modelisation_merise.md` pour le MCD complet et
+`docs/architecture/registre_rgpd.md` pour le registre RGPD associé :
+
+```bash
+alembic upgrade head
+```
+
+Puis, une fois C8 et C10 exécutés, importe les données consolidées :
+
+```bash
+python3 -m datacore.storage.staging.load_staging
+```
