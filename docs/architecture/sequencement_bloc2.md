@@ -111,3 +111,6 @@ blocage strict entre elles (C9 peut par exemple être menée en parallèle de
 C10). Le [plan de développement](../plan_de_developpement.md) référence ce
 document pour que l'ordre retenu reste traçable avant le démarrage du
 codage.
+
+Diagramme d'architecture de l'ingestion (C8), une fois le milestone livré :
+[`diagrammes_techniques.md` §1](diagrammes_techniques.md#1-architecture-de-lingestion-c8).
