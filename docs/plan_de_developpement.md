@@ -37,7 +37,8 @@ Voir architecture complète discutée avec Claude Web (conversation du 24/08/202
 données reproductibles, en appui des chiffres cités dans les livrables
 (ex. `notebooks/exploration_fichiers_clients.ipynb` pour C10,
 `notebooks/requetes_sql_extraction.ipynb` pour C9,
-`notebooks/verification_normalisation_c11.ipynb` pour C11).
+`notebooks/verification_normalisation_c11.ipynb` pour C11,
+`notebooks/demo_omega_data_api.ipynb` pour C12).
 
 ## État d'avancement
 

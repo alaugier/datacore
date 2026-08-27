@@ -77,7 +77,7 @@ minimisation déjà retenu.
 | GET | `/health` | Disponibilité du service (sans authentification) |
 | GET | `/commandes-clients` | En-têtes de commandes clients consolidées (C10/C11), filtrables par client, paginées |
 | GET | `/commandes-clients/{id}/lignes` | Lignes d'une commande (produit, quantité, poids, chaîne du froid — dérivés de `produits` FluxPro via `sku`) |
-| GET | `/livraisons` | Livraisons TransFlow avec statut dérivé (équipes internes uniquement) |
+| GET | `/livraisons` | Livraisons TransFlow avec statut dérivé (équipes internes uniquement) — `?statut=` typé `Literal["Livree", "En cours"]` : une valeur invalide est rejetée (422), pas silencieusement filtrée à vide |
 | GET | `/kpis/taux-service` | Taux de service (% livré à l'heure) par client, calculé sur FluxPro |
 
 Documentation interactive complète (OpenAPI) : `/docs` une fois le
@@ -149,3 +149,8 @@ curl -H "X-API-Key: omega-data-analyst-2026" http://localhost:8000/kpis/taux-ser
 - Test de bout en bout manuel (Docker Compose) documenté au §5 :
   authentification, restriction de périmètre client, refus d'accès aux
   livraisons pour un référent, KPI correctement filtré.
+- [`notebooks/demo_omega_data_api.ipynb`](../../notebooks/demo_omega_data_api.ipynb) :
+  démonstration reproductible en client réel (`requests`, pas
+  `TestClient`) contre une instance vivante de l'API — mêmes scénarios
+  que le §5, exécutés et vérifiés pour de vrai, sorties capturées dans
+  le notebook.

@@ -23,7 +23,13 @@ from datacore.api import repository
 from datacore.api.auth import get_current_principal, require_internal
 from datacore.api.config import Principal, Role
 from datacore.api.db import get_db
-from datacore.api.schemas import CommandeClient, LigneCommandeClient, Livraison, TauxServiceClient
+from datacore.api.schemas import (
+    CommandeClient,
+    LigneCommandeClient,
+    Livraison,
+    StatutLivraison,
+    TauxServiceClient,
+)
 
 app = FastAPI(
     title="Omega Data API",
@@ -99,7 +105,7 @@ def get_lignes_commande_client(
 
 @app.get("/livraisons", response_model=list[Livraison], tags=["Livraisons"])
 def get_livraisons(
-    statut: str | None = Query(default=None, description="'Livree' ou 'En cours'"),
+    statut: StatutLivraison | None = Query(default=None),
     limit: int = Query(default=50, le=200),
     offset: int = Query(default=0, ge=0),
     principal: Principal = Depends(require_internal),

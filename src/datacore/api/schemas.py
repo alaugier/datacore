@@ -4,8 +4,18 @@ Génèrent automatiquement la spécification OpenAPI de l'API (voir
 `/openapi.json` et `/docs` une fois le service lancé).
 """
 import datetime
+from typing import Literal
 
 from pydantic import BaseModel, Field
+
+StatutLivraison = Literal["Livree", "En cours"]
+"""Les deux seules valeurs que peut prendre `statut` (voir la vue
+`livraisons_avec_statut`, C11 §3.3 : dérivé de `heure_reelle`, pas de
+troisième cas possible). Réutilisé pour le paramètre de requête
+`?statut=` sur `/livraisons` (`main.py`) : une valeur invalide est
+rejetée avec une erreur 422 explicite, plutôt que de filtrer
+silencieusement sur une valeur qui ne peut jamais correspondre à une
+ligne."""
 
 
 class CommandeClient(BaseModel):
@@ -39,7 +49,7 @@ class Livraison(BaseModel):
     tracking_number: str
     heure_estimee: str | None = None
     heure_reelle: str | None = None
-    statut: str
+    statut: StatutLivraison
 
 
 class TauxServiceClient(BaseModel):

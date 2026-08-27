@@ -99,6 +99,34 @@ def test_data_analyst_can_access_livraisons(client, monkeypatch):
     assert resp.status_code == 200
 
 
+def test_livraisons_rejects_invalid_statut_value(client, monkeypatch):
+    """Un statut hors {Livree, En cours} est rejeté (422), pas silencieusement filtré à vide."""
+    called = False
+
+    def fake_list(*args, **kwargs):
+        nonlocal called
+        called = True
+        return []
+
+    monkeypatch.setattr(api_main.repository, "list_livraisons", fake_list)
+
+    resp = client.get(
+        "/livraisons?statut=en_retard", headers={"X-API-Key": ANALYST_KEY}
+    )
+
+    assert resp.status_code == 422
+    assert called is False  # rejeté avant meme d'atteindre la couche de donnees
+
+
+def test_livraisons_accepts_valid_statut_values(client, monkeypatch):
+    """Les deux valeurs valides sont acceptées."""
+    monkeypatch.setattr(api_main.repository, "list_livraisons", lambda *a, **k: [])
+
+    for statut in ("Livree", "En cours"):
+        resp = client.get(f"/livraisons?statut={statut}", headers={"X-API-Key": ANALYST_KEY})
+        assert resp.status_code == 200
+
+
 def test_client_referent_cannot_see_another_clients_commande_lines(client, monkeypatch):
     """Un référent ne peut pas consulter les lignes d'une commande d'un autre client."""
     monkeypatch.setattr(
