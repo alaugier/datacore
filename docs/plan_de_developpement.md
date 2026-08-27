@@ -37,7 +37,8 @@ Voir architecture complète discutée avec Claude Web (conversation du 24/08/202
 données reproductibles, en appui des chiffres cités dans les livrables
 (ex. `notebooks/exploration_fichiers_clients.ipynb` pour C10,
 `notebooks/requetes_sql_extraction.ipynb` pour C9,
-`notebooks/verification_normalisation_c11.ipynb` pour C11).
+`notebooks/verification_normalisation_c11.ipynb` pour C11,
+`notebooks/demo_omega_data_api.ipynb` pour C12).
 
 ## État d'avancement
 
@@ -62,7 +63,7 @@ pour M1). Release mergée sur `main` via la PR #25.
 - [x] Requêtes SQL d'extraction documentées C9 (#27)
 - [x] Agrégation et nettoyage des fichiers clients C10 (#28)
 - [x] Base de données de travail — modélisation MERISE C11 (#29)
-- [ ] API Omega Data — exposition sécurisée C12 (#30)
+- [x] API Omega Data — exposition sécurisée C12 (#30)
 
 Ordre de traitement retenu pour C8-C12 et justification :
 voir `docs/architecture/sequencement_bloc2.md` — C8 → C10 → C9 → C11 → C12.
