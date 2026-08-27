@@ -31,5 +31,27 @@ services:
       timeout: 5s
       retries: 5
 
+  omega-data-api:
+    build:
+      context: ../..
+      dockerfile: infra/docker/omega-data-api.Dockerfile
+    container_name: datacore-omega-data-api
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      # Surcharge le DSN par defaut (localhost) : a l'interieur du
+      # reseau Docker Compose, la base est joignable via le nom du
+      # service "db", pas localhost.
+      STAGING_DB_DSN: postgresql://${POSTGRES_USER:-datacore}:${POSTGRES_PASSWORD:-datacore}@db:5432/${POSTGRES_DB:-datacore_staging}
+    ports:
+      - "${OMEGA_DATA_API_PORT:-8000}:8000"
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
 volumes:
   datacore-staging-data:

@@ -114,3 +114,22 @@ Puis, une fois C8 et C10 exécutés, importe les données consolidées :
 ```bash
 python3 -m datacore.storage.staging.load_staging
 ```
+
+## Omega Data API (C12)
+API REST documentée (spécification OpenAPI générée automatiquement),
+authentifiée par clé API et autorisée par rôle (Data Engineer, Data
+Analyst, référent client externe) — voir
+`docs/architecture/api_omega_data.md` pour le détail des endpoints et
+du modèle d'accès :
+
+```bash
+uvicorn datacore.api.main:app --reload
+# -> http://127.0.0.1:8000/docs
+```
+
+Ou via Docker Compose (service `omega-data-api`, inclus dans
+`docker compose up`) :
+
+```bash
+curl -H "X-API-Key: omega-data-engineer-2026" http://localhost:8000/commandes-clients
+```
