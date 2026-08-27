@@ -9,6 +9,8 @@ stocks et expéditions depuis la base FluxPro importée (C8, `data/schema.sql`)
 et depuis l'historique volumineux chargé dans la base de staging (voir
 §1 ci-dessous). Chaque requête est exécutable telle quelle contre la
 base de staging PostgreSQL (`infra/docker/docker-compose.yml`).
+Démonstration interactive avec sorties réelles :
+[`notebooks/requetes_sql_extraction.ipynb`](../../notebooks/requetes_sql_extraction.ipynb).
 
 ---
 
