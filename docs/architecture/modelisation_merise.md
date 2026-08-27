@@ -308,6 +308,17 @@ et ceux de ses clients, ce qui est hors du périmètre de ce programme.
 En revanche, le rapprochement `lignes_commande_clients.sku` ↔
 `produits.sku` est, lui, vérifié fiable à 100 % (§3.4).
 
+**Preuve empirique** (formalisée lors de la modélisation OMEGA BI, C13) :
+[`notebooks/verification_rapprochement_commandes.ipynb`](../../notebooks/verification_rapprochement_commandes.ipynb)
+quantifie pourquoi la jointure « trop fragile » évoquée ci-dessus l'est
+réellement — la clé candidate `(client, entrepot, date_commande)` est
+ambiguë sur 13,6 % des clés distinctes côté FluxPro (166/1223), et
+`omega_historique_expeditions.csv` ne porte de toute façon aucun
+identifiant de commande, SKU ni quantité permettant de servir de pont.
+Conséquence actée pour `Dim_Commande` (bloc 3) : commandes clients et
+commandes FluxPro y sont traitées comme deux faits distincts, non
+joignables au niveau ligne.
+
 ### 4.3 `HISTORIQUE_EXPEDITIONS.client` reste en texte libre
 
 Limite déjà documentée en C9
