@@ -26,7 +26,7 @@ def scrape_colis_list(base_url: str = TRANSFLOW_API_URL) -> list[str]:
     resp.raise_for_status()
     soup = BeautifulSoup(resp.text, "html.parser")
     links = soup.select("a[href*='/portail-transporteur/colis/']")
-    return [a["href"].rsplit("/", 1)[-1] for a in links]
+    return [str(a["href"]).rsplit("/", 1)[-1] for a in links]
 
 
 def scrape_colis_detail(tracking_number: str, base_url: str = TRANSFLOW_API_URL) -> dict[str, Any]:
@@ -46,10 +46,14 @@ def scrape_colis_detail(tracking_number: str, base_url: str = TRANSFLOW_API_URL)
     resp = requests.get(f"{base_url}/portail-transporteur/colis/{tracking_number}", timeout=10)
     resp.raise_for_status()
     soup = BeautifulSoup(resp.text, "html.parser")
-    rows = {
-        row.find("th").get_text(strip=True): row.find("td").get_text(strip=True)
-        for row in soup.select("table tr")
-    }
+    rows: dict[str, str] = {}
+    for row in soup.select("table tr"):
+        th, td = row.find("th"), row.find("td")
+        if th is None or td is None:
+            # Ligne de table sans en-tete ou sans valeur (HTML inattendu) :
+            # ignoree plutot que de lever une exception.
+            continue
+        rows[th.get_text(strip=True)] = td.get_text(strip=True)
     return {
         "tracking_number": tracking_number,
         "statut": rows.get("Statut"),

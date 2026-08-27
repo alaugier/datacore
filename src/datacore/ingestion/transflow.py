@@ -5,7 +5,7 @@ Couvre la source « service web » attendue par le référentiel (voir
 ses réponses (`page`, `per_page`) : ce module boucle automatiquement sur
 toutes les pages pour renvoyer la collection complète.
 """
-from typing import Any
+from typing import Any, cast
 
 import requests
 
@@ -44,7 +44,10 @@ def fetch_transporteurs(base_url: str = TRANSFLOW_API_URL) -> list[dict[str, Any
     Returns:
         La liste des transporteurs.
     """
-    return _get_json("/api/transporteurs", None, base_url)
+    # _get_json() renvoie Any (reponse JSON generique, tantot liste tantot
+    # dict pagine selon la route) : cast explicite ici, ou l'appelant sait
+    # que /api/transporteurs renvoie une liste.
+    return cast(list[dict[str, Any]], _get_json("/api/transporteurs", None, base_url))
 
 
 def _fetch_paginated(path: str, params: dict[str, Any], base_url: str) -> list[dict[str, Any]]:
