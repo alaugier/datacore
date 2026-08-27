@@ -21,3 +21,10 @@ select = ["E", "F", "I", "UP"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests/unit", "tests/integration"]
+
+[tool.mypy]
+python_version = "3.12"
+files = ["src/datacore"]
+warn_return_any = true
+warn_unused_ignores = true
+check_untyped_defs = true

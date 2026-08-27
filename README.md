@@ -14,6 +14,16 @@ pip install -r requirements-dev.txt   # installe aussi le package datacore en ed
 cd api-mock && python3 app.py   # API mock TransFlow sur :5050
 ```
 
+## Qualité de code (CI)
+Les mêmes vérifications que `.github/workflows/ci.yml` (lint, typage,
+tests), à lancer localement avant de pousser :
+
+```bash
+ruff check .
+mypy
+pytest tests/unit tests/integration -v
+```
+
 ## Setup via Docker Compose
 Alternative conteneurisée : base de staging PostgreSQL + API mock TransFlow.
 

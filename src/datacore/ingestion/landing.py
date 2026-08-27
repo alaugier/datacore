@@ -10,7 +10,7 @@ import datetime
 import decimal
 import json
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 
 def _json_default(value: Any) -> Any:
@@ -62,4 +62,6 @@ def read_records(path: Path) -> list[dict[str, Any]]:
         La liste de dictionnaires désérialisée.
     """
     with open(path, encoding="utf-8") as f:
-        return json.load(f)
+        # json.load() renvoie Any (contenu JSON non type) : cast explicite,
+        # l'appelant sait que write_records() y a ecrit une liste de dicts.
+        return cast(list[dict[str, Any]], json.load(f))
