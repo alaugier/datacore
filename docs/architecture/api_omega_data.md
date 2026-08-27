@@ -6,7 +6,9 @@
 Ce document décrit l'API REST « Omega Data API » (`src/datacore/api/`),
 qui expose le jeu de données consolidé produit par les compétences C8 à
 C11 (base de travail de staging) aux équipes BI et data science, avec
-authentification et autorisation.
+authentification et autorisation. Diagrammes d'architecture et de
+séquence d'autorisation :
+[`diagrammes_techniques.md` §2](diagrammes_techniques.md#2-architecture-de-lomega-data-api-c12).
 
 ---
 
