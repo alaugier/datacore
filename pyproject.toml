@@ -1,3 +1,16 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "datacore"
+version = "0.1.0"
+description = "DATA CORE — refonte de l'infrastructure data d'Omega Logistics (formation Simplon Data Engineer)."
+requires-python = ">=3.12"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
 [tool.ruff]
 line-length = 100
 target-version = "py312"
@@ -8,3 +21,10 @@ select = ["E", "F", "I", "UP"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests/unit", "tests/integration"]
+
+[tool.mypy]
+python_version = "3.12"
+files = ["src/datacore"]
+warn_return_any = true
+warn_unused_ignores = true
+check_untyped_defs = true

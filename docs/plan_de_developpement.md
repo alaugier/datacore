@@ -33,7 +33,16 @@ Voir architecture complète discutée avec Claude Web (conversation du 24/08/202
 `src/datacore/{ingestion,processing,storage,api,governance,config}`,
 `docs/{architecture,latex,presentation}`, `tests/{unit,integration,playwright}`, `infra/`.
 
+`notebooks/` (ajouté le 26/08/2026) : explorations et analyses de
+données reproductibles, en appui des chiffres cités dans les livrables
+(ex. `notebooks/exploration_fichiers_clients.ipynb` pour C10,
+`notebooks/requetes_sql_extraction.ipynb` pour C9,
+`notebooks/verification_normalisation_c11.ipynb` pour C11,
+`notebooks/demo_omega_data_api.ipynb` pour C12).
+
 ## État d'avancement
+
+### M0 — Cadrage & Setup (clos le 25/08/2026)
 - [x] Init repo, arborescence, .gitignore, README (#1)
 - [x] Étude de faisabilité C1 (#2)
 - [x] Topographie des données C2 (#3)
@@ -45,9 +54,30 @@ Voir architecture complète discutée avec Claude Web (conversation du 24/08/202
 - [x] Supervision — rituels et budget C6 (#19)
 - [x] Plan de communication et lancement C7 (#20)
 
-**M0 clos le 25/08/2026** — voir `docs/comptes_rendus/M0.md` pour le
-compte rendu de fin de milestone (livrables, compétences couvertes,
-décisions, points ouverts pour M1).
+Voir `docs/comptes_rendus/M0.md` pour le compte rendu de fin de
+milestone (livrables, compétences couvertes, décisions, points ouverts
+pour M1). Release mergée sur `main` via la PR #25.
+
+### M1 — Collecte & Stockage (clos le 27/08/2026)
+- [x] Extraction automatisée multi-source C8 (#26)
+- [x] Requêtes SQL d'extraction documentées C9 (#27)
+- [x] Agrégation et nettoyage des fichiers clients C10 (#28)
+- [x] Base de données de travail — modélisation MERISE C11 (#29)
+- [x] API Omega Data — exposition sécurisée C12 (#30)
+
+Ordre de traitement retenu pour C8-C12 et justification :
+voir `docs/architecture/sequencement_bloc2.md` — C8 → C10 → C9 → C11 → C12.
+
+Voir `docs/comptes_rendus/M1.md` pour le compte rendu de fin de
+milestone (livrables, compétences couvertes, décisions, points ouverts
+pour M2). Release vers `main` via la PR #42.
+
+### M2 — Entrepôt OMEGA BI (en cours)
+- [ ] Modélisation OMEGA BI — schémas étoile/flocon C13 (#44)
+- [ ] Création de l'entrepôt OMEGA BI C14 (#45)
+- [ ] Pipelines ETL vers l'entrepôt OMEGA BI C15 (#46)
+- [ ] Gestion opérationnelle de l'entrepôt OMEGA BI C16 (#47)
+- [ ] Variation de dimension SCD type 2 sur Dim_Client C17 (#48)
 
 ## Règles pour Claude Code
 - Ne jamais committer `data/raw/*` (voir `.gitignore`).

@@ -10,8 +10,18 @@ Voir `docs/architecture/` pour l'AS IS/TO BE et le détail des modules `src/data
 ## Setup local
 ```bash
 python3 -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt
+pip install -r requirements-dev.txt   # installe aussi le package datacore en editable
 cd api-mock && python3 app.py   # API mock TransFlow sur :5050
+```
+
+## Qualité de code (CI)
+Les mêmes vérifications que `.github/workflows/ci.yml` (lint, typage,
+tests), à lancer localement avant de pousser :
+
+```bash
+ruff check .
+mypy
+pytest tests/unit tests/integration -v
 ```
 
 ## Setup via Docker Compose
@@ -43,3 +53,83 @@ docker compose -f infra/docker/docker-compose.yml down
 
 ## Données
 `data/raw/` contient le pack pédagogique fourni (non versionné, voir .gitignore).
+
+## Extraction des données (C8)
+Une fois l'API mock lancée (localement ou via Docker Compose) et la base
+de staging peuplée (`./scripts/init_staging_db.sh`), les cinq sources du
+programme (TransFlow, portail transporteur, FluxPro, fichiers clients,
+historique) peuvent être extraites en une commande :
+
+```bash
+python3 -m datacore.ingestion.run_extraction
+```
+
+Les résultats sont écrits dans `data/interim/` (zone d'atterrissage
+intermédiaire, non versionnée — voir
+`docs/architecture/sequencement_bloc2.md`), en attendant la modélisation
+de la base de travail consolidée (C11).
+
+## Nettoyage des fichiers clients (C10)
+Une fois l'extraction (C8) effectuée, agrège et nettoie les trois
+fichiers clients (dédoublonnage au grain commande/produit, dates et
+unités homogénéisées) en un jeu de données unique :
+
+```bash
+python3 -m datacore.processing.run_cleaning
+```
+
+Écrit `data/interim/clients_consolidated.json` et affiche un rapport de
+nettoyage (lignes lues, entrées corrompues supprimées, doublons résolus).
+
+## Requêtes SQL d'extraction (C9)
+Charge l'historique volumineux dans la base de staging (table dédiée
+`historique_expeditions`) :
+
+```bash
+./scripts/load_historique.sh
+```
+
+Les requêtes documentées (commandes, stocks, expéditions FluxPro et
+historique) sont dans `sql/extraction/` — voir
+`docs/architecture/requetes_sql_extraction.md` pour le détail de chacune
+avec un échantillon de résultat. Exécution directe, par exemple :
+
+```bash
+docker compose -f infra/docker/docker-compose.yml exec -T db \
+  psql -U datacore -d datacore_staging < sql/extraction/01_commandes_par_client_periode.sql
+```
+
+## Base de travail consolidée — modélisation MERISE (C11)
+Crée les tables modélisées pour C11 (`transporteurs`, `tournees`,
+`livraisons`, `commandes_clients`), versionnées via Alembic — voir
+`docs/architecture/modelisation_merise.md` pour le MCD complet et
+`docs/architecture/registre_rgpd.md` pour le registre RGPD associé :
+
+```bash
+alembic upgrade head
+```
+
+Puis, une fois C8 et C10 exécutés, importe les données consolidées :
+
+```bash
+python3 -m datacore.storage.staging.load_staging
+```
+
+## Omega Data API (C12)
+API REST documentée (spécification OpenAPI générée automatiquement),
+authentifiée par clé API et autorisée par rôle (Data Engineer, Data
+Analyst, référent client externe) — voir
+`docs/architecture/api_omega_data.md` pour le détail des endpoints et
+du modèle d'accès :
+
+```bash
+uvicorn datacore.api.main:app --reload
+# -> http://127.0.0.1:8000/docs
+```
+
+Ou via Docker Compose (service `omega-data-api`, inclus dans
+`docker compose up`) :
+
+```bash
+curl -H "X-API-Key: omega-data-engineer-2026" http://localhost:8000/commandes-clients
+```

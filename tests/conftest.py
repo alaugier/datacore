@@ -7,8 +7,10 @@ sans dependre du serveur Flask reellement lance.
 import importlib.util
 import pathlib
 import sys
+import threading
 
 import pytest
+from werkzeug.serving import make_server
 
 API_MOCK_DIR = pathlib.Path(__file__).resolve().parents[1] / "api-mock"
 sys.path.insert(0, str(API_MOCK_DIR))
@@ -44,3 +46,25 @@ def api_client(api_mock_module):
 def api_key(api_mock_module):
     """Cle API valide attendue par l'API mock (en-tete X-API-Key)."""
     return api_mock_module.API_KEY
+
+
+@pytest.fixture(scope="session")
+def live_api_mock(api_mock_module):
+    """URL de base d'un serveur Flask reel (l'API mock), lance en arriere-plan.
+
+    Contrairement a `api_client` (client de test Flask, pas de vrai
+    reseau), cette fixture permet de tester des clients HTTP (module
+    `requests`, utilises par `datacore.ingestion.transflow` et
+    `datacore.ingestion.portail_scraping`) sans dependre d'un processus
+    `python3 app.py` deja lance manuellement.
+
+    Yields:
+        str: l'URL de base du serveur (ex. "http://127.0.0.1:54321").
+    """
+    server = make_server("127.0.0.1", 0, api_mock_module.app)
+    port = server.server_port
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    yield f"http://127.0.0.1:{port}"
+    server.shutdown()
+    thread.join(timeout=5)
