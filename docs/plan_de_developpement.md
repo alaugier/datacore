@@ -58,7 +58,7 @@ Voir `docs/comptes_rendus/M0.md` pour le compte rendu de fin de
 milestone (livrables, compétences couvertes, décisions, points ouverts
 pour M1). Release mergée sur `main` via la PR #25.
 
-### M1 — Collecte & Stockage (en cours)
+### M1 — Collecte & Stockage (clos le 27/08/2026)
 - [x] Extraction automatisée multi-source C8 (#26)
 - [x] Requêtes SQL d'extraction documentées C9 (#27)
 - [x] Agrégation et nettoyage des fichiers clients C10 (#28)
@@ -67,6 +67,17 @@ pour M1). Release mergée sur `main` via la PR #25.
 
 Ordre de traitement retenu pour C8-C12 et justification :
 voir `docs/architecture/sequencement_bloc2.md` — C8 → C10 → C9 → C11 → C12.
+
+Voir `docs/comptes_rendus/M1.md` pour le compte rendu de fin de
+milestone (livrables, compétences couvertes, décisions, points ouverts
+pour M2). Release vers `main` via la PR #42.
+
+### M2 — Entrepôt OMEGA BI (en cours)
+- [ ] Modélisation OMEGA BI — schémas étoile/flocon C13 (#44)
+- [ ] Création de l'entrepôt OMEGA BI C14 (#45)
+- [ ] Pipelines ETL vers l'entrepôt OMEGA BI C15 (#46)
+- [ ] Gestion opérationnelle de l'entrepôt OMEGA BI C16 (#47)
+- [ ] Variation de dimension SCD type 2 sur Dim_Client C17 (#48)
 
 ## Règles pour Claude Code
 - Ne jamais committer `data/raw/*` (voir `.gitignore`).
