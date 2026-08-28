@@ -441,6 +441,11 @@ pas par principe).
   retenu pour le Bloc 3 (C13 → C14 → C15 → C17 → C16).
 - [`notebooks/verification_rapprochement_commandes.ipynb`](../../notebooks/verification_rapprochement_commandes.ipynb) —
   preuve empirique du choix fait en §6.1.
+- [`notebooks/exploration_donnees_omega_bi.ipynb`](../../notebooks/exploration_donnees_omega_bi.ipynb) —
+  analyses exploratoires reproductibles derrière §5.1, §5.2, §6.3, §6.5
+  et §8 (instantané unique de `stocks.csv`, corrélation catégorie/client,
+  cohérence de l'historique, rappel RGPD, correspondance
+  `expeditions.transporteur` ↔ `Dim_Transporteur`).
 - [`modelisation_merise.md`](modelisation_merise.md) — modélisation de la
   base de travail (source de cet entrepôt).
 - [`registre_rgpd.md`](registre_rgpd.md) — registre RGPD de la base de
