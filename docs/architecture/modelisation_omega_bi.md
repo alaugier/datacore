@@ -196,9 +196,26 @@ c'est la raison du choix `Dim_Categorie` plutôt que `Dim_Produit` en
 | Volume | 1100 lignes | 25 000 lignes |
 | Lien vers une commande | Oui (`commande_id`, via `expeditions`) | Non |
 | Produit | Détail SKU (via `commande_id` → `lignes_commande` → `produits`) | Catégorie seule (`categorie_produit`) |
-| Transporteur | Connu (`expeditions.transporteur`) | **Absent** de la source (aucune colonne transporteur) |
+| Transporteur | Connu, mais en texte libre (`expeditions.transporteur`, ex. `"RapidFret"`) — pas de FK vers `transporteurs.id` (point déjà noté dans `topographie_donnees.md` : jointure applicative nécessaire, voir note ci-dessous) | **Absent** de la source (aucune colonne transporteur) |
 | Coût de transport | **Absent** (ni `expeditions` ni `livraisons` ne portent de coût) | Connu (`cout_transport_eur`) |
 | Rapprochement client/entrepôt | Fiable (clés étrangères) | Texte libre (`client`, `entrepot`) — non garanti par contrainte, mais vérifié cohérent avec les 3 clients et 3 entrepôts connus sur ce jeu de données (voir `modelisation_merise.md` §4.3 pour la réserve déjà documentée) |
+
+**Rapprochement `expeditions.transporteur` ↔ `Dim_Transporteur`** : côté
+FluxPro, `expeditions.transporteur` est un texte libre (`"RapidFret"`,
+`"EcoRoute"`, `"TransUnion Logistique"`), pas une clé étrangère vers
+`transporteurs.id` — le chargement de `Fait_Expedition` doit donc
+rapprocher cette valeur de `Dim_Transporteur.nom` par **jointure
+textuelle exacte**, avec le même risque de principe qu'un rapprochement
+`client`/`entrepot` en texte libre (variante d'orthographe, casse,
+espace). Vérifié empiriquement sur ce jeu de données : les 3 valeurs de
+`expeditions.transporteur` correspondent exactement aux 3 valeurs de
+`transporteurs.nom` (source `api-mock/fixtures/transporteurs.json`),
+aucun écart. Comme pour le rapprochement client/entrepôt de
+l'historique, ce n'est pas garanti par une contrainte — à traiter comme
+un contrôle qualité explicite en C15 (ligne rejetée ou mise en
+quarantaine si `expeditions.transporteur` ne correspond à aucun
+`transporteurs.nom` connu), pas supposé automatiquement fiable en
+production (voir §8).
 
 Ce tableau documente une asymétrie réelle du jeu de données, pas un
 choix de modélisation : le système « historique » et le couple
@@ -391,12 +408,14 @@ pas par principe).
 
 ## 8. Limites et points ouverts pour la suite du Bloc 3
 
-- **Rapprochement client/entrepôt de l'historique** : fiable sur ce jeu
-  de données (3 clients, 3 entrepôts, correspondance textuelle exacte
-  vérifiée), mais toujours non garanti par une contrainte — à traiter
-  comme un contrôle qualité explicite en C15 (ligne rejetée ou mise en
-  quarantaine si `client`/`entrepot` ne correspond à aucune valeur
-  connue), pas supposé automatiquement fiable en production.
+- **Rapprochement client/entrepôt de l'historique, et transporteur côté
+  FluxPro** : fiables sur ce jeu de données (correspondance textuelle
+  exacte vérifiée dans les deux cas — 3 clients, 3 entrepôts, 3
+  transporteurs), mais dans les deux cas non garantis par une contrainte
+  (texte libre, voir §5.1) — à traiter comme un contrôle qualité
+  explicite en C15 (ligne rejetée ou mise en quarantaine si `client`,
+  `entrepot` ou `transporteur` ne correspond à aucune valeur connue),
+  pas supposé automatiquement fiable en production.
 - **`Fait_Stock` à un seul instantané** : le modèle est prêt pour un
   historique quotidien, mais le jeu de données pédagogique n'en fournit
   qu'un seul aujourd'hui (§5.2).
