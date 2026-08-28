@@ -30,6 +30,15 @@ STAGING_DB_DSN = os.environ.get(
     f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@localhost:{POSTGRES_PORT}/{POSTGRES_DB}",
 )
 
+# Entrepôt OMEGA BI (C13-C17) : base distincte de la base de staging,
+# mais même instance Postgres (voir docker-compose.yml) — sobriété
+# RGESN, pas de second conteneur pour une simple séparation logique.
+OMEGA_BI_DB = os.environ.get("OMEGA_BI_DB", "datacore_omega_bi")
+OMEGA_BI_DB_DSN = os.environ.get(
+    "OMEGA_BI_DB_DSN",
+    f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@localhost:{POSTGRES_PORT}/{OMEGA_BI_DB}",
+)
+
 RAW_DIR = Path(os.environ.get("DATACORE_RAW_DIR", REPO_ROOT / "data" / "raw"))
 CLIENTS_FILES_DIR = RAW_DIR / "clients_fichiers"
 HISTORIQUE_PATH = RAW_DIR / "historique" / "omega_historique_expeditions.csv"
