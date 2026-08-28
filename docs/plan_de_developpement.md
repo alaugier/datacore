@@ -79,6 +79,9 @@ pour M2). Release vers `main` via la PR #42.
 - [ ] Gestion opérationnelle de l'entrepôt OMEGA BI C16 (#47)
 - [ ] Variation de dimension SCD type 2 sur Dim_Client C17 (#48)
 
+Ordre de traitement retenu pour C13-C17 et justification :
+voir `docs/architecture/sequencement_bloc3.md` — C13 → C14 → C15 → C17 → C16.
+
 ## Règles pour Claude Code
 - Ne jamais committer `data/raw/*` (voir `.gitignore`).
 - Une branche par issue, nommée selon la convention ci-dessus.
