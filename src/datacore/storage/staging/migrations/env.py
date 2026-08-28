@@ -3,14 +3,14 @@ from logging.config import fileConfig
 from alembic import context
 from sqlalchemy import engine_from_config, pool
 
-from datacore.ingestion.config import STAGING_DB_DSN
+from datacore.config import STAGING_DB_DSN
 from datacore.storage.staging.models import metadata
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
 
-# DSN unique : lu depuis .env via datacore.ingestion.config (python-dotenv),
+# DSN unique : lu depuis .env via datacore.config (python-dotenv),
 # plutôt que codé en dur dans alembic.ini -- une seule source de vérité
 # pour la chaîne de connexion à la base de staging.
 config.set_main_option("sqlalchemy.url", STAGING_DB_DSN)

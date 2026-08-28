@@ -69,7 +69,7 @@ seule `dim_temps` (dimension générée) l'est.
 (script_location dédié) plutôt qu'un ajout à `alembic.ini` — deux bases
 Postgres séparées, donc deux historiques de migration indépendants, sur
 le même principe qu'un DSN dédié
-(`datacore.ingestion.config.OMEGA_BI_DB_DSN`, à côté de
+(`datacore.config.OMEGA_BI_DB_DSN`, à côté de
 `STAGING_DB_DSN`).
 
 ---

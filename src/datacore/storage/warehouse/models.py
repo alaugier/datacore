@@ -3,7 +3,7 @@
 Implémente la modélisation en étoile/flocon conçue en C13 (voir
 `docs/architecture/modelisation_omega_bi.md`) dans une base Postgres
 distincte (`OMEGA_BI_DB`, même instance que la base de staging — voir
-`datacore.ingestion.config`), organisée en 3 schémas Postgres :
+`datacore.config`), organisée en 3 schémas Postgres :
 
 - `dimensions` : les 6 dimensions conformées, partagées entre les deux
   datamarts (`Dim_Client`, `Dim_Site`, `Dim_Produit`, `Dim_Categorie`,

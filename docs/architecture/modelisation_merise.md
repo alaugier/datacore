@@ -350,7 +350,7 @@ alembic downgrade base
 alembic revision --autogenerate -m "description du changement"
 ```
 
-Le DSN de connexion est lu depuis `datacore.ingestion.config.STAGING_DB_DSN`
+Le DSN de connexion est lu depuis `datacore.config.STAGING_DB_DSN`
 (donc depuis `.env` via `python-dotenv`) — voir
 `src/datacore/storage/staging/migrations/env.py` — pas codé en dur dans
 `alembic.ini`, pour n'avoir qu'une seule source de vérité sur la chaîne

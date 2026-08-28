@@ -6,6 +6,8 @@ le même principe que `tests/unit/test_load_staging.py`.
 """
 import datetime
 
+import pytest
+
 from datacore.storage.warehouse.load_dim_temps import charger_dim_temps, generer_lignes
 
 
@@ -50,14 +52,33 @@ def test_generer_lignes_est_weekend_correct():
     assert samedi[-1] is True
 
 
-class FakeCursor:
-    """Curseur factice : enregistre les appels executemany reçus."""
+def test_generer_lignes_rejette_une_plage_inversee():
+    """date_debut postérieure à date_fin lève une erreur explicite plutôt qu'une liste vide."""
+    with pytest.raises(ValueError):
+        generer_lignes(datetime.date(2026, 1, 3), datetime.date(2026, 1, 1))
 
-    def __init__(self):
+
+class FakeCursor:
+    """Curseur factice : enregistre les appels executemany reçus.
+
+    Args:
+        rowcount_insere: valeur simulée de `cur.rowcount` après
+            `executemany` — par défaut égale au nombre d'enregistrements
+            envoyés (aucun conflit), surchargeable pour simuler des
+            lignes ignorées par `ON CONFLICT DO NOTHING`.
+    """
+
+    def __init__(self, rowcount_insere=None):
         self.executemany_calls = []
+        self._rowcount_insere = rowcount_insere
+        self.rowcount = 0
 
     def executemany(self, sql, records):
-        self.executemany_calls.append((sql, list(records)))
+        records = list(records)
+        self.executemany_calls.append((sql, records))
+        self.rowcount = (
+            self._rowcount_insere if self._rowcount_insere is not None else len(records)
+        )
 
     def __enter__(self):
         return self
@@ -69,8 +90,8 @@ class FakeCursor:
 class FakeConnection:
     """Connexion factice supportant le protocole context manager utilisé par charger_dim_temps."""
 
-    def __init__(self):
-        self.cursor_obj = FakeCursor()
+    def __init__(self, cursor_obj=None):
+        self.cursor_obj = cursor_obj or FakeCursor()
         self.committed = False
 
     def cursor(self):
@@ -101,3 +122,22 @@ def test_charger_dim_temps_insere_et_commit(monkeypatch):
     assert "ON CONFLICT (date_key) DO NOTHING" in sql
     assert len(records) == n
     assert conn.committed is True
+
+
+def test_charger_dim_temps_retourne_rowcount_pas_le_nombre_envoye(monkeypatch):
+    """Le retour reflète les lignes réellement insérées (cur.rowcount), pas celles envoyées.
+
+    Simule un ON CONFLICT qui ignore une partie des lignes (ex. un
+    second chargement partiellement recouvrant) : le nombre de lignes
+    générées est le même, mais rowcount, lui, diffère.
+    """
+    conn = FakeConnection(cursor_obj=FakeCursor(rowcount_insere=1))
+    monkeypatch.setattr(
+        "datacore.storage.warehouse.load_dim_temps.psycopg2.connect", lambda dsn: conn
+    )
+
+    n = charger_dim_temps(dsn="postgresql://fake")
+
+    sql, records = conn.cursor_obj.executemany_calls[0]
+    assert len(records) > 1  # des lignes ont bien été envoyées...
+    assert n == 1  # ...mais seule une a été réellement insérée

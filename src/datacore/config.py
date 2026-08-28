@@ -1,4 +1,10 @@
-"""Configuration centralisée des connecteurs d'extraction (C8).
+"""Configuration centralisée du programme (connexions Postgres, API TransFlow, chemins).
+
+Partagée par `ingestion`, `processing`, `storage` (staging et warehouse)
+et `api` — placée à la racine du package plutôt que sous `ingestion/`
+(où elle a été conçue à l'origine pour C8) pour refléter cet usage
+transverse, plutôt que de laisser croire qu'elle est spécifique à
+l'extraction.
 
 Toutes les valeurs sont surchargeables via variables d'environnement.
 Contrairement à `docker-compose` (qui lit `.env` lui-même pour les
@@ -14,7 +20,7 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
-REPO_ROOT = Path(__file__).resolve().parents[3]
+REPO_ROOT = Path(__file__).resolve().parents[2]
 
 load_dotenv(REPO_ROOT / ".env")
 

@@ -3,14 +3,14 @@ from logging.config import fileConfig
 from alembic import context
 from sqlalchemy import engine_from_config, pool
 
-from datacore.ingestion.config import OMEGA_BI_DB_DSN
+from datacore.config import OMEGA_BI_DB_DSN
 from datacore.storage.warehouse.models import metadata
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
 
-# DSN unique : lu depuis .env via datacore.ingestion.config (python-dotenv),
+# DSN unique : lu depuis .env via datacore.config (python-dotenv),
 # meme principe que src/datacore/storage/staging/migrations/env.py.
 config.set_main_option("sqlalchemy.url", OMEGA_BI_DB_DSN)
 

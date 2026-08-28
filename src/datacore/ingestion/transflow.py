@@ -9,7 +9,7 @@ from typing import Any, cast
 
 import requests
 
-from datacore.ingestion.config import TRANSFLOW_API_KEY, TRANSFLOW_API_URL
+from datacore.config import TRANSFLOW_API_KEY, TRANSFLOW_API_URL
 
 MAX_PER_PAGE = 200
 

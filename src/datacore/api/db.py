@@ -4,7 +4,7 @@ from collections.abc import Iterator
 import psycopg2
 import psycopg2.extensions
 
-from datacore.ingestion.config import STAGING_DB_DSN
+from datacore.config import STAGING_DB_DSN
 
 
 def get_db() -> Iterator[psycopg2.extensions.connection]:

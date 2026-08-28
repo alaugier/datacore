@@ -9,8 +9,8 @@ Prérequis : l'API mock TransFlow doit être lancée (voir README), et la
 base de staging PostgreSQL doit contenir les données FluxPro (voir
 `scripts/init_staging_db.sh`, issue #7) pour l'extraction FluxPro.
 """
+from datacore.config import INTERIM_DIR
 from datacore.ingestion import clients_files, fluxpro, historique, portail_scraping, transflow
-from datacore.ingestion.config import INTERIM_DIR
 from datacore.ingestion.landing import write_records
 
 
