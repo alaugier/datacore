@@ -450,3 +450,5 @@ pas par principe).
   base de travail (source de cet entrepôt).
 - [`registre_rgpd.md`](registre_rgpd.md) — registre RGPD de la base de
   travail, référence pour les exclusions RGPD *by design* de §6.5.
+- [`creation_entrepot_omega_bi.md`](creation_entrepot_omega_bi.md) —
+  création physique de l'entrepôt implémentant ce schéma (C14).

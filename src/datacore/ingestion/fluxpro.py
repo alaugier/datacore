@@ -15,7 +15,7 @@ from typing import Any
 
 import psycopg2
 
-from datacore.ingestion.config import STAGING_DB_DSN
+from datacore.config import STAGING_DB_DSN
 
 FLUXPRO_TABLES = (
     "entrepots",

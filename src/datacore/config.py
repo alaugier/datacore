@@ -1,4 +1,10 @@
-"""Configuration centralisée des connecteurs d'extraction (C8).
+"""Configuration centralisée du programme (connexions Postgres, API TransFlow, chemins).
+
+Partagée par `ingestion`, `processing`, `storage` (staging et warehouse)
+et `api` — placée à la racine du package plutôt que sous `ingestion/`
+(où elle a été conçue à l'origine pour C8) pour refléter cet usage
+transverse, plutôt que de laisser croire qu'elle est spécifique à
+l'extraction.
 
 Toutes les valeurs sont surchargeables via variables d'environnement.
 Contrairement à `docker-compose` (qui lit `.env` lui-même pour les
@@ -14,7 +20,7 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
-REPO_ROOT = Path(__file__).resolve().parents[3]
+REPO_ROOT = Path(__file__).resolve().parents[2]
 
 load_dotenv(REPO_ROOT / ".env")
 
@@ -28,6 +34,15 @@ POSTGRES_PORT = os.environ.get("POSTGRES_PORT", "5432")
 STAGING_DB_DSN = os.environ.get(
     "STAGING_DB_DSN",
     f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@localhost:{POSTGRES_PORT}/{POSTGRES_DB}",
+)
+
+# Entrepôt OMEGA BI (C13-C17) : base distincte de la base de staging,
+# mais même instance Postgres (voir docker-compose.yml) — sobriété
+# RGESN, pas de second conteneur pour une simple séparation logique.
+OMEGA_BI_DB = os.environ.get("OMEGA_BI_DB", "datacore_omega_bi")
+OMEGA_BI_DB_DSN = os.environ.get(
+    "OMEGA_BI_DB_DSN",
+    f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@localhost:{POSTGRES_PORT}/{OMEGA_BI_DB}",
 )
 
 RAW_DIR = Path(os.environ.get("DATACORE_RAW_DIR", REPO_ROOT / "data" / "raw"))
