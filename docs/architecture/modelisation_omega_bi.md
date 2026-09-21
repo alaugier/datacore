@@ -459,3 +459,6 @@ pas par principe).
   ETL peuplant l'entrepôt depuis la base de staging (C15).
 - [`historisation_dim_client_scd2.md`](historisation_dim_client_scd2.md) —
   historisation SCD2 de `Dim_Client`, anticipée ici (C17).
+- [`gestion_operationnelle_omega_bi.md`](gestion_operationnelle_omega_bi.md)
+  et [`registre_rgpd_entrepot.md`](registre_rgpd_entrepot.md) — gestion
+  opérationnelle et registre RGPD de l'entrepôt (C16).

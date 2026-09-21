@@ -40,7 +40,8 @@ données reproductibles, en appui des chiffres cités dans les livrables
 `notebooks/verification_normalisation_c11.ipynb` pour C11,
 `notebooks/demo_omega_data_api.ipynb` pour C12,
 `notebooks/verification_rapprochement_commandes.ipynb` et
-`notebooks/exploration_donnees_omega_bi.ipynb` pour C13).
+`notebooks/exploration_donnees_omega_bi.ipynb` pour C13,
+`notebooks/tableau_de_bord_sla_omega_bi.ipynb` pour C16).
 
 ## État d'avancement
 
@@ -74,15 +75,19 @@ Voir `docs/comptes_rendus/M1.md` pour le compte rendu de fin de
 milestone (livrables, compétences couvertes, décisions, points ouverts
 pour M2). Release vers `main` via la PR #42.
 
-### M2 — Entrepôt OMEGA BI (en cours)
+### M2 — Entrepôt OMEGA BI (clos le 21/09/2026)
 - [x] Modélisation OMEGA BI — schémas étoile/flocon C13 (#44)
 - [x] Création de l'entrepôt OMEGA BI C14 (#45)
 - [x] Pipelines ETL vers l'entrepôt OMEGA BI C15 (#46)
-- [ ] Gestion opérationnelle de l'entrepôt OMEGA BI C16 (#47)
+- [x] Gestion opérationnelle de l'entrepôt OMEGA BI C16 (#47)
 - [x] Variation de dimension SCD type 2 sur Dim_Client C17 (#48)
 
 Ordre de traitement retenu pour C13-C17 et justification :
 voir `docs/architecture/sequencement_bloc3.md` — C13 → C14 → C15 → C17 → C16.
+
+Voir `docs/comptes_rendus/M2.md` pour le compte rendu de fin de
+milestone (livrables, compétences couvertes, décisions, points ouverts
+pour M3). Release vers `main` à planifier.
 
 ## Règles pour Claude Code
 - Ne jamais committer `data/raw/*` (voir `.gitignore`).

@@ -3,13 +3,18 @@
 Implémente la modélisation en étoile/flocon conçue en C13 (voir
 `docs/architecture/modelisation_omega_bi.md`) dans une base Postgres
 distincte (`OMEGA_BI_DB`, même instance que la base de staging — voir
-`datacore.config`), organisée en 3 schémas Postgres :
+`datacore.config`), organisée en 4 schémas Postgres :
 
 - `dimensions` : les 6 dimensions conformées, partagées entre les deux
   datamarts (`Dim_Client`, `Dim_Site`, `Dim_Produit`, `Dim_Categorie`,
   `Dim_Temps`, `Dim_Transporteur`).
-- `exploitation` : `Fait_Expedition`, `Fait_Stock` (datamart Exploitation).
+- `exploitation` : `Fait_Expedition`, `Fait_Stock` (datamart Exploitation)
+  et les vues d'indicateurs de service (C16, voir
+  `docs/architecture/gestion_operationnelle_omega_bi.md`).
 - `commercial` : `Fait_Commande` (datamart Commercial).
+- `gouvernance` : journal des opérations de maintenance (C16,
+  `journal_operations`) — aucune donnée métier, uniquement des
+  métadonnées d'exécution.
 
 Cette séparation physique en schémas rend tangible le principe bottom-up
 par datamarts avec dimensions conformées (C13 §1) : chaque datamart est
@@ -31,12 +36,14 @@ from sqlalchemy import (
     Boolean,
     Column,
     Date,
+    DateTime,
     ForeignKey,
     Integer,
     MetaData,
     Numeric,
     String,
     Table,
+    Text,
     UniqueConstraint,
 )
 
@@ -230,4 +237,24 @@ fait_commande = Table(
     Column("poids_ligne", Numeric(8, 2)),
     Column("statut_commande", String(30), nullable=False),
     schema="commercial",
+)
+
+# --- schéma "gouvernance" (gestion opérationnelle, C16) --------------------
+
+# Journal des opérations de maintenance de l'entrepôt (chargements ETL,
+# sauvegardes) -- alimenté par datacore.governance.journal, pas par le
+# code applicatif directement. Grain : une ligne par exécution d'une
+# opération. Ne contient aucune donnée personnelle (métadonnées
+# d'exécution uniquement) -- voir registre_rgpd_entrepot.md.
+journal_operations = Table(
+    "journal_operations",
+    metadata,
+    Column("id", Integer, primary_key=True),
+    Column("operation", String(50), nullable=False, comment="ex. load_warehouse, backup_complet"),
+    Column("demarre_le", DateTime, nullable=False),
+    Column("termine_le", DateTime),
+    Column("statut", String(20), nullable=False, comment="en_cours, succes ou echec"),
+    Column("details", Text, comment="résumé libre (ex. comptes de lignes chargées)"),
+    Column("erreur", Text, comment="message d'erreur si statut = echec"),
+    schema="gouvernance",
 )

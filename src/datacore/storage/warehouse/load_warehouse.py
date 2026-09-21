@@ -51,6 +51,7 @@ import psycopg2
 import psycopg2.extras
 
 from datacore.config import OMEGA_BI_DB_DSN, STAGING_DB_DSN
+from datacore.governance.journal import journaliser
 
 FAIT_EXPEDITION_COLUMNS = """
     client_key, site_key, categorie_key, date_key, transporteur_key,
@@ -620,8 +621,17 @@ def main() -> None:
 
     Transaction unique côté entrepôt : un échec à n'importe quelle étape
     annule (`ROLLBACK`) l'ensemble du rechargement plutôt que de laisser
-    l'entrepôt partiellement peuplé.
+    l'entrepôt partiellement peuplé. L'exécution elle-même est journalisée
+    (`gouvernance.journal_operations`, C16) sur une connexion séparée, pour
+    que l'échec soit bien enregistré même si la transaction de chargement
+    est annulée.
     """
+    with journaliser("load_warehouse") as contexte:
+        _run(contexte)
+
+
+def _run(contexte: dict[str, Any]) -> None:
+    """Corps du pipeline, séparé de `main()` pour être enveloppé par `journaliser`."""
     staging_conn = psycopg2.connect(STAGING_DB_DSN)
     warehouse_conn = psycopg2.connect(OMEGA_BI_DB_DSN)
     try:
@@ -657,14 +667,16 @@ def main() -> None:
         )
 
         warehouse_conn.commit()
-        print(
+        resume = (
             f"dim_client: {len(client_keys)}, dim_site: {len(site_keys)}, "
             f"dim_categorie: {len(categorie_keys)}, dim_produit: {len(produit_keys)}, "
-            f"dim_transporteur: {len(transporteur_nom_keys)} + 1 (Inconnu)\n"
+            f"dim_transporteur: {len(transporteur_nom_keys)} + 1 (Inconnu) | "
             f"fait_stock: {n_stock}, fait_commande: {n_commande}, "
-            f"fait_expedition: {n_exp_fluxpro} (FluxPro/TransFlow) + {n_exp_hist} (Historique)\n"
-            f"lignes historique mises en quarantaine: {n_quarantaine}"
+            f"fait_expedition: {n_exp_fluxpro} (FluxPro/TransFlow) + {n_exp_hist} (Historique) | "
+            f"quarantaine: {n_quarantaine}"
         )
+        print(resume.replace(" | ", "\n"))
+        contexte["details"] = resume
     except Exception:
         warehouse_conn.rollback()
         raise
