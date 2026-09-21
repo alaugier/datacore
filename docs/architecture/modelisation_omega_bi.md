@@ -305,13 +305,16 @@ fait par *drill-across* sur les dimensions conformées
 Issue de `clients` (`id`, `code`, `nom`, `secteur`). **Clé de substitution
 (`client_key`) retenue dès cette itération**, distincte de la clé
 naturelle FluxPro (`client_id`) — pratique Kimball standard pour toute
-dimension, indépendamment d'un besoin de SCD immédiat. Ce choix anticipe
-explicitement **C17 (SCD2 sur `Dim_Client`)** : lorsque C17 sera
-implémenté, l'ajout des colonnes `valid_from`/`valid_to`/`is_current`
-sera une évolution additive du schéma (une même entreprise cliente
-pourra alors avoir plusieurs lignes `Dim_Client`, chacune avec sa propre
-`client_key`), pas une refonte — voir `sequencement_bloc3.md` §2 pour la
-justification de l'ordre C17 avant C16.
+dimension, indépendamment d'un besoin de SCD immédiat. Ce choix anticipait
+explicitement **C17 (SCD2 sur `Dim_Client`)** : l'ajout des colonnes
+`valid_from`/`valid_to`/`is_current`, livré en C17, a bien été une
+évolution additive du schéma (une même entreprise cliente peut désormais
+avoir plusieurs lignes `Dim_Client`, chacune avec sa propre `client_key`)
+plutôt qu'une refonte — voir
+[`historisation_dim_client_scd2.md`](historisation_dim_client_scd2.md)
+pour le mécanisme et
+[`sequencement_bloc3.md`](sequencement_bloc3.md) §2 pour la justification
+de l'ordre C17 avant C16.
 
 **Pourquoi `commandes_clients` n'est pas un fait ici** : le jeu de
 données pédagogique ne fournit aucune clé métier partagée entre les
@@ -454,3 +457,5 @@ pas par principe).
   création physique de l'entrepôt implémentant ce schéma (C14).
 - [`pipelines_etl_omega_bi.md`](pipelines_etl_omega_bi.md) — pipeline
   ETL peuplant l'entrepôt depuis la base de staging (C15).
+- [`historisation_dim_client_scd2.md`](historisation_dim_client_scd2.md) —
+  historisation SCD2 de `Dim_Client`, anticipée ici (C17).

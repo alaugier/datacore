@@ -95,38 +95,122 @@ def test_date_key_convertit_en_yyyymmdd():
     assert _date_key(datetime.date(2026, 8, 28)) == 20260828
 
 
-def test_truncate_warehouse_inclut_toutes_les_tables_hors_dim_temps():
-    """truncate_warehouse vide les 8 tables alimentées par ce pipeline, jamais dim_temps."""
+def test_truncate_warehouse_inclut_toutes_les_tables_hors_dim_temps_et_dim_client():
+    """truncate_warehouse vide les 7 tables rechargées entièrement, jamais
+    dim_temps ni dim_client."""
     warehouse_conn = FakeWarehouseConnection()
 
     truncate_warehouse(warehouse_conn)
 
     sql, _ = warehouse_conn.cursor_obj.execute_calls[0]
     for table in [
-        "dimensions.dim_client", "dimensions.dim_site", "dimensions.dim_categorie",
+        "dimensions.dim_site", "dimensions.dim_categorie",
         "dimensions.dim_produit", "dimensions.dim_transporteur",
         "exploitation.fait_expedition", "exploitation.fait_stock", "commercial.fait_commande",
     ]:
         assert table in sql
     assert "dim_temps" not in sql
+    assert "dim_client" not in sql
     assert "CASCADE" in sql
 
 
-def test_load_dim_client_construit_le_mapping_id_vers_key():
-    """load_dim_client insère chaque client et associe son id staging à sa client_key générée."""
+class FakeScd2Cursor:
+    """Curseur factice pour load_dim_client (SCD2) : SELECT (version courante) puis INSERT/UPDATE.
+
+    Args:
+        current_row: `(client_key, nom, secteur)` simulant la version
+            courante déjà en base, ou `None` si le client est inédit.
+    """
+
+    def __init__(self, current_row):
+        self.current_row = current_row
+        self.execute_calls = []
+        self._last_sql = None
+        self._next_key = 100
+
+    def execute(self, sql, params=None):
+        self.execute_calls.append((sql, params))
+        self._last_sql = sql
+
+    def fetchone(self):
+        if "SELECT client_key, nom, secteur" in self._last_sql:
+            return self.current_row
+        if "RETURNING client_key" in self._last_sql:
+            key = self._next_key
+            self._next_key += 1
+            return (key,)
+        return None
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *exc):
+        return False
+
+
+class FakeScd2Connection:
+    """Connexion factice câblée sur un FakeScd2Cursor pré-configuré."""
+
+    def __init__(self, current_row):
+        self.cursor_obj = FakeScd2Cursor(current_row)
+
+    def cursor(self):
+        return self.cursor_obj
+
+
+def test_load_dim_client_premiere_version_insere_sans_cloturer_rien():
+    """Un client jamais vu (aucune version courante) est simplement inséré."""
     staging_conn = FakeStagingConnection([
         {"id": 1, "code": "NORDDRIVE", "nom": "NordDrive", "secteur": "Pieces automobiles"},
-        {"id": 2, "code": "FRESHMARKET", "nom": "FreshMarket", "secteur": "Grande distribution"},
     ])
-    warehouse_conn = FakeWarehouseConnection()
+    warehouse_conn = FakeScd2Connection(current_row=None)
 
-    mapping = load_dim_client(staging_conn, warehouse_conn)
+    mapping = load_dim_client(staging_conn, warehouse_conn, today=datetime.date(2026, 9, 21))
 
-    assert mapping == {1: 1, 2: 2}
-    assert len(warehouse_conn.cursor_obj.execute_calls) == 2
-    sql, params = warehouse_conn.cursor_obj.execute_calls[0]
-    assert "INSERT INTO dimensions.dim_client" in sql
-    assert params["nom"] == "NordDrive"
+    assert mapping == {1: 100}
+    calls = warehouse_conn.cursor_obj.execute_calls
+    assert len(calls) == 2  # SELECT puis INSERT, pas d'UPDATE
+    assert "UPDATE" not in calls[1][0]
+    assert "INSERT INTO dimensions.dim_client" in calls[1][0]
+
+
+def test_load_dim_client_reutilise_la_version_inchangee():
+    """Sans changement de nom/secteur, la ligne existante est réutilisée, rien n'est écrit."""
+    staging_conn = FakeStagingConnection([
+        {"id": 1, "code": "NORDDRIVE", "nom": "NordDrive", "secteur": "Pieces automobiles"},
+    ])
+    warehouse_conn = FakeScd2Connection(current_row=(555, "NordDrive", "Pieces automobiles"))
+
+    mapping = load_dim_client(staging_conn, warehouse_conn, today=datetime.date(2026, 9, 21))
+
+    assert mapping == {1: 555}
+    calls = warehouse_conn.cursor_obj.execute_calls
+    assert len(calls) == 1  # uniquement le SELECT
+
+
+def test_load_dim_client_historise_un_changement_de_secteur():
+    """Un secteur modifié clôture l'ancienne version et en ouvre une nouvelle."""
+    staging_conn = FakeStagingConnection([
+        {
+            "id": 1, "code": "NORDDRIVE", "nom": "NordDrive",
+            "secteur": "Pieces automobiles et electromobilite",
+        },
+    ])
+    warehouse_conn = FakeScd2Connection(current_row=(4, "NordDrive", "Pieces automobiles"))
+
+    mapping = load_dim_client(staging_conn, warehouse_conn, today=datetime.date(2026, 9, 21))
+
+    assert mapping == {1: 100}  # nouvelle client_key, pas l'ancienne (4)
+    calls = warehouse_conn.cursor_obj.execute_calls
+    assert len(calls) == 3  # SELECT, UPDATE (clôture), INSERT (nouvelle version)
+    update_sql, update_params = calls[1]
+    assert "UPDATE dimensions.dim_client" in update_sql
+    assert "is_current = false" in update_sql
+    assert update_params["client_key"] == 4
+    assert update_params["today"] == datetime.date(2026, 9, 21)
+    insert_sql, insert_params = calls[2]
+    assert "INSERT INTO dimensions.dim_client" in insert_sql
+    assert insert_params["secteur"] == "Pieces automobiles et electromobilite"
 
 
 def test_load_dim_categorie_une_ligne_par_categorie_distincte():
