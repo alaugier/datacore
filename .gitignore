@@ -6,3 +6,4 @@ data/raw/*
 !data/raw/README.md
 data/interim/
 *.egg-info/
+backups/

@@ -10,7 +10,7 @@ from typing import Any
 import requests
 from bs4 import BeautifulSoup
 
-from datacore.ingestion.config import TRANSFLOW_API_URL
+from datacore.config import TRANSFLOW_API_URL
 
 
 def scrape_colis_list(base_url: str = TRANSFLOW_API_URL) -> list[str]:

@@ -13,7 +13,12 @@ concrète — pas seulement théorique — de chaque source.
 Le schéma décrit ici est la **version normalisée** (26/08/2026), revue
 après une analyse des formes normales (§3) qui a mis au jour deux
 violations réelles dans la première version — corrigées après
-vérification empirique, pas par principe.
+vérification empirique, pas par principe. Une version SQL brute de ce
+même schéma (à titre documentaire, sans dépendance à SQLAlchemy/Alembic)
+est disponible dans
+[`sql/schema_base_travail.sql`](../../sql/schema_base_travail.sql) —
+testée pour s'assurer qu'elle correspond exactement à ce que crée la
+migration Alembic.
 
 ---
 
@@ -308,6 +313,17 @@ et ceux de ses clients, ce qui est hors du périmètre de ce programme.
 En revanche, le rapprochement `lignes_commande_clients.sku` ↔
 `produits.sku` est, lui, vérifié fiable à 100 % (§3.4).
 
+**Preuve empirique** (formalisée lors de la modélisation OMEGA BI, C13) :
+[`notebooks/verification_rapprochement_commandes.ipynb`](../../notebooks/verification_rapprochement_commandes.ipynb)
+quantifie pourquoi la jointure « trop fragile » évoquée ci-dessus l'est
+réellement — la clé candidate `(client, entrepot, date_commande)` est
+ambiguë sur 13,6 % des clés distinctes côté FluxPro (166/1223), et
+`omega_historique_expeditions.csv` ne porte de toute façon aucun
+identifiant de commande, SKU ni quantité permettant de servir de pont.
+Conséquence actée pour `Dim_Commande` (bloc 3) : commandes clients et
+commandes FluxPro y sont traitées comme deux faits distincts, non
+joignables au niveau ligne.
+
 ### 4.3 `HISTORIQUE_EXPEDITIONS.client` reste en texte libre
 
 Limite déjà documentée en C9
@@ -339,7 +355,7 @@ alembic downgrade base
 alembic revision --autogenerate -m "description du changement"
 ```
 
-Le DSN de connexion est lu depuis `datacore.ingestion.config.STAGING_DB_DSN`
+Le DSN de connexion est lu depuis `datacore.config.STAGING_DB_DSN`
 (donc depuis `.env` via `python-dotenv`) — voir
 `src/datacore/storage/staging/migrations/env.py` — pas codé en dur dans
 `alembic.ini`, pour n'avoir qu'une seule source de vérité sur la chaîne

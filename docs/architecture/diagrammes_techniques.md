@@ -119,12 +119,27 @@ Ces diagrammes décrivent le code réellement livré (pas une intention) :
 Toute évolution de ces modules doit s'accompagner d'une mise à jour de
 ce document.
 
-## 4. Export pour le rapport LaTeX (M4, transverse)
+## 4. Export pour le rapport LaTeX
 
-Mermaid n'est pas nativement supporté par LaTeX. Au moment de rédiger le
-rapport technique (milestone M4, prévu plus tard), ces diagrammes
-devront être exportés en image (SVG/PDF) — par exemple via
-[`mermaid-cli`](https://github.com/mermaid-js/mermaid-cli)
-(`mmdc -i diagrammes_techniques.md -o diagramme.svg`) — puis inclus avec
-`\includegraphics`. Non fait à ce stade : action reportée à M4, cette
-page reste la source de vérité éditable en attendant.
+Mermaid n'est pas nativement supporté par LaTeX. Chaque diagramme de ce
+document (et plus généralement de `docs/architecture/`) est donc
+également exporté en PNG dans
+[`docs/architecture/images/`](images/), via
+[`mermaid-cli`](https://github.com/mermaid-js/mermaid-cli) (`mmdc`,
+exécuté via `npx`) — prêt à être inclus avec `\includegraphics` au
+moment de la rédaction du rapport technique (milestone M4). Les blocs
+Mermaid ci-dessus restent la source de vérité éditable : les PNG sont
+des exports dérivés, à régénérer si un diagramme change (voir §5).
+
+## 5. Régénérer les exports PNG
+
+```bash
+python3 scripts/export_mermaid_diagrams.py
+```
+
+Rend chaque bloc Mermaid de `docs/architecture/*.md` (déclarés
+explicitement dans le script) via `mermaid-cli` (`mmdc`, exécuté par
+`npx` — aucune installation globale requise) dans
+`docs/architecture/images/`. À relancer après toute modification d'un
+diagramme existant ; ajouter le nouveau fichier/slug dans le
+dictionnaire `TARGETS` du script pour tout nouveau diagramme.

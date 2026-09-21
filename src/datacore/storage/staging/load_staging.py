@@ -31,7 +31,7 @@ from typing import Any
 
 import psycopg2
 
-from datacore.ingestion.config import INTERIM_DIR, STAGING_DB_DSN
+from datacore.config import INTERIM_DIR, STAGING_DB_DSN
 from datacore.ingestion.landing import read_records
 
 

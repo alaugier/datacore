@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Journal de bord — DATA CORE</title>
+<!--
+  Document vivant : à enrichir au fil du projet.
+  Pour ajouter une nouvelle entrée de jalon, dupliquer un bloc
+  <article class="entry"> et l'insérer à la suite du dernier jalon
+  effectivement démarré. Les jalons "à venir" (M3-M5) restent en fin
+  de journal sous forme de rappel court tant qu'ils ne sont pas
+  entamés.
+-->
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Karla:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+  :root {
+    --paper: #EBEEE4;
+    --paper-raised: #F5F7F0;
+    --ink: #1A2319;
+    --muted: #5C6B58;
+    --line: #C7D0BE;
+    --accent: #2C6C93;
+    --accent-soft: #DCE7EC;
+    --flag: #A6501F;
+    --flag-soft: #F1DED0;
+    --done-bg: #DCE8DA;
+    --done-ink: #2F6B41;
+    --review-bg: #E7EEF2;
+    --review-ink: #245577;
+    --todo-bg: #E4E2D8;
+    --todo-ink: #6B6759;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #10140D;
+      --paper-raised: #171C13;
+      --ink: #E7ECE0;
+      --muted: #96A38F;
+      --line: #2B3326;
+      --accent: #74AFD1;
+      --accent-soft: #1C333E;
+      --flag: #E08752;
+      --flag-soft: #3B2618;
+      --done-bg: #1E3623;
+      --done-ink: #7FCB92;
+      --review-bg: #1B2E3A;
+      --review-ink: #8FC3E3;
+      --todo-bg: #262A20;
+      --todo-ink: #9C9887;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --paper: #10140D;
+    --paper-raised: #171C13;
+    --ink: #E7ECE0;
+    --muted: #96A38F;
+    --line: #2B3326;
+    --accent: #74AFD1;
+    --accent-soft: #1C333E;
+    --flag: #E08752;
+    --flag-soft: #3B2618;
+    --done-bg: #1E3623;
+    --done-ink: #7FCB92;
+    --review-bg: #1B2E3A;
+    --review-ink: #8FC3E3;
+    --todo-bg: #262A20;
+    --todo-ink: #9C9887;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Karla', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 16.5px;
+    line-height: 1.62;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .sheet { max-width: 760px; margin: 0 auto; padding: 60px 28px 80px; }
+
+  h1, h2, h3 { font-family: 'Fraunces', Georgia, serif; text-wrap: balance; }
+
+  .mono {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ---------- Masthead ---------- */
+
+  header.masthead { padding-bottom: 22px; border-bottom: 1px solid var(--line); margin-bottom: 6px; }
+
+  .kicker {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0 0 10px;
+  }
+
+  h1.title {
+    font-weight: 600;
+    font-size: clamp(2.1rem, 5.6vw, 2.9rem);
+    letter-spacing: -0.01em;
+    margin: 0 0 8px;
+    font-style: italic;
+  }
+
+  .intro {
+    color: var(--muted);
+    font-size: 1.02rem;
+    max-width: 56ch;
+    margin: 0;
+  }
+
+  .meta-row {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-top: 18px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.76rem;
+    color: var(--muted);
+  }
+  .meta-row strong { color: var(--ink); font-weight: 500; }
+
+  /* ---------- Overview table ---------- */
+
+  .overview { margin: 40px 0 56px; }
+  .overview h2 { font-size: 1.3rem; font-weight: 600; margin: 0 0 4px; }
+  .overview .sub { color: var(--muted); font-size: 0.9rem; margin: 0 0 18px; }
+
+  table.ledger { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+  .ledger th {
+    text-align: left;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.66rem;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-weight: 500;
+    padding: 0 10px 8px 0;
+    border-bottom: 1px solid var(--ink);
+  }
+  .ledger td { padding: 11px 10px 11px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+  .ledger tr:last-child td { border-bottom: 1px solid var(--ink); }
+  .ledger .m-name { font-weight: 600; }
+  .ledger .m-detail { display: block; color: var(--muted); font-size: 0.83rem; margin-top: 2px; font-weight: 400; }
+  .tagc { font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; color: var(--muted); }
+
+  .pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 3px 10px 3px 8px; border-radius: 999px;
+    font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; font-weight: 500;
+    white-space: nowrap;
+  }
+  .pill::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex: none; }
+  .pill.done { background: var(--done-bg); color: var(--done-ink); }
+  .pill.review { background: var(--review-bg); color: var(--review-ink); }
+  .pill.todo { background: var(--todo-bg); color: var(--todo-ink); }
+
+  /* ---------- Journal entries ---------- */
+
+  .journal { display: flex; flex-direction: column; gap: 4px; }
+
+  article.entry {
+    display: grid;
+    grid-template-columns: 92px 1fr;
+    gap: 24px;
+    padding: 40px 0;
+    border-top: 1px solid var(--line);
+  }
+  article.entry:first-of-type { border-top: none; padding-top: 8px; }
+
+  .entry-date {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.74rem;
+    color: var(--muted);
+    padding-top: 6px;
+  }
+  .entry-date .yr { display: block; color: var(--ink); font-weight: 600; font-size: 0.86rem; }
+
+  .entry-head { display: flex; align-items: baseline; gap: 12px; margin-bottom: 4px; flex-wrap: wrap; }
+  .entry-head h2 { font-size: 1.55rem; font-weight: 600; margin: 0; }
+  .entry-tag { font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; color: var(--muted); }
+
+  .entry-lede { font-size: 1.02rem; }
+  .entry-lede :first-child { margin-top: 0; }
+
+  .discovery {
+    background: var(--flag-soft);
+    border-left: 3px solid var(--flag);
+    padding: 13px 16px;
+    font-size: 0.92rem;
+    margin: 16px 0;
+    border-radius: 2px;
+  }
+  .discovery .dk { font-family: 'JetBrains Mono', monospace; font-size: 0.66rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--flag); display: block; margin-bottom: 4px; }
+
+  .sub-comp { margin-top: 22px; padding-top: 18px; border-top: 1px dashed var(--line); }
+  .sub-comp:first-of-type { margin-top: 26px; }
+  .sub-comp-head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin-bottom: 6px; }
+  .sub-comp-code { font-family: 'JetBrains Mono', monospace; font-weight: 600; color: var(--accent); font-size: 0.82rem; }
+  .sub-comp h3 { font-size: 1.15rem; font-weight: 600; margin: 0; }
+  .sub-comp-meta { font-family: 'JetBrains Mono', monospace; font-size: 0.74rem; color: var(--muted); margin-left: auto; }
+  .sub-comp p { margin: 6px 0 0; font-size: 0.95rem; }
+
+  .metrics-row {
+    display: flex; flex-wrap: wrap; gap: 8px 24px;
+    margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--line);
+  }
+  .metric { font-family: 'JetBrains Mono', monospace; }
+  .metric .num { font-size: 1.1rem; font-weight: 600; color: var(--ink); display: block; line-height: 1.1; }
+  .metric .lbl { font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+
+  .next-flags { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 14px; }
+  .next-flag {
+    font-family: 'JetBrains Mono', monospace; font-size: 0.76rem;
+    border: 1px solid var(--line); border-radius: 4px; padding: 6px 12px;
+    color: var(--muted);
+  }
+  .next-flag strong { color: var(--ink); }
+
+  /* ---------- Stub entries (not started) ---------- */
+
+  article.entry.stub { opacity: 0.72; }
+  article.entry.stub .entry-head h2 { font-size: 1.25rem; }
+  article.entry.stub p { font-size: 0.92rem; margin: 4px 0 0; }
+
+  /* ---------- Footer ---------- */
+
+  footer {
+    margin-top: 48px; padding-top: 18px; border-top: 1px solid var(--ink);
+    font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; color: var(--muted);
+    display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px;
+  }
+
+  /* ---------- Responsive ---------- */
+
+  @media (max-width: 560px) {
+    .sheet { padding: 40px 18px 60px; }
+    article.entry { grid-template-columns: 1fr; gap: 6px; }
+    .entry-date { padding-top: 0; }
+    .ledger { display: block; overflow-x: auto; }
+    .sub-comp-meta { margin-left: 0; }
+  }
+</style>
+</head>
+<body>
+<div class="sheet">
+
+  <header class="masthead">
+    <p class="kicker">Journal de bord de certification</p>
+    <h1 class="title">DATA CORE</h1>
+    <p class="intro">Omega Logistics (3PL fictif) — parcours Simplon Data Engineer, RNCP.
+    Ce journal retrace, jalon après jalon, ce qui a été construit et pourquoi — il s'enrichit
+    au fil de l'avancement plutôt que d'être refait à chaque point d'étape.</p>
+    <div class="meta-row">
+      <span>Dernière entrée <strong>28/08/2026</strong></span>
+      <span>Mis à jour le <strong>21/09/2026</strong></span>
+      <span>Dépôt <strong>alaugier/datacore</strong></span>
+    </div>
+  </header>
+
+  <section class="overview">
+    <h2>Où en est le programme</h2>
+    <p class="sub">15 des 21 compétences du référentiel livrées, sur 4 blocs.</p>
+    <table class="ledger">
+      <thead>
+        <tr><th>Jalon</th><th>Bloc</th><th>Épreuve(s)</th><th>Statut</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="m-name">M0 — Cadrage &amp; Setup</span><span class="m-detail">Écoute du besoin, cartographie, architecture cible</span></td>
+          <td class="tagc">C1&ndash;C7</td><td class="tagc">E1, E2, E3</td>
+          <td><span class="pill done">Clos 25/08</span></td>
+        </tr>
+        <tr>
+          <td><span class="m-name">M1 — Collecte &amp; Stockage</span><span class="m-detail">Extraction, nettoyage, base de travail, API</span></td>
+          <td class="tagc">C8&ndash;C12</td><td class="tagc">E4</td>
+          <td><span class="pill done">Clos 27/08</span></td>
+        </tr>
+        <tr>
+          <td><span class="m-name">M2 — Entrepôt OMEGA BI</span><span class="m-detail">Modèle, entrepôt, ETL livrés — historisation &amp; exploitation à venir</span></td>
+          <td class="tagc">C13&ndash;C17</td><td class="tagc">E5, E6</td>
+          <td><span class="pill review">3 / 5</span></td>
+        </tr>
+        <tr>
+          <td><span class="m-name">M3 — Data Lake OMEGA LAKE</span><span class="m-detail">Architecture, infrastructure, catalogue, gouvernance</span></td>
+          <td class="tagc">C18&ndash;C21</td><td class="tagc">E7</td>
+          <td><span class="pill todo">À venir</span></td>
+        </tr>
+        <tr>
+          <td><span class="m-name">M4 — Rapport LaTeX</span><span class="m-detail">Consolidation continue, différée par choix</span></td>
+          <td class="tagc">Transverse</td><td class="tagc">—</td>
+          <td><span class="pill todo">Différé</span></td>
+        </tr>
+        <tr>
+          <td><span class="m-name">M5 — Présentation orale</span><span class="m-detail">Préparation de la soutenance finale</span></td>
+          <td class="tagc">Transverse</td><td class="tagc">—</td>
+          <td><span class="pill todo">À venir</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <div class="journal">
+
+    <article class="entry">
+      <div class="entry-date"><span class="yr">2026</span>10&ndash;25 août</div>
+      <div>
+        <div class="entry-head"><h2>M0 — Cadrage &amp; Setup</h2><span class="entry-tag">C1&ndash;C7 · E1, E2, E3</span></div>
+        <div class="entry-lede">
+          <p>Le problème de départ n'était pas technique, mais organisationnel. Omega Logistics
+          exploite trois entrepôts (Lyon, Lille, Marseille) pour trois clients aux besoins très
+          différents — NordDrive (pièces automobiles, flux tendus), FreshMarket (grande
+          distribution, chaîne du froid) et MedioTex (textile, forte saisonnalité). Chaque site
+          avait bricolé ses propres extractions du WMS (FluxPro) dans des scripts ad hoc, sans
+          revue ni tests : un incident sur un site restait invisible depuis les autres, et la
+          Direction des Opérations découvrait les erreurs de stock après coup, souvent signalées
+          par un client plutôt que détectées en interne.</p>
+          <p>M0 a donc commencé par écouter avant de coder. Trois entretiens (la sponsor Éléonore
+          RAKOTO, le commanditaire opérationnel Karim BELAÏD, et le terrain) ont posé le périmètre
+          réel : cinq sources hétérogènes à couvrir à terme (le WMS FluxPro, le TMS TransFlow, un
+          portail transporteur à scraper, trois formats de fichiers clients différents, et un
+          historique de 25 000 lignes), un budget de 180 000 € réparti sur quatre blocs, une
+          équipe de quatre personnes en interne plus un prestataire externe à encadrer. Cette
+          écoute a débouché sur une étude de faisabilité, une cartographie complète des données
+          disponibles, une architecture cible et une feuille de route — avant la moindre ligne de
+          code de collecte.</p>
+        </div>
+      </div>
+    </article>
+
+    <article class="entry">
+      <div class="entry-date"><span class="yr">2026</span>26&ndash;27 août</div>
+      <div>
+        <div class="entry-head"><h2>M1 — Collecte &amp; Stockage</h2><span class="entry-tag">C8&ndash;C12 · E4</span></div>
+        <div class="entry-lede">
+          <p>Cinq connecteurs d'extraction, un nettoyage/dédoublonnage des fichiers clients, une
+          base de travail consolidée modélisée en MERISE, puis une API sécurisée pour la partager
+          aux équipes BI. Le choix méthodologique marquant de ce jalon : modéliser <em>après</em>
+          avoir concrètement extrait et nettoyé les données, pas avant — l'analyse abstraite des
+          schémas ne suffisait pas à anticiper la réalité (le taux de doublons mesuré au départ
+          s'est révélé largement surestimé une fois le grain correct identifié : commande × produit,
+          pas seulement commande).</p>
+        </div>
+        <div class="discovery">
+          <span class="dk">Découverte — analyse des formes normales</span>
+          En vérifiant empiriquement les dépendances fonctionnelles de la base de travail, il est
+          apparu que le statut d'une livraison (<code>livraisons.statut</code>) était en réalité
+          <strong>entièrement déductible de l'heure réelle de livraison</strong> : renseignée, le
+          statut vaut toujours « Livrée » ; absente, il vaut toujours « En cours » — sans aucune
+          exception sur les 1 100 livraisons. Stocker les deux revenait à dupliquer une information
+          calculable, et exposait au risque d'une incohérence entre les deux valeurs si l'une était
+          mise à jour sans l'autre. La colonne a été retirée au profit d'une vue SQL qui recalcule
+          le statut à la lecture — l'information reste disponible, mais n'existe plus qu'à un seul
+          endroit.
+        </div>
+      </div>
+    </article>
+
+    <article class="entry">
+      <div class="entry-date"><span class="yr">2026</span>28 août &ndash; en cours</div>
+      <div>
+        <div class="entry-head"><h2>M2 — Entrepôt OMEGA BI</h2><span class="entry-tag">C13&ndash;C17 · E5, E6</span></div>
+        <div class="entry-lede">
+          <p>Construction de l'entrepôt décisionnel qui alimentera le pilotage de la performance
+          logistique — approche bottom-up (Kimball), par datamarts plutôt qu'un modèle unique :
+          <strong>Exploitation</strong> (transport, stock) et <strong>Commercial</strong>
+          (commandes), reliés par des dimensions partagées entre les deux.</p>
+        </div>
+
+        <div class="sub-comp">
+          <div class="sub-comp-head">
+            <span class="sub-comp-code">C13</span><h3>Modéliser un entrepôt de données</h3>
+            <span class="sub-comp-meta">livré 28/08</span>
+          </div>
+          <p>Trois faits, six dimensions conformées, un seul flocon retenu — justifié, pas
+          systématique (détail ci-dessous). Les commandes brutes des clients ont été délibérément
+          exclues du modèle : un notebook dédié démontre chiffres à l'appui qu'elles ne peuvent pas
+          être rapprochées fiablement des commandes réellement traitées (clé candidate ambiguë sur
+          13,6&nbsp;% des cas).</p>
+          <div class="discovery">
+            <span class="dk">Découverte — un client, une seule catégorie</span>
+            En explorant le référentiel produit, chaque client s'est révélé associé à une
+            <strong>catégorie unique</strong> : NordDrive ne commande que des pièces automobiles,
+            FreshMarket que des produits alimentaires, MedioTex que du textile — sans exception sur
+            les 30 produits du catalogue. Ce constat a permis de dériver la catégorie d'une
+            expédition depuis son client quand le produit précis n'est pas connu (c'est le cas des
+            25 000 lignes de l'historique, qui ne portent qu'une catégorie, jamais un SKU) — et a
+            motivé le seul flocon du modèle : sortir la catégorie dans sa propre dimension
+            (<code>Dim_Categorie</code>), pour que les deux sources d'expédition, à des niveaux de
+            détail différents, puissent toutes deux la renseigner. Le pipeline ETL revérifie cette
+            hypothèse à chaque exécution plutôt que de la considérer acquise une fois pour toutes.
+          </div>
+        </div>
+
+        <div class="sub-comp">
+          <div class="sub-comp-head">
+            <span class="sub-comp-code">C14</span><h3>Créer un entrepôt de données</h3>
+            <span class="sub-comp-meta">livré 28/08</span>
+          </div>
+          <p>Base Postgres distincte de celle du staging, mais sur la même instance (sobriété
+          plutôt qu'un second conteneur), organisée en trois schémas physiques qui rendent
+          tangible la séparation par datamart. Accès en lecture seule configuré pour les équipes
+          BI, vérifié directement en base plutôt que seulement documenté.</p>
+        </div>
+
+        <div class="sub-comp">
+          <div class="sub-comp-head">
+            <span class="sub-comp-code">C15</span><h3>Développer des pipelines de données</h3>
+            <span class="sub-comp-meta">livré 28/08</span>
+          </div>
+          <p>Le pipeline recharge l'entrepôt en entier à chaque exécution plutôt que d'accumuler
+          incrémentalement — plus simple à garantir correct tant qu'aucune dimension ne conserve
+          d'historique. Les lignes de l'historique qui ne se rapprochent d'aucun client/entrepôt
+          connu sont mises en quarantaine plutôt qu'ignorées silencieusement ou insérées avec une
+          clé fausse.</p>
+          <div class="metrics-row">
+            <div class="metric"><span class="num">30 419</span><span class="lbl">Lignes chargées</span></div>
+            <div class="metric"><span class="num">0</span><span class="lbl">En quarantaine</span></div>
+            <div class="metric"><span class="num">88</span><span class="lbl">Tests passants</span></div>
+          </div>
+        </div>
+
+        <div class="next-flags">
+          <span class="next-flag"><strong>C17</strong> — SCD2 sur Dim_Client (E6) — prochaine étape</span>
+          <span class="next-flag"><strong>C16</strong> — Gestion opérationnelle (E6) — après C17, sa procédure de purge en dépend</span>
+        </div>
+      </div>
+    </article>
+
+    <article class="entry stub">
+      <div class="entry-date">À venir</div>
+      <div>
+        <div class="entry-head"><h2>M3 — Data Lake OMEGA LAKE</h2><span class="entry-tag">C18&ndash;C21 · E7</span></div>
+        <p>Architecture et intégration d'un data lake pour absorber les données massives à venir
+        (capteurs IoT des entrepôts) — non démarré.</p>
+      </div>
+    </article>
+
+    <article class="entry stub">
+      <div class="entry-date">Transverse</div>
+      <div>
+        <div class="entry-head"><h2>M4 — Rapport LaTeX &amp; M5 — Soutenance</h2></div>
+        <p>Consolidation du rapport technique et préparation de la présentation orale — différées
+        par choix jusqu'à ce que les blocs techniques soient achevés.</p>
+      </div>
+    </article>
+
+  </div>
+
+  <footer>
+    <span>Journal tenu à partir de l'état réel du dépôt (issues, pull requests, CI).</span>
+    <span>Prochaine entrée : C17</span>
+  </footer>
+
+</div>
+</body>
+</html>

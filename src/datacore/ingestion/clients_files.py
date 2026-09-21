@@ -10,7 +10,7 @@ import csv
 from pathlib import Path
 from typing import Any
 
-from datacore.ingestion.config import CLIENTS_FILES_DIR
+from datacore.config import CLIENTS_FILES_DIR
 
 
 def _read_csv(path: Path, delimiter: str) -> list[dict[str, Any]]:

@@ -14,7 +14,7 @@ Prérequis : avoir lancé au préalable
 """
 import json
 
-from datacore.ingestion.config import INTERIM_DIR
+from datacore.config import INTERIM_DIR
 from datacore.ingestion.landing import read_records, write_records
 from datacore.processing.clients_cleaning import clean_and_aggregate
 

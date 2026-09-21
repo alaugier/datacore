@@ -8,7 +8,7 @@ import csv
 from pathlib import Path
 from typing import Any
 
-from datacore.ingestion.config import HISTORIQUE_PATH
+from datacore.config import HISTORIQUE_PATH
 
 
 def read_historique(path: Path | None = None) -> list[dict[str, Any]]:
