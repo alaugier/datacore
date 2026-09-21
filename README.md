@@ -134,17 +134,20 @@ Ou via Docker Compose (service `omega-data-api`, inclus dans
 curl -H "X-API-Key: omega-data-engineer-2026" http://localhost:8000/commandes-clients
 ```
 
-## Entrepôt OMEGA BI (C13-C14)
+## Entrepôt OMEGA BI (C13-C15)
 Modélisation en étoile/flocon (bottom-up, 2 datamarts, dimensions
 conformées) — voir `docs/architecture/modelisation_omega_bi.md`. Créé
 dans une base Postgres distincte (`datacore_omega_bi`, même instance que
 la base de staging), 3 schémas Postgres (`dimensions`, `exploitation`,
 `commercial`), versionnée via un second environnement Alembic — voir
 `docs/architecture/creation_entrepot_omega_bi.md` pour la procédure
-complète :
+complète. Peuplé depuis la base de staging par un pipeline ETL
+(rechargement complet, quarantaine des lignes historique non
+rapprochées) — voir `docs/architecture/pipelines_etl_omega_bi.md` :
 
 ```bash
 ./scripts/init_omega_bi_db.sh
 alembic -c alembic_omega_bi.ini upgrade head
 python3 -m datacore.storage.warehouse.load_dim_temps
+python3 -m datacore.storage.warehouse.load_warehouse
 ```

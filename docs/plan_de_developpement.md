@@ -77,7 +77,7 @@ pour M2). Release vers `main` via la PR #42.
 ### M2 — Entrepôt OMEGA BI (en cours)
 - [x] Modélisation OMEGA BI — schémas étoile/flocon C13 (#44)
 - [x] Création de l'entrepôt OMEGA BI C14 (#45)
-- [ ] Pipelines ETL vers l'entrepôt OMEGA BI C15 (#46)
+- [x] Pipelines ETL vers l'entrepôt OMEGA BI C15 (#46)
 - [ ] Gestion opérationnelle de l'entrepôt OMEGA BI C16 (#47)
 - [ ] Variation de dimension SCD type 2 sur Dim_Client C17 (#48)
 

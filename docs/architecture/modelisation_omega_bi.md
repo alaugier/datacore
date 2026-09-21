@@ -452,3 +452,5 @@ pas par principe).
   travail, référence pour les exclusions RGPD *by design* de §6.5.
 - [`creation_entrepot_omega_bi.md`](creation_entrepot_omega_bi.md) —
   création physique de l'entrepôt implémentant ce schéma (C14).
+- [`pipelines_etl_omega_bi.md`](pipelines_etl_omega_bi.md) — pipeline
+  ETL peuplant l'entrepôt depuis la base de staging (C15).
