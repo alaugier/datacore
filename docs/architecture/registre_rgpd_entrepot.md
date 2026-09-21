@@ -112,3 +112,5 @@ gouvernance.journal_operations` ne montre aucun droit accordé à
   premier volet de C16 (sauvegardes, journalisation, tableau de bord).
 - [`historisation_dim_client_scd2.md`](historisation_dim_client_scd2.md) —
   C17, à l'origine du point de vigilance du §3.
+- [`sql/schema_entrepot_omega_bi.sql`](../../sql/schema_entrepot_omega_bi.sql) —
+  schéma SQL brut complet des 10 tables/vues auditées en §1.
