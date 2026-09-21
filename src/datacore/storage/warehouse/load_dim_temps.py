@@ -19,6 +19,7 @@ import datetime
 import psycopg2
 
 from datacore.config import OMEGA_BI_DB_DSN
+from datacore.governance.journal import journaliser
 
 DATE_DEBUT = datetime.date(2022, 1, 1)
 DATE_FIN = datetime.date(2027, 12, 31)
@@ -107,5 +108,8 @@ def charger_dim_temps(dsn: str = OMEGA_BI_DB_DSN) -> int:
 
 
 if __name__ == "__main__":
-    n = charger_dim_temps()
-    print(f"{n} nouvelles lignes dim_temps insérées ({DATE_DEBUT} -> {DATE_FIN}).")
+    with journaliser("load_dim_temps") as contexte:
+        n = charger_dim_temps()
+        resume = f"{n} nouvelles lignes dim_temps insérées ({DATE_DEBUT} -> {DATE_FIN})."
+        print(resume)
+        contexte["details"] = resume
