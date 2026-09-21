@@ -45,6 +45,11 @@ def run_migrations_offline() -> None:
         target_metadata=target_metadata,
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
+        # Les tables vivent dans dimensions/exploitation/commercial, pas
+        # le schema public par defaut -- sans include_schemas=True,
+        # autogenerate ne les voit pas dans l'etat courant de la base et
+        # les recree en double a chaque revision.
+        include_schemas=True,
     )
 
     with context.begin_transaction():
@@ -66,7 +71,9 @@ def run_migrations_online() -> None:
 
     with connectable.connect() as connection:
         context.configure(
-            connection=connection, target_metadata=target_metadata
+            connection=connection,
+            target_metadata=target_metadata,
+            include_schemas=True,
         )
 
         with context.begin_transaction():

@@ -79,7 +79,7 @@ pour M2). Release vers `main` via la PR #42.
 - [x] Création de l'entrepôt OMEGA BI C14 (#45)
 - [x] Pipelines ETL vers l'entrepôt OMEGA BI C15 (#46)
 - [ ] Gestion opérationnelle de l'entrepôt OMEGA BI C16 (#47)
-- [ ] Variation de dimension SCD type 2 sur Dim_Client C17 (#48)
+- [x] Variation de dimension SCD type 2 sur Dim_Client C17 (#48)
 
 Ordre de traitement retenu pour C13-C17 et justification :
 voir `docs/architecture/sequencement_bloc3.md` — C13 → C14 → C15 → C17 → C16.

@@ -16,11 +16,11 @@ par datamarts avec dimensions conformées (C13 §1) : chaque datamart est
 un schéma Postgres indépendant, qui référence les dimensions partagées
 par clé étrangère inter-schéma.
 
-`Dim_Client` ne porte pas encore les colonnes `valid_from`/`valid_to`/
-`is_current` : elles seront ajoutées par une migration Alembic
-additionnelle en C17 (SCD2), conformément au choix déjà documenté en
-C13 §6.1 (clé de substitution posée dès maintenant pour que cet ajout
-reste non disruptif).
+`Dim_Client` porte les colonnes `valid_from`/`valid_to`/`is_current`
+(SCD2, C17, ajoutées par une migration additionnelle conformément au
+choix documenté en C13 §6.1) et n'est jamais tronquée par le pipeline
+ETL (C15), contrairement aux autres dimensions -- voir
+`load_warehouse.load_dim_client`.
 
 Utilise SQLAlchemy Core (`Table`/`MetaData`), pas l'ORM déclaratif, sur
 le même principe que `datacore.storage.staging.models` : ce module ne
@@ -44,6 +44,12 @@ metadata = MetaData()
 
 # --- schéma "dimensions" (dimensions conformées, partagées) ---------------
 
+# SCD2 (Kimball, C17) : contrairement aux autres dimensions, jamais
+# tronquée -- une même entreprise cliente peut avoir plusieurs lignes,
+# une par version historisée de nom/secteur (les seuls attributs
+# descriptifs réellement présents dans clients.csv -- pas d'adresse ni
+# de contrat dans ce jeu de données, voir modelisation_omega_bi.md §6.1
+# et le journal C17 dans pipelines_etl_omega_bi.md).
 dim_client = Table(
     "dim_client",
     metadata,
@@ -52,6 +58,9 @@ dim_client = Table(
     Column("code", String(30), nullable=False),
     Column("nom", String(100), nullable=False),
     Column("secteur", String(100)),
+    Column("valid_from", Date, nullable=False, comment="SCD2 : début de validité de cette version"),
+    Column("valid_to", Date, comment="SCD2 : fin de validité, NULL si version courante"),
+    Column("is_current", Boolean, nullable=False, comment="SCD2 : version actuellement en vigueur"),
     schema="dimensions",
 )
 

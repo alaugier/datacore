@@ -9,15 +9,20 @@ créé en C14. Deux bases Postgres distinctes (`STAGING_DB_DSN` et
 transformation se fait en Python entre l'extraction (staging) et le
 chargement (entrepôt).
 
-**Rechargement complet, pas incrémental** : chaque exécution vide
+**Rechargement complet, sauf `Dim_Client`** : chaque exécution vide
 d'abord les tables qu'il alimente (`truncate_warehouse`, hors
 `dimensions.dim_temps` — dimension générée, chargée séparément par
 `load_dim_temps.py`, C14) puis recharge tout depuis staging. Cohérent
 avec le rythme batch quotidien/hebdomadaire prévu
-(`docs/architecture/architecture_cible.md`, flux F6) et avec l'absence
-d'historisation avant C17 (SCD2 sur `Dim_Client`) : un rechargement
-complet est plus simple à raisonner qu'une logique d'upsert incrémentale
-tant qu'aucune dimension ne conserve d'historique.
+(`docs/architecture/architecture_cible.md`, flux F6). **`Dim_Client` fait
+exception** (SCD2, C17) : c'est la seule dimension historisée du modèle,
+elle n'est donc jamais tronquée — `load_dim_client` compare chaque client
+à sa version courante déjà en base et ne crée une nouvelle ligne que si
+`nom`/`secteur` a changé, en fermant proprement l'ancienne version
+(`valid_to`, `is_current = false`) plutôt que de l'écraser. Toutes les
+tables de faits, elles, référencent systématiquement la version
+**courante** du client (pas de reconstruction rétroactive de l'historique
+des faits — rechargement complet oblige).
 
 **Contrôles qualité** :
 - Unicité : `dimensions.dim_categorie.libelle` et le grain de
@@ -104,7 +109,9 @@ def truncate_warehouse(warehouse_conn: Any) -> None:
     """Vide les tables alimentées par ce pipeline avant un rechargement complet.
 
     `dimensions.dim_temps` n'est volontairement pas tronquée (voir
-    docstring du module).
+    docstring du module). `dimensions.dim_client` non plus, depuis C17 :
+    c'est la seule dimension historisée (SCD2), une troncature détruirait
+    l'historique accumulé au fil des exécutions -- voir `load_dim_client`.
 
     Args:
         warehouse_conn: connexion psycopg2 ouverte sur l'entrepôt.
@@ -112,7 +119,7 @@ def truncate_warehouse(warehouse_conn: Any) -> None:
     with warehouse_conn.cursor() as cur:
         cur.execute("""
             TRUNCATE
-                dimensions.dim_client, dimensions.dim_site,
+                dimensions.dim_site,
                 dimensions.dim_categorie, dimensions.dim_produit,
                 dimensions.dim_transporteur,
                 exploitation.fait_expedition, exploitation.fait_stock,
@@ -121,27 +128,74 @@ def truncate_warehouse(warehouse_conn: Any) -> None:
         """)
 
 
-def load_dim_client(staging_conn: Any, warehouse_conn: Any) -> dict[int, int]:
-    """Charge `Dim_Client` depuis `staging.clients`.
+def load_dim_client(
+    staging_conn: Any, warehouse_conn: Any, today: datetime.date | None = None
+) -> dict[int, int]:
+    """Charge/historise `Dim_Client` depuis `staging.clients` (SCD2, C17).
+
+    Contrairement aux autres dimensions (entièrement rechargées à chaque
+    exécution), `Dim_Client` n'est jamais tronquée : c'est la seule
+    dimension historisée du modèle -- la clé de substitution `client_key`
+    a été posée dès C13 précisément pour permettre cet ajout sans refonte
+    (voir `modelisation_omega_bi.md` §6.1). Chaque client est comparé à sa
+    version courante déjà en base (`is_current = true`) ; si `nom` ou
+    `secteur` a changé, l'ancienne version est close
+    (`valid_to`/`is_current = false`) et une nouvelle ligne est insérée
+    avec une nouvelle `client_key`. Sans changement détecté, la ligne
+    existante est réutilisée telle quelle.
+
+    Le jeu de données pédagogique ne porte ni adresse ni contrat client
+    (seulement `id`/`code`/`nom`/`secteur` dans `clients`, voir
+    `data/raw/schema.sql`) -- `nom` et `secteur` sont donc les attributs
+    suivis ici ; `code`, clé métier, n'est volontairement pas historisé.
 
     Args:
         staging_conn: connexion psycopg2 ouverte sur la base de staging.
         warehouse_conn: connexion psycopg2 ouverte sur l'entrepôt.
+        today: date de référence pour `valid_from`/`valid_to` (par
+            défaut la date du jour) -- paramétrable pour les tests.
 
     Returns:
-        Mapping `clients.id` (staging) -> `client_key` (entrepôt).
+        Mapping `clients.id` (staging) -> `client_key` **courant**
+        (entrepôt) -- celui utilisé par les faits rechargés à cette
+        exécution.
     """
+    today = today or datetime.date.today()
     rows = _fetch_dicts(staging_conn, "SELECT id, code, nom, secteur FROM clients ORDER BY id")
     mapping: dict[int, int] = {}
     with warehouse_conn.cursor() as cur:
         for r in rows:
             cur.execute(
                 """
-                INSERT INTO dimensions.dim_client (client_id, code, nom, secteur)
-                VALUES (%(id)s, %(code)s, %(nom)s, %(secteur)s)
-                RETURNING client_key
+                SELECT client_key, nom, secteur FROM dimensions.dim_client
+                WHERE client_id = %(id)s AND is_current
                 """,
                 r,
+            )
+            current = cur.fetchone()
+
+            if current is not None and current[1] == r["nom"] and current[2] == r["secteur"]:
+                mapping[r["id"]] = current[0]
+                continue
+
+            if current is not None:
+                cur.execute(
+                    """
+                    UPDATE dimensions.dim_client
+                    SET valid_to = %(today)s, is_current = false
+                    WHERE client_key = %(client_key)s
+                    """,
+                    {"today": today, "client_key": current[0]},
+                )
+
+            cur.execute(
+                """
+                INSERT INTO dimensions.dim_client
+                    (client_id, code, nom, secteur, valid_from, valid_to, is_current)
+                VALUES (%(id)s, %(code)s, %(nom)s, %(secteur)s, %(today)s, NULL, true)
+                RETURNING client_key
+                """,
+                {**r, "today": today},
             )
             mapping[r["id"]] = cur.fetchone()[0]
     return mapping

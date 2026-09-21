@@ -24,17 +24,17 @@ python3 -m datacore.storage.warehouse.load_dim_temps  # si pas déjà fait (C14)
 python3 -m datacore.storage.warehouse.load_warehouse
 ```
 
-**Rechargement complet, pas incrémental** : chaque exécution vide
-d'abord les 8 tables qu'elle alimente (`TRUNCATE ... CASCADE`, tout sauf
-`dimensions.dim_temps` — chargée séparément par C14) puis recharge tout
-depuis staging. Choix délibéré : cohérent avec le rythme batch
-quotidien/hebdomadaire prévu (`architecture_cible.md`, flux F6) et avec
-l'absence d'historisation avant C17 (SCD2 sur `Dim_Client`) — un
-rechargement complet est plus simple à raisonner et à tester qu'une
-logique d'upsert incrémentale tant qu'aucune dimension ne conserve
-d'historique. **Idempotent par construction** (pas via `ON CONFLICT`) :
-rejouer le pipeline produit exactement le même état, vérifié pour de
-vrai en le lançant deux fois de suite (voir §4).
+**Rechargement complet, sauf `Dim_Client`** : chaque exécution vide
+d'abord les 7 tables qu'elle recharge entièrement (`TRUNCATE ...
+CASCADE`) puis recharge tout depuis staging. Choix délibéré : cohérent
+avec le rythme batch quotidien/hebdomadaire prévu (`architecture_cible.md`,
+flux F6). **`dimensions.dim_temps`** (générée, chargée séparément par
+C14) et **`dimensions.dim_client`** (historisée depuis C17, SCD2) sont
+les deux exceptions — `dim_client` n'est jamais tronquée, voir
+[`historisation_dim_client_scd2.md`](historisation_dim_client_scd2.md).
+**Idempotent par construction** (pas via `ON CONFLICT`) : rejouer le
+pipeline sur des données staging inchangées produit exactement le même
+état, vérifié pour de vrai en le lançant deux fois de suite (voir §4).
 
 ---
 
@@ -106,9 +106,11 @@ plutôt que d'inventer une règle non vérifiée.
   `exploitation.fait_stock` (`site_key`, `produit_key`, `date_key`) sont
   contraints en base (C14, `UNIQUE`) — une violation lève une erreur
   Postgres explicite plutôt que d'insérer un doublon silencieux.
-- **Doublons entre exécutions** : évités par construction (`TRUNCATE` +
-  rechargement complet, §1), pas par une logique `ON CONFLICT` à
-  maintenir.
+- **Doublons entre exécutions** : évités par construction pour les 7
+  tables rechargées en entier (`TRUNCATE`, §1) ; pour `dim_client`
+  (SCD2, non tronquée), évités par comparaison explicite à la version
+  courante avant tout INSERT — voir
+  [`historisation_dim_client_scd2.md`](historisation_dim_client_scd2.md).
 - **Rapprochement textuel de l'historique** : quarantaine ligne par
   ligne plutôt que rejet en bloc ou clé fausse (§2.2).
 - **Hypothèse « un client = une catégorie »** : revérifiée à chaque
@@ -165,3 +167,6 @@ Vérifications supplémentaires effectuées :
   création physique de l'entrepôt (C14), prérequis de ce pipeline.
 - [`api_omega_data.md`](api_omega_data.md) — définition de
   `taux_service_par_client`, réutilisée pour `livre_a_lheure` (§2.1).
+- [`historisation_dim_client_scd2.md`](historisation_dim_client_scd2.md) —
+  historisation SCD2 de `Dim_Client` (C17), qui modifie le comportement
+  de `load_dim_client` décrit ici depuis sa livraison initiale.
