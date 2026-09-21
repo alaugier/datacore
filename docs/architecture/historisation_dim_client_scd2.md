@@ -68,9 +68,60 @@ ce pipeline ne reconstruit pas rétroactivement quelle version de
 
 ---
 
-## 3. Migration
+## 3. Garantie d'intégrité en base : index unique partiel
 
-Migration additive
+Le mécanisme applicatif décrit en §2 (comparaison à la version courante
+avant écriture) empêche `load_dim_client` de créer un doublon dans son
+propre déroulement normal — mais rien, initialement, n'empêchait en
+base une seconde ligne `is_current = true` pour le même `client_id` : ni
+exécution concurrente du pipeline, ni script de correction manuelle, ni
+insertion directe n'auraient déclenché la moindre erreur Postgres. Point
+relevé en revue externe du compte rendu M2, vérifié avant correction
+(aucune contrainte de ce type n'existait sur `dim_client`, confirmé par
+`\d dimensions.dim_client`) plutôt que pris pour argent comptant.
+
+Corrigé par un **index unique partiel** (migration `44a800999124`,
+additive) :
+
+```sql
+CREATE UNIQUE INDEX uq_dim_client_courant
+ON dimensions.dim_client (client_id)
+WHERE is_current;
+```
+
+Un doublon `is_current = true` sur un même `client_id` est désormais
+rejeté par Postgres lui-même, quelle que soit la voie d'écriture — pas
+seulement par la logique de `load_dim_client`. Une ligne historique
+(`is_current = false`) partageant le même `client_id` qu'une autre reste
+autorisée, comme attendu.
+
+**`load_dim_client` traduit une violation de cet index en erreur
+explicite** plutôt que de laisser remonter la trace psycopg2 brute :
+
+```python
+except psycopg2.errors.UniqueViolation as exc:
+    raise RuntimeError(
+        f"Conflit SCD2 sur dim_client : une version courante existe "
+        f"déjà pour client_id={r['id']} (contrainte "
+        f"uq_dim_client_courant) -- exécution concurrente du "
+        f"pipeline ou écriture directe en base ?"
+    ) from exc
+```
+
+Vérifié pour de vrai contre l'entrepôt réel : l'index accepte les 4
+lignes déjà en place sans conflit à sa création ; une tentative
+d'insertion manuelle d'un second `is_current = true` pour `client_id = 1`
+est rejetée (`ERROR: duplicate key value violates unique constraint`) ;
+une insertion `is_current = false` pour ce même `client_id` reste
+acceptée.
+
+---
+
+## 4. Migrations
+
+Deux migrations additives.
+
+**Première**
 (`src/datacore/storage/warehouse/migrations/versions/ad009b506239_*.py`) :
 colonnes ajoutées nullables d'abord (Postgres refuse un `ADD COLUMN NOT
 NULL` sans défaut sur une table déjà peuplée — `dim_client` portait déjà
@@ -90,16 +141,35 @@ de C14 (créer un entrepôt vide depuis rien donnait, par coïncidence, le
 même résultat), révélé par cette seconde migration. Corrigé dans les
 deux fonctions `run_migrations_*` de `env.py`.
 
+**Seconde**
+(`src/datacore/storage/warehouse/migrations/versions/44a800999124_*.py`) :
+ajoute l'index unique partiel décrit en §3, suite à la revue externe du
+compte rendu M2. Cycle `downgrade`/`upgrade` retesté après ajout.
+
 ---
 
-## 4. Procédure de test
+## 5. Procédure de test
 
 **Tests unitaires** (`tests/unit/test_load_warehouse.py`) : trois cas
 avec un curseur factice dédié (`FakeScd2Cursor`, simule le
 SELECT-puis-branche propre au SCD2) — client inédit (insertion simple,
 pas de clôture), version inchangée (réutilisation, aucune écriture),
 changement détecté (clôture + nouvelle ligne, nouvelle `client_key`
-retournée).
+retournée). Un quatrième cas couvre l'index unique partiel de §3
+(`test_load_dim_client_violation_index_leve_une_erreur_explicite`) :
+`FakeScd2Cursor` simule un `psycopg2.errors.UniqueViolation` sur
+l'`INSERT` dans `dim_client`, et le test vérifie que `load_dim_client`
+le traduit bien en `RuntimeError` explicite (message contenant le
+`client_id` en cause), avec l'exception d'origine préservée via
+`__cause__`.
+
+**Vérification live** (Docker Compose) de l'index et de la gestion
+d'erreur : migration `44a800999124` appliquée contre l'entrepôt réel
+peuplé (4 lignes existantes, aucun conflit à la création de l'index) ;
+tentative d'insertion manuelle d'un second `is_current = true` pour un
+`client_id` déjà courant rejetée par Postgres ; insertion d'une ligne
+`is_current = false` pour ce même `client_id` acceptée ; cycle complet
+`downgrade`/`upgrade` rejoué sans erreur.
 
 **Test de bout en bout réel** (Docker Compose), effectué lors de la
 création de ce livrable — le jeu de données pédagogique étant statique
@@ -132,7 +202,7 @@ supplémentaire créée (idempotence confirmée sur le cas « inchangé »).
 
 ---
 
-## 5. Références
+## 6. Références
 
 - [`modelisation_omega_bi.md`](modelisation_omega_bi.md) §6.1 — décision
   de poser la clé de substitution dès C13 pour anticiper cet ajout.

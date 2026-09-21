@@ -48,6 +48,7 @@ import datetime
 from typing import Any
 
 import psycopg2
+import psycopg2.errors
 import psycopg2.extras
 
 from datacore.config import OMEGA_BI_DB_DSN, STAGING_DB_DSN
@@ -189,15 +190,29 @@ def load_dim_client(
                     {"today": today, "client_key": current[0]},
                 )
 
-            cur.execute(
-                """
-                INSERT INTO dimensions.dim_client
-                    (client_id, code, nom, secteur, valid_from, valid_to, is_current)
-                VALUES (%(id)s, %(code)s, %(nom)s, %(secteur)s, %(today)s, NULL, true)
-                RETURNING client_key
-                """,
-                {**r, "today": today},
-            )
+            try:
+                cur.execute(
+                    """
+                    INSERT INTO dimensions.dim_client
+                        (client_id, code, nom, secteur, valid_from, valid_to, is_current)
+                    VALUES (%(id)s, %(code)s, %(nom)s, %(secteur)s, %(today)s, NULL, true)
+                    RETURNING client_key
+                    """,
+                    {**r, "today": today},
+                )
+            except psycopg2.errors.UniqueViolation as exc:
+                # uq_dim_client_courant (index unique partiel, protège en
+                # base l'invariant "une seule version courante par
+                # client_id") a rejeté l'insertion -- ne devrait pas se
+                # produire via ce pipeline seul (l'ancienne version est
+                # close juste avant), signale plutôt une exécution
+                # concurrente du pipeline ou une écriture directe en base.
+                raise RuntimeError(
+                    f"Conflit SCD2 sur dim_client : une version courante existe "
+                    f"déjà pour client_id={r['id']} (contrainte "
+                    f"uq_dim_client_courant) -- exécution concurrente du "
+                    f"pipeline ou écriture directe en base ?"
+                ) from exc
             mapping[r["id"]] = cur.fetchone()[0]
     return mapping
 

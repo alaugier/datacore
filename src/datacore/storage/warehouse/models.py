@@ -38,6 +38,7 @@ from sqlalchemy import (
     Date,
     DateTime,
     ForeignKey,
+    Index,
     Integer,
     MetaData,
     Numeric,
@@ -45,6 +46,7 @@ from sqlalchemy import (
     Table,
     Text,
     UniqueConstraint,
+    text,
 )
 
 metadata = MetaData()
@@ -68,6 +70,18 @@ dim_client = Table(
     Column("valid_from", Date, nullable=False, comment="SCD2 : début de validité de cette version"),
     Column("valid_to", Date, comment="SCD2 : fin de validité, NULL si version courante"),
     Column("is_current", Boolean, nullable=False, comment="SCD2 : version actuellement en vigueur"),
+    # Index unique partiel : un seul client_id peut avoir is_current=true
+    # à la fois. Filet de sécurité au niveau base, en plus de la
+    # vérification applicative dans load_dim_client (comparaison avant
+    # écriture) -- protège contre une exécution concurrente du pipeline
+    # ou une écriture directe en base, pas seulement contre un bug dans
+    # load_dim_client lui-même. Voir historisation_dim_client_scd2.md §2.
+    Index(
+        "uq_dim_client_courant",
+        "client_id",
+        unique=True,
+        postgresql_where=text("is_current"),
+    ),
     schema="dimensions",
 )
 
