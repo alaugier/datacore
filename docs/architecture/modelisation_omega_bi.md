@@ -440,6 +440,10 @@ pas par principe).
 
 ## 9. Références
 
+- [`sql/schema_entrepot_omega_bi.sql`](../../sql/schema_entrepot_omega_bi.sql) —
+  schéma SQL brut complet (tables, contraintes, vues), à titre
+  documentaire, testé pour correspondre exactement à ce que créent les
+  migrations Alembic.
 - [`sequencement_bloc3.md`](sequencement_bloc3.md) — ordre de traitement
   retenu pour le Bloc 3 (C13 → C14 → C15 → C17 → C16).
 - [`notebooks/verification_rapprochement_commandes.ipynb`](../../notebooks/verification_rapprochement_commandes.ipynb) —

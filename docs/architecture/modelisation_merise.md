@@ -13,7 +13,12 @@ concrète — pas seulement théorique — de chaque source.
 Le schéma décrit ici est la **version normalisée** (26/08/2026), revue
 après une analyse des formes normales (§3) qui a mis au jour deux
 violations réelles dans la première version — corrigées après
-vérification empirique, pas par principe.
+vérification empirique, pas par principe. Une version SQL brute de ce
+même schéma (à titre documentaire, sans dépendance à SQLAlchemy/Alembic)
+est disponible dans
+[`sql/schema_base_travail.sql`](../../sql/schema_base_travail.sql) —
+testée pour s'assurer qu'elle correspond exactement à ce que crée la
+migration Alembic.
 
 ---
 
