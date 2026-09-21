@@ -159,6 +159,10 @@ Vérifié pour de vrai :
 
 - [`modelisation_omega_bi.md`](modelisation_omega_bi.md) — modélisation
   étoile/flocon implémentée ici (C13).
+- [`sql/schema_entrepot_omega_bi.sql`](../../sql/schema_entrepot_omega_bi.sql) —
+  schéma SQL brut complet (tables, contraintes, vues, accès), à titre
+  documentaire, testé pour correspondre exactement à ce que créent les
+  migrations Alembic.
 - [`sequencement_bloc3.md`](sequencement_bloc3.md) — ordre de traitement
   du Bloc 3.
 - [`modelisation_merise.md`](modelisation_merise.md) — base de staging,
