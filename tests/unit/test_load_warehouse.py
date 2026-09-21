@@ -9,6 +9,7 @@ jointures est vérifiée par un test de bout en bout contre une vraie base
 """
 import datetime
 
+import psycopg2.errors
 import pytest
 
 from datacore.storage.warehouse.load_warehouse import (
@@ -120,10 +121,13 @@ class FakeScd2Cursor:
     Args:
         current_row: `(client_key, nom, secteur)` simulant la version
             courante déjà en base, ou `None` si le client est inédit.
+        raise_on_insert: si fourni, levée lorsqu'un INSERT est exécuté —
+            simule une violation de `uq_dim_client_courant` en base.
     """
 
-    def __init__(self, current_row):
+    def __init__(self, current_row, raise_on_insert=None):
         self.current_row = current_row
+        self.raise_on_insert = raise_on_insert
         self.execute_calls = []
         self._last_sql = None
         self._next_key = 100
@@ -131,6 +135,8 @@ class FakeScd2Cursor:
     def execute(self, sql, params=None):
         self.execute_calls.append((sql, params))
         self._last_sql = sql
+        if self.raise_on_insert is not None and "INSERT INTO dimensions.dim_client" in sql:
+            raise self.raise_on_insert
 
     def fetchone(self):
         if "SELECT client_key, nom, secteur" in self._last_sql:
@@ -151,8 +157,8 @@ class FakeScd2Cursor:
 class FakeScd2Connection:
     """Connexion factice câblée sur un FakeScd2Cursor pré-configuré."""
 
-    def __init__(self, current_row):
-        self.cursor_obj = FakeScd2Cursor(current_row)
+    def __init__(self, current_row, raise_on_insert=None):
+        self.cursor_obj = FakeScd2Cursor(current_row, raise_on_insert=raise_on_insert)
 
     def cursor(self):
         return self.cursor_obj
@@ -211,6 +217,31 @@ def test_load_dim_client_historise_un_changement_de_secteur():
     insert_sql, insert_params = calls[2]
     assert "INSERT INTO dimensions.dim_client" in insert_sql
     assert insert_params["secteur"] == "Pieces automobiles et electromobilite"
+
+
+def test_load_dim_client_violation_index_leve_une_erreur_explicite():
+    """Une violation de uq_dim_client_courant est traduite en RuntimeError explicite.
+
+    Simule ce que renverrait Postgres si une seconde version courante
+    existait déjà pour le même client_id (ex. exécution concurrente du
+    pipeline) — le message doit rester lisible, pas une trace psycopg2
+    brute, tout en conservant l'exception d'origine via `__cause__`.
+    """
+    staging_conn = FakeStagingConnection([
+        {"id": 1, "code": "NORDDRIVE", "nom": "NordDrive", "secteur": "Nouveau secteur"},
+    ])
+    violation = psycopg2.errors.UniqueViolation(
+        "duplicate key value violates uq_dim_client_courant"
+    )
+    warehouse_conn = FakeScd2Connection(
+        current_row=(4, "NordDrive", "Pieces automobiles"),
+        raise_on_insert=violation,
+    )
+
+    with pytest.raises(RuntimeError, match="Conflit SCD2.*client_id=1") as excinfo:
+        load_dim_client(staging_conn, warehouse_conn, today=datetime.date(2026, 9, 21))
+
+    assert excinfo.value.__cause__ is violation
 
 
 def test_load_dim_categorie_une_ligne_par_categorie_distincte():
