@@ -125,3 +125,6 @@ figures capturées.
   raison d'être de la sauvegarde partielle (§1).
 - [`registre_rgpd_entrepot.md`](registre_rgpd_entrepot.md) — registre
   RGPD de l'entrepôt (C16, second volet).
+- [`sql/schema_entrepot_omega_bi.sql`](../../sql/schema_entrepot_omega_bi.sql) —
+  schéma SQL brut complet, y compris `gouvernance.journal_operations`
+  et les vues SLA décrites ici.

@@ -87,7 +87,8 @@ voir `docs/architecture/sequencement_bloc3.md` — C13 → C14 → C15 → C17 �
 
 Voir `docs/comptes_rendus/M2.md` pour le compte rendu de fin de
 milestone (livrables, compétences couvertes, décisions, points ouverts
-pour M3). Release vers `main` à planifier.
+pour M3). Release vers `main` via la PR #60 (en attente de validation du
+compte rendu M2.md avant merge).
 
 ## Règles pour Claude Code
 - Ne jamais committer `data/raw/*` (voir `.gitignore`).
