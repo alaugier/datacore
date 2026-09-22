@@ -101,7 +101,7 @@ supposé équivalent — §1.3bis ci-dessous.
 
 ### 1.3bis Même preuve, cette fois avec le Parquet réellement dans MinIO
 
-MinIO déployé (`docker compose up -d minio minio-init` — voir §3),
+MinIO déployé (`docker compose up -d minio minio-init` — voir §4),
 bucket `omega-lake` créé automatiquement au démarrage. Même script que
 §1.3, avec deux différences : le Parquet est écrit et lu via `s3://`
 plutôt qu'en local, et l'extension `httpfs` est configurée pour pointer
@@ -194,7 +194,66 @@ avec un client S3 factice (aucune I/O réelle en test).
 
 ---
 
-## 3. État de l'implémentation
+## 3. Consommateur du flux SSE vers `raw/`
+
+**Décision** : le flux `/api/stream/capteurs` (non borné, 1 évènement/2s)
+est mis en tampon en mémoire et **déversé par fenêtre de temps**
+(`intervalle`, 5 min par défaut en production), pas seulement à la fin
+de la journée — voir le docstring de
+`src/datacore/storage/lake/sse_consumer.py`. Nommé
+`raw/flux_sse_capteurs/`, délibérément distinct de `capteurs_temperature`
+(le flux batch CSV) : le flux SSE combine température **et**
+géolocalisation par évènement, ce n'est pas le même contenu malgré le
+nom proche.
+
+**Pourquoi ce n'est pas un détail** : le flux source n'est pas rejouable
+(`topographie_donnees.md` §3.5) — en cas de coupure, les évènements
+manqués pendant la coupure elle-même sont perdus pour de bon, aucune
+API de rattrapage n'existe côté serveur. La seule variable sous
+contrôle est donc la taille du tampon local non encore déposé : le
+déverser par petites fenêtres plutôt qu'une fois par jour borne la
+perte réelle à `intervalle`, pas à une journée entière.
+
+### Vérifié par une coupure brutale réelle, pas seulement décrite
+
+Point explicitement demandé en relecture externe de C19. Test mené
+contre le flux SSE réel (`api-mock`) et MinIO réel, avec un intervalle
+court (3 s, pour observer plusieurs dépôts en quelques secondes plutôt
+que d'attendre les 5 min de production) :
+
+1. Processus consommateur lancé en arrière-plan.
+2. Après 10 s, vérification indépendante (`boto3`, hors du processus
+   consommateur) : **2 fichiers déjà déposés** dans
+   `raw/flux_sse_capteurs/date=2026-09-22/` (516 et 345 octets).
+3. **`kill -9`** sur le processus (coupure brutale, pas un arrêt propre)
+   — confirmé tué (pas de gestion de signal, donc aucune chance de
+   sauvegarde de dernière minute qui fausserait la preuve).
+4. Un **second** processus relancé (simule un redémarrage après crash),
+   tourne 8 s, tué à son tour.
+5. Vérification finale : **3 fichiers au total, 8 évènements, aucune
+   collision de nom entre l'avant- et l'après-redémarrage, chaque ligne
+   NDJSON relue comme un JSON valide**.
+
+Résultat : le redémarrage ne perd que les évènements du tampon en cours
+au moment du `kill` (borné par `intervalle`), jamais les fichiers déjà
+déposés — le comportement attendu est vérifié en pratique, pas supposé
+à partir du code seul.
+
+**Robustesse distincte, également ajoutée** : `main()` reconnecte
+automatiquement sur une coupure réseau *transitoire* (la requête HTTP
+lève une exception mais le processus reste vivant) — cas différent du
+crash complet testé ci-dessus. L'orchestration du processus lui-même
+(relance automatique s'il s'arrête complètement) reste hors périmètre
+de ce livrable.
+
+7 tests unitaires (`tests/unit/test_sse_consumer.py`, horloge et client
+S3 factices — aucune I/O réelle en test, la preuve réelle est le test
+manuel ci-dessus, pas un test automatisé qui nécessiterait une vraie
+infrastructure à chaque exécution de la suite).
+
+---
+
+## 4. État de l'implémentation
 
 **Fait** :
 - MinIO déployé (services `minio`/`minio-init` dans
@@ -213,19 +272,16 @@ avec un client S3 factice (aucune I/O réelle en test).
   réelles (§1.3bis).
 - Ingestion batch des 4 flux CSV/JSON vers `raw/` (§2), fidélité
   vérifiée par somme de contrôle.
+- Consommateur du flux SSE vers `raw/` (§3), robustesse au crash vérifiée
+  en conditions réelles.
 
 **Reste à faire** :
-- Consommateur du flux SSE `/api/stream/capteurs` vers `raw/` (fenêtré
-  par jour, cf. `architecture_omega_lake.md` §3) — attention particulière
-  à la reprise après interruption (flux non borné, pas de rejeu possible
-  côté source), relevée en relecture externe : à tester explicitement,
-  pas seulement décrire le comportement attendu.
 - Scripts de transformation `raw/` → `staging/` → `curated/` (DuckDB,
   typage, Parquet) — réutiliseront le mécanisme vérifié en §1.3bis.
 
 ---
 
-## 4. Références
+## 5. Références
 
 - [`architecture_omega_lake.md`](architecture_omega_lake.md) §3-§5 —
   zones, formats, clés de jointure conçues en C18.
