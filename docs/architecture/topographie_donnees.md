@@ -38,6 +38,8 @@ mock TransFlow (`api-mock/app.py`).
 | **IoT** (Internet of Things) | Capteurs connectés en entrepôt (température, comptage caméra) et sur la flotte (géolocalisation), anticipant le bloc 4 (data lake). |
 | **SSE** (Server-Sent Events) | Protocole HTTP de flux continu à sens unique serveur → client (une connexion ouverte, le serveur pousse des évènements). Utilisé par `/api/stream/capteurs` pour diffuser les mesures capteurs en temps réel (bloc 4). |
 | **Staging** | Base de données de travail intermédiaire, cible de la collecte du bloc 2, alimentant ensuite l'entrepôt de données (bloc 3). À ne pas confondre avec la zone `staging` du data lake (bloc 4), qui porte le même nom par convention Kimball/data lake mais désigne une brique de stockage différente — voir [`architecture_omega_lake.md` §3](architecture_omega_lake.md#3-organisation-en-zones). |
+| **SCD1** (Slowly Changing Dimension, type 1) | Historisation Kimball où un changement **écrase** la valeur précédente, sans garder de trace. Cas implicite dans OMEGA BI : `Dim_Client.code` n'est jamais versionné. |
+| **SCD2** (Slowly Changing Dimension, type 2) | Historisation Kimball où un changement produit une **nouvelle ligne** (nouvelle clé de substitution, `valid_from`/`valid_to`/`is_current`), en conservant l'ancienne. Implémentée sur `Dim_Client.nom`/`secteur` en C17 — voir [`historisation_dim_client_scd2.md`](historisation_dim_client_scd2.md). |
 | **CoSu** (Comité de suivi) | Réunion mensuelle de pilotage entre le chef·fe de projet, le commanditaire opérationnel (Karim BELAÏD) et la sponsor (Éléonore RAKOTO) — voir [`supervision_projet.md` §1.2](supervision_projet.md#12-comité-de-suivi-mensuel--cosu-). |
 
 ---
