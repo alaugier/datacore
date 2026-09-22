@@ -36,6 +36,21 @@ semaine : pipeline CI (C8 infra) puis bascule sur le bloc 2. Décision
 d'équipe : extension du Kanban à 6 statuts pour un suivi plus fin des PR
 en revue.
 
+**Exemple — synthèse des points hebdomadaires du 28/08 au 21/09/2026**
+(période M1 → M2 ; synthétisée a posteriori plutôt qu'un compte-rendu par
+semaine, le rythme réel de livraison ayant été irrégulier sur cette
+période — voir le point de vigilance correspondant ci-dessous).
+Avancement : Bloc 2 clos le 27/08 (C8-C12, PR #42) ; Bloc 3 démarré dans
+la foulée, C13/C14 livrés le 28/08 (PR #52/#54), puis C15/C16/C17 livrés
+le 21/09 (PR #55/#57/#58) — Bloc 3 clos le même jour. Blocage : aucun
+blocage technique, mais un ralentissement d'activité de plusieurs
+semaines fin août-début septembre (autres priorités du Pôle Data),
+signalé au fil de l'eau plutôt que dissimulé. Décisions d'équipe notables :
+inversion de l'ordre C16/C17 par rapport au Gantt (voir
+[sequencement_bloc3.md](sequencement_bloc3.md)) ; correction d'un fichier
+SQL orphelin découvert lors de la revue du Bloc 3 (PR #59). Priorité
+suivante : ouverture du Bloc 4 (data lake OMEGA LAKE).
+
 ### 1.2 Comité de suivi mensuel (« CoSu »)
 
 | Élément | Détail |
@@ -68,15 +83,54 @@ en revue.
   point de vigilance sur la charge de travail liée au rattrapage C6/C7 en
   parallèle du démarrage du bloc 2.
 
+**Exemple — CoSu du 21/09/2026 (clôture de M2, ouverture de M3).**
+
+- **Avancement** : Bloc 2 (M1, C8-C12) et Bloc 3 (M2, C13-C17) tous deux
+  clos — 10 compétences supplémentaires livrées depuis le dernier CoSu.
+  Bloc 4 (M3, C18-C21) démarré le jour même : 4 issues ouvertes (#63-#66),
+  ordre de traitement confirmé sans réserve
+  ([sequencement_bloc4.md](sequencement_bloc4.md)).
+- **Décisions actées depuis le dernier point** : inversion C17 avant C16
+  au Bloc 3 (dépendance RGPD réelle, voir
+  [sequencement_bloc3.md](sequencement_bloc3.md)) ; correctif appliqué à
+  `Dim_Client` après clôture du milestone GitHub M2 (index unique
+  partiel empêchant un doublon de version courante — gap remonté en
+  revue externe du compte rendu M2, vérifié avant correction, non
+  bloquant pour la release).
+- **Point d'attention à faire remonter à Éléonore RAKOTO** : le Bloc 4
+  introduit dans le périmètre la géolocalisation de la flotte
+  (`geoloc_flotte.csv` et le flux temps réel `/api/stream/capteurs`,
+  identifiés dès la conception de C18 — voir
+  [sequencement_bloc4.md §2](sequencement_bloc4.md#2-c18--c19--c20--c21--confirmé-sans-réserve)).
+  La sponsor a positionné la conformité RGPD en zéro tolérance dès
+  l'entretien de cadrage, nommément sur la géolocalisation des
+  chauffeurs ([étude de faisabilité §2.2](etude_faisabilite.md#22-entretien-avec-éléonore-rakoto--directrice-des-opérations)) :
+  ce périmètre est donc signalé dès l'ouverture du bloc, et non
+  seulement à la production du registre RGPD prévue en C21, cohérent
+  avec sa demande d'être alertée sans attendre en cas de sujet sensible.
+  La gouvernance renforcée (registre, purge, droits d'accès) reste
+  prévue en C21 — ce point d'attention n'anticipe pas le livrable, il
+  informe la sponsor que le périmètre est identifié et suivi.
+- **Budget** : voir §2.2 ci-dessous, aucun dépassement — 3 phases sur 4
+  closes intégralement dans l'enveloppe prévisionnelle.
+- **Risques** : aucun risque bloquant pour l'ouverture du Bloc 4 ; point
+  de vigilance sur la mobilisation de SupervIT (§3), prévue à l'entrée
+  en Phase 4 et toujours non démarrée à ce jour.
+
 ---
 
 ## 2. Tableau de suivi budgétaire
 
+### 2.1 Détail Phase 1 — Cadrage
+
 Suivi du budget de la Phase 1 — Cadrage (25 000 €, cf.
 [feuille de route §3](feuille_de_route.md#3-budget-prévisionnel)), ventilé
-par poste de livrable. Situation au 25/08/2026.
+par poste de livrable. **Instantané historique au 25/08/2026** (Phase 1
+alors quasiment terminée, cf. CoSu §1.2) — C6 et C7 se sont depuis
+achevés normalement, budget consommé intégralement sans écart ; voir la
+vue consolidée à jour en §2.2.
 
-| Poste | Budget prévisionnel | Réalisé à date | Écart | Statut |
+| Poste | Budget prévisionnel | Réalisé au 25/08/2026 | Écart | Statut au 25/08/2026 |
 |---|---|---|---|---|
 | C1 — Étude de faisabilité | 2 500 € | 2 500 € | 0 € | Terminé |
 | C2 — Topographie des données | 2 500 € | 2 500 € | 0 € | Terminé |
@@ -87,13 +141,32 @@ par poste de livrable. Situation au 25/08/2026.
 | C7 — Communication et lancement | 2 500 € | 0 € | 2 500 € | À faire |
 | Infrastructure (docker-compose #7, CI #8) | 3 000 € | 3 000 € | 0 € | Terminé |
 | Pilotage et coordination transverse | 5 000 € | 1 500 € | 3 500 € | En cours |
-| **Total Phase 1** | **25 000 €** | **18 000 €** | **7 000 €** | **72 % consommé** |
+| **Total Phase 1 au 25/08/2026** | **25 000 €** | **18 000 €** | **7 000 €** | **72 % consommé** |
 
-**Analyse** : aucun dépassement constaté. L'écart restant (7 000 €, 28 %)
-correspond au reste à produire pour C6 et C7, cohérent avec l'avancement
-réel du programme. Le poste « pilotage et coordination transverse »
-absorbera la charge de rattrapage identifiée en CoSu (§1.2) sans nécessiter
-de révision du budget prévisionnel de la Phase 1.
+### 2.2 Vue d'ensemble par phase
+
+Le budget prévisionnel par phase (cf.
+[feuille de route §3](feuille_de_route.md#3-budget-prévisionnel)) n'est
+détaillé par poste de livrable que pour la Phase 1 (§2.1 ci-dessus) — les
+phases suivantes sont suivies au niveau de la phase, cohérent avec la
+granularité du budget prévisionnel initial. Situation au 21/09/2026, mise
+à jour à la clôture de M2.
+
+| Phase | Budget prévisionnel | Réalisé à date | Écart | Statut |
+|---|---|---|---|---|
+| Phase 1 — Cadrage (M0) | 25 000 € | 25 000 € | 0 € | Terminé |
+| Phase 2 — Collecte & Stockage (M1) | 45 000 € | 45 000 € | 0 € | Terminé |
+| Phase 3 — Entrepôt de données (M2) | 55 000 € | 55 000 € | 0 € | Terminé |
+| Phase 4 — Data lake et infrastructure IoT (M3) | 55 000 € | 0 € | 55 000 € | En cours |
+| **Total programme** | **180 000 €** | **125 000 €** | **55 000 €** | **69 % consommé** |
+
+**Analyse** : aucun dépassement constaté sur les 3 phases closes (M0,
+M1, M2) — chacune consommée intégralement, sans écart, cohérent avec
+les comptes rendus de milestone déjà validés
+([M0](../comptes_rendus/M0.md), [M1](../comptes_rendus/M1.md),
+[M2](../comptes_rendus/M2.md)). L'écart restant (55 000 €, 31 %) est
+le budget de la Phase 4 (M3), qui démarre — voir
+[sequencement_bloc4.md](sequencement_bloc4.md).
 
 ---
 
@@ -107,10 +180,11 @@ l'intégration technique du bloc 4 (data lake OMEGA LAKE) — installation et
 connexion des composants d'infrastructure (C19), où la complexité
 technique dépasse le périmètre courant de l'équipe interne.
 
-**Statut au 25/08/2026** : SupervIT n'est pas encore mobilisé. Le
-programme est en Phase 1 (cadrage) ; la mobilisation est planifiée à
-l'entrée en Phase 4, conformément au
-[calendrier détaillé](feuille_de_route.md#41-diagramme-de-gantt).
+**Statut au 21/09/2026** : SupervIT n'est toujours pas mobilisé. Le
+programme entre en Phase 4 (M3, data lake OMEGA LAKE) — la mobilisation,
+planifiée à l'entrée de cette phase, conformément au
+[calendrier détaillé](feuille_de_route.md#41-diagramme-de-gantt), reste
+à engager (voir aussi le point de vigilance du CoSu du 21/09/2026, §1.2).
 
 ### 3.2 Modalités d'encadrement prévues
 

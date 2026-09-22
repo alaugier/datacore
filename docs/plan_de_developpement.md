@@ -87,8 +87,16 @@ voir `docs/architecture/sequencement_bloc3.md` — C13 → C14 → C15 → C17 �
 
 Voir `docs/comptes_rendus/M2.md` pour le compte rendu de fin de
 milestone (livrables, compétences couvertes, décisions, points ouverts
-pour M3). Release vers `main` via la PR #60 (en attente de validation du
-compte rendu M2.md avant merge).
+pour M3). Release vers `main` via la PR #60.
+
+### M3 — Data Lake OMEGA LAKE (en cours)
+- [ ] Architecture du data lake C18 (#63)
+- [ ] Intégration infrastructure C19 (#64)
+- [ ] Catalogue de données C20 (#65)
+- [ ] Gouvernance des données C21 (#66)
+
+Ordre de traitement retenu pour C18-C21 et justification :
+voir `docs/architecture/sequencement_bloc4.md` — C18 → C19 → C20 → C21.
 
 ## Règles pour Claude Code
 - Ne jamais committer `data/raw/*` (voir `.gitignore`).
