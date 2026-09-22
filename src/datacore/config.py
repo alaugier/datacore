@@ -45,6 +45,17 @@ OMEGA_BI_DB_DSN = os.environ.get(
     f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@localhost:{POSTGRES_PORT}/{OMEGA_BI_DB}",
 )
 
+# Data lake OMEGA LAKE (C18-C19) : MinIO, meme instance locale que le
+# reste (sobriete RGESN) -- voir docker-compose.yml et
+# architecture_omega_lake.md. Bucket unique, zones raw/staging/curated
+# comme prefixes internes, pas comme buckets separes.
+MINIO_ROOT_USER = os.environ.get("MINIO_ROOT_USER", "datacore")
+MINIO_ROOT_PASSWORD = os.environ.get("MINIO_ROOT_PASSWORD", "datacore_lake")
+OMEGA_LAKE_S3_ENDPOINT = os.environ.get(
+    "OMEGA_LAKE_S3_ENDPOINT", f"localhost:{os.environ.get('MINIO_API_PORT', '9000')}"
+)
+OMEGA_LAKE_BUCKET = os.environ.get("OMEGA_LAKE_BUCKET", "omega-lake")
+
 RAW_DIR = Path(os.environ.get("DATACORE_RAW_DIR", REPO_ROOT / "data" / "raw"))
 CLIENTS_FILES_DIR = RAW_DIR / "clients_fichiers"
 HISTORIQUE_PATH = RAW_DIR / "historique" / "omega_historique_expeditions.csv"

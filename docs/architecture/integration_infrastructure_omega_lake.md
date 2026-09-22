@@ -89,9 +89,59 @@ table `entrepots` peuplée par C11) :
 
 864 × 3 = 2592 mesures, cohérent avec le volume total réel de
 `capteurs_temperature.csv` (vérifié en C18 §1) — aucune ligne perdue ni
-dupliquée par la jointure. Le mécanisme décrit en C18 §5 fonctionne donc
-tel que conçu, avec l'outil retenu ici, contre des données et une base
-réelles plutôt qu'un exemple jouet.
+dupliquée par la jointure.
+
+**Réserve soulevée en relecture externe, à juste titre** : cette
+première preuve joint Postgres à un fichier Parquet **local** — elle
+démontre le mécanisme Parquet↔Postgres, pas que DuckDB sait lire un
+Parquet réellement stocké dans MinIO (S3 ≠ MinIO : MinIO n'étant pas
+AWS S3, l'extension `httpfs` de DuckDB a besoin d'un endpoint et d'un
+style d'adressage explicites). Point vérifié séparément plutôt que
+supposé équivalent — §1.3bis ci-dessous.
+
+### 1.3bis Même preuve, cette fois avec le Parquet réellement dans MinIO
+
+MinIO déployé (`docker compose up -d minio minio-init` — voir §2),
+bucket `omega-lake` créé automatiquement au démarrage. Même script que
+§1.3, avec deux différences : le Parquet est écrit et lu via `s3://`
+plutôt qu'en local, et l'extension `httpfs` est configurée pour pointer
+vers MinIO (pas AWS S3, qui est l'hypothèse par défaut de DuckDB) :
+
+```python
+con.sql("INSTALL httpfs; LOAD httpfs;")
+con.sql("""
+    SET s3_endpoint='localhost:9000';
+    SET s3_access_key_id='datacore';
+    SET s3_secret_access_key='datacore_lake';
+    SET s3_use_ssl=false;
+    SET s3_url_style='path';   -- MinIO exige le style "path", pas "virtual-hosted"
+""")
+
+con.sql("""
+    COPY (SELECT * FROM read_csv_auto('data/raw/iot/capteurs_temperature.csv'))
+    TO 's3://omega-lake/staging/capteurs_temperature/date=2026-08-01/part-0.parquet'
+    (FORMAT PARQUET)
+""")
+
+# Jointure reelle : Parquet LU DEPUIS MINIO <-> vraie base de staging
+con.sql("""
+    SELECT e.nom, e.ville, count(*), round(avg(c.temperature_c), 2)
+    FROM read_parquet('s3://omega-lake/staging/capteurs_temperature/date=2026-08-01/part-0.parquet') c
+    JOIN staging.public.entrepots e ON e.code = c.entrepot
+    GROUP BY e.nom, e.ville
+""").show()
+```
+
+Résultat identique (864 mesures/site, 2592 au total) — et confirmé
+persistant dans MinIO lui-même, pas seulement lisible dans la session
+DuckDB qui l'a écrit (`mc ls --recursive local/omega-lake` liste bien
+`staging/capteurs_temperature/date=2026-08-01/part-0.parquet`, 13 KiB).
+Fichier de test supprimé après vérification (`mc rm`) — cette preuve
+ne laisse pas de donnée de démonstration dans le bucket.
+
+Le mécanisme décrit en C18 §5 est donc vérifié de bout en bout : Parquet
+réellement dans MinIO, jointure réelle avec la base de staging réelle,
+pas un exemple jouet à aucune étape.
 
 ### 1.4 Portée de la décision
 
@@ -102,15 +152,30 @@ dépendances du projet (`requirements.txt`).
 
 ---
 
-## 2. Ce qui reste à implémenter
+## 2. État de l'implémentation
 
-- Déploiement de MinIO (service `docker-compose`) et création du bucket
-  `omega-lake`.
+**Fait** :
+- MinIO déployé (services `minio`/`minio-init` dans
+  `infra/docker/docker-compose.yml`), bucket `omega-lake` créé
+  automatiquement au démarrage (conteneur `minio-init`, image
+  `quay.io/minio/mc`, `mc mb --ignore-existing local/omega-lake`).
+  **Note pratique** : `minio/minio` et `minio/mc` ont disparu de Docker
+  Hub (vérifié le 22/09/2026, `pull access denied`) — remplacés par
+  `quay.io/minio/minio` et `quay.io/minio/mc`, le registre désormais
+  recommandé par l'éditeur.
+- Variables d'environnement ajoutées (`.env.example`,
+  `src/datacore/config.py`) : `MINIO_ROOT_USER`/`MINIO_ROOT_PASSWORD`,
+  `MINIO_API_PORT`/`MINIO_CONSOLE_PORT`, `OMEGA_LAKE_BUCKET`,
+  `OMEGA_LAKE_S3_ENDPOINT`.
+- Mécanisme de jointure DuckDB↔MinIO↔Postgres vérifié en conditions
+  réelles (§1.3bis).
+
+**Reste à faire** :
 - Scripts d'ingestion batch des 4 fichiers CSV/JSON vers `raw/`.
 - Consommateur du flux SSE `/api/stream/capteurs` vers `raw/` (fenêtré
   par jour, cf. `architecture_omega_lake.md` §3).
 - Scripts de transformation `raw/` → `staging/` → `curated/` (DuckDB,
-  typage, Parquet).
+  typage, Parquet) — réutiliseront le mécanisme vérifié en §1.3bis.
 
 ---
 
