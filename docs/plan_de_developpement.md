@@ -90,7 +90,7 @@ milestone (livrables, compétences couvertes, décisions, points ouverts
 pour M3). Release vers `main` via la PR #60.
 
 ### M3 — Data Lake OMEGA LAKE (en cours)
-- [ ] Architecture du data lake C18 (#63)
+- [x] Architecture du data lake C18 (#63)
 - [ ] Intégration infrastructure C19 (#64)
 - [ ] Catalogue de données C20 (#65)
 - [ ] Gouvernance des données C21 (#66)
