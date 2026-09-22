@@ -36,7 +36,9 @@ mock TransFlow (`api-mock/app.py`).
 | **SLA** (Service Level Agreement) | Accord de niveau de service définissant la qualité de prestation attendue. |
 | **RFID** (Radio Frequency Identification) | Technologie d'étiquetage/scan sans contact utilisée pour tracer les palettes en entrepôt. |
 | **IoT** (Internet of Things) | Capteurs connectés en entrepôt (température, comptage caméra) et sur la flotte (géolocalisation), anticipant le bloc 4 (data lake). |
-| **Staging** | Base de données de travail intermédiaire, cible de la collecte du bloc 2, alimentant ensuite l'entrepôt de données (bloc 3). |
+| **SSE** (Server-Sent Events) | Protocole HTTP de flux continu à sens unique serveur → client (une connexion ouverte, le serveur pousse des évènements). Utilisé par `/api/stream/capteurs` pour diffuser les mesures capteurs en temps réel (bloc 4). |
+| **Staging** | Base de données de travail intermédiaire, cible de la collecte du bloc 2, alimentant ensuite l'entrepôt de données (bloc 3). À ne pas confondre avec la zone `staging` du data lake (bloc 4), qui porte le même nom par convention Kimball/data lake mais désigne une brique de stockage différente — voir [`architecture_omega_lake.md` §3](architecture_omega_lake.md#3-organisation-en-zones). |
+| **CoSu** (Comité de suivi) | Réunion mensuelle de pilotage entre le chef·fe de projet, le commanditaire opérationnel (Karim BELAÏD) et la sponsor (Éléonore RAKOTO) — voir [`supervision_projet.md` §1.2](supervision_projet.md#12-comité-de-suivi-mensuel--cosu-). |
 
 ---
 

@@ -26,6 +26,10 @@ TARGETS: dict[str, list[str]] = {
         "diagrammes_techniques_api_sequence_autorisation",
     ],
     "modelisation_merise.md": ["modelisation_merise_mcd"],
+    "architecture_omega_lake.md": [
+        "architecture_omega_lake_trois_couches",
+        "architecture_omega_lake_zones",
+    ],
 }
 
 MERMAID_BLOCK = re.compile(r"```mermaid\n(.*?)\n```", re.DOTALL)

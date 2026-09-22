@@ -271,7 +271,7 @@
 
   <section class="overview">
     <h2>Où en est le programme</h2>
-    <p class="sub">15 des 21 compétences du référentiel livrées, sur 4 blocs.</p>
+    <p class="sub">18 des 21 compétences du référentiel livrées, sur 4 blocs.</p>
     <table class="ledger">
       <thead>
         <tr><th>Jalon</th><th>Bloc</th><th>Épreuve(s)</th><th>Statut</th></tr>
@@ -288,14 +288,14 @@
           <td><span class="pill done">Clos 27/08</span></td>
         </tr>
         <tr>
-          <td><span class="m-name">M2 — Entrepôt OMEGA BI</span><span class="m-detail">Modèle, entrepôt, ETL livrés — historisation &amp; exploitation à venir</span></td>
+          <td><span class="m-name">M2 — Entrepôt OMEGA BI</span><span class="m-detail">Modèle, entrepôt, ETL, historisation &amp; exploitation</span></td>
           <td class="tagc">C13&ndash;C17</td><td class="tagc">E5, E6</td>
-          <td><span class="pill review">3 / 5</span></td>
+          <td><span class="pill done">Clos 21/09</span></td>
         </tr>
         <tr>
-          <td><span class="m-name">M3 — Data Lake OMEGA LAKE</span><span class="m-detail">Architecture, infrastructure, catalogue, gouvernance</span></td>
+          <td><span class="m-name">M3 — Data Lake OMEGA LAKE</span><span class="m-detail">Architecture livrée — infrastructure, catalogue, gouvernance à venir</span></td>
           <td class="tagc">C18&ndash;C21</td><td class="tagc">E7</td>
-          <td><span class="pill todo">À venir</span></td>
+          <td><span class="pill review">1 / 4</span></td>
         </tr>
         <tr>
           <td><span class="m-name">M4 — Rapport LaTeX</span><span class="m-detail">Consolidation continue, différée par choix</span></td>
@@ -368,7 +368,7 @@
     </article>
 
     <article class="entry">
-      <div class="entry-date"><span class="yr">2026</span>28 août &ndash; en cours</div>
+      <div class="entry-date"><span class="yr">2026</span>28 août &ndash; 21 septembre</div>
       <div>
         <div class="entry-head"><h2>M2 — Entrepôt OMEGA BI</h2><span class="entry-tag">C13&ndash;C17 · E5, E6</span></div>
         <div class="entry-lede">
@@ -431,19 +431,86 @@
           </div>
         </div>
 
-        <div class="next-flags">
-          <span class="next-flag"><strong>C17</strong> — SCD2 sur Dim_Client (E6) — prochaine étape</span>
-          <span class="next-flag"><strong>C16</strong> — Gestion opérationnelle (E6) — après C17, sa procédure de purge en dépend</span>
+        <div class="sub-comp">
+          <div class="sub-comp-head">
+            <span class="sub-comp-code">C17</span><h3>Mettre en œuvre une variation de dimension</h3>
+            <span class="sub-comp-meta">livré 21/09</span>
+          </div>
+          <p>L'issue prévoyait d'historiser les changements d'adresse ou de contrat client — le jeu
+          de données ne porte ni l'un ni l'autre. Décision actée avec l'utilisateur plutôt que
+          supposée : historiser <code>nom</code>/<code>secteur</code> à la place, les deux seuls
+          attributs descriptifs réellement présents. SCD2 classique (Kimball) : la version courante
+          est close et une nouvelle ligne insérée à chaque changement détecté, jamais d'écrasement.</p>
+          <div class="discovery">
+            <span class="dk">Trouvé en revue externe — un doublon possible que la logique applicative ne couvrait pas</span>
+            La comparaison à la version courante avant écriture empêche <code>load_dim_client</code>
+            de créer un doublon dans son propre déroulement — mais rien n'empêchait, en base, une
+            exécution concurrente ou une écriture directe de créer deux lignes courantes pour le
+            même client. Vérifié avant de corriger (<code>\d dimensions.dim_client</code> confirmait
+            l'absence de contrainte), plutôt que supposé sur la seule foi de la remontée externe.
+            Corrigé par un index unique partiel Postgres
+            (<code>WHERE is_current</code>) — et <code>load_dim_client</code> traduit désormais une
+            violation en erreur explicite plutôt qu'en trace psycopg2 brute.
+          </div>
+        </div>
+
+        <div class="sub-comp">
+          <div class="sub-comp-head">
+            <span class="sub-comp-code">C16</span><h3>Assurer la gestion opérationnelle d'un entrepôt</h3>
+            <span class="sub-comp-meta">livré 21/09</span>
+          </div>
+          <p>Sauvegardes planifiées (complètes et partielles — seule <code>Dim_Client</code>, désormais
+          historisée, n'est pas reconstructible depuis un rechargement ETL), journalisation des
+          opérations sur une connexion séparée de la transaction de données (un échec reste tracé même
+          si la transaction est annulée), tableau de bord SLA en vues SQL. Le registre RGPD de
+          l'entrepôt s'appuie sur un contrôle automatisé et rejouable (recherche de colonnes sensibles
+          par motif) plutôt que sur une revue manuelle ponctuelle — verdict : aucune donnée personnelle
+          dans les 10 tables/vues, conséquence directe des choix RGPD by design pris dès C13.</p>
         </div>
       </div>
     </article>
 
-    <article class="entry stub">
-      <div class="entry-date">À venir</div>
+    <article class="entry">
+      <div class="entry-date"><span class="yr">2026</span>22 septembre &ndash; en cours</div>
       <div>
         <div class="entry-head"><h2>M3 — Data Lake OMEGA LAKE</h2><span class="entry-tag">C18&ndash;C21 · E7</span></div>
-        <p>Architecture et intégration d'un data lake pour absorber les données massives à venir
-        (capteurs IoT des entrepôts) — non démarré.</p>
+        <div class="entry-lede">
+          <p>Cinq flux IoT (température, géolocalisation de flotte, comptage caméra, scans RFID,
+          plus un flux temps réel) que ni la base de staging ni l'entrepôt ne peuvent absorber : trop
+          variés dans leur format, trop fréquents pour transiter par une base relationnelle. Le data
+          lake ne remplace ni l'un ni l'autre — il complète ce qu'ils ne peuvent pas ingérer, avec une
+          logique différente : le schéma s'applique à la lecture, pas à l'écriture.</p>
+        </div>
+
+        <div class="sub-comp">
+          <div class="sub-comp-head">
+            <span class="sub-comp-code">C18</span><h3>Concevoir une architecture de données pour le big data</h3>
+            <span class="sub-comp-meta">livré 22/09</span>
+          </div>
+          <p>Zones <code>raw</code>/<code>staging</code>/<code>curated</code> (l'équivalent de ce que
+          d'autres outils, dont Microsoft Fabric/OneLake, appellent bronze/silver/gold). Décision
+          tranchée sur un point resté ouvert depuis le compte rendu de M2 : les flux IoT sont ingérés
+          en flux séparé, jamais via la base de staging relationnelle — mais la zone curated est conçue
+          pour être jointe à la volée aux entités déjà en place, via de vraies clés retrouvées dans les
+          données (l'entrepôt d'un capteur, le SKU d'un scan RFID, l'identifiant véhicule d'une
+          tournée), sans dupliquer aucune donnée entre les briques.</p>
+          <div class="discovery">
+            <span class="dk">Trouvé en concevant — une jointure qui ré-identifie plus qu'il n'y paraît</span>
+            L'identifiant véhicule des relevés de géolocalisation se retrouve aussi dans les tournées
+            de la base de staging, à côté du nom du chauffeur — et les deux jeux de données se
+            recouvrent réellement dans le temps, pas seulement en théorie. Une trace de géolocalisation
+            du lac est donc, en pratique, ré-identifiable jusqu'au chauffeur par une simple jointure.
+            Décision actée dès la conception : aucune jointure automatisée entre les deux n'est
+            implémentée dans le pipeline curated — signalé explicitement pour que le registre RGPD
+            (C21) couvre ce traitement, pas seulement la géolocalisation prise isolément.
+          </div>
+        </div>
+
+        <div class="next-flags">
+          <span class="next-flag"><strong>C19</strong> — Intégration infrastructure (E7) — prochaine étape</span>
+          <span class="next-flag"><strong>C20</strong> — Catalogue de données (E7) — après C19</span>
+          <span class="next-flag"><strong>C21</strong> — Gouvernance des données (E7) — après C20</span>
+        </div>
       </div>
     </article>
 
@@ -460,7 +527,7 @@
 
   <footer>
     <span>Journal tenu à partir de l'état réel du dépôt (issues, pull requests, CI).</span>
-    <span>Prochaine entrée : C17</span>
+    <span>Prochaine entrée : C19</span>
   </footer>
 
 </div>

@@ -34,7 +34,62 @@ confirmé ici après avoir effectivement regardé le contenu des fichiers.
 
 ---
 
-## 2. Organisation en zones
+## 2. Trois couches de stockage, trois logiques différentes
+
+Le programme empile trois briques de stockage — base de staging (C11),
+entrepôt OMEGA BI (C13-C17), data lake OMEGA LAKE (C18-C21) — mais ce
+n'est **pas** un simple empilement de couches de plus en plus « propres »
+au fil du nettoyage. Chacune répond à une logique de modélisation
+différente, pas seulement à un degré de nettoyage différent :
+
+```mermaid
+flowchart LR
+    subgraph SRC1["Sources métier"]
+        direction TB
+        F1["FluxPro / TransFlow<br/>fichiers clients"]
+    end
+    subgraph SRC2["Sources IoT"]
+        direction TB
+        F2["5 flux IoT<br/>(4 batch + SSE)"]
+    end
+
+    F1 -->|"C8-C10<br/>extraction, nettoyage"| STG[("Base de staging (C11)<br/>relationnel, schema-on-write")]
+    STG -->|"ETL (C15)"| DW[("Entrepôt OMEGA BI (C13-C17)<br/>étoile/flocon, schema-on-write")]
+
+    subgraph LAKE["Data lake OMEGA LAKE (C18-C21) — schema-on-read"]
+        direction LR
+        RAW["raw/"] --> STGZ["staging/<br/>(zone du lake)"] --> CUR["curated/"]
+    end
+
+    F2 -->|"ingestion directe<br/>flux séparé"| RAW
+
+    CUR -.->|"jointure à la lecture<br/>(dim_site, dim_produit)"| DW
+    CUR -.->|"jointure à la lecture<br/>(vehicule_id)"| STG
+```
+
+| | Base de staging (C11) | Entrepôt OMEGA BI (C13-C17) | Data lake OMEGA LAKE (C18-C21) |
+|---|---|---|---|
+| **Modélise** | Des entités métier opérationnelles (un client, une commande, une tournée) | Des faits analytiques décisionnels (une expédition livrée, un stock à une date) | Des évènements bruts, sans modélisation métier a priori |
+| **Structure** | Relationnelle normalisée (3NF, MERISE) | Étoile/flocon, dénormalisée volontairement (dimensions conformées, tables de faits) | Fichiers, tout format (CSV/JSON/Parquet) |
+| **Schéma** | Schema-on-write : structure SQL fixée avant toute écriture | Schema-on-write : tables typées, connues à l'avance | Schema-on-read : la structure s'applique à la lecture, pas à l'écriture |
+| **Répond à** | « Quel est l'état actuel de l'activité ? » (une commande, une tournée) | « Quel indicateur, sur quelle période ? » (taux de service, délai moyen) — questions déjà anticipées en C13 | « Quelles données a-t-on, avant même de savoir toutes les analyses qu'on en fera ? » |
+| **Pourquoi ce n'est pas redondant** | Reflet fidèle des systèmes sources après nettoyage — seule source de vérité opérationnelle | Reconstruit entièrement depuis la staging à chaque exécution (C15) — jetable/rechargeable, pas une copie figée | Absorbe ce qu'aucune des deux bases relationnelles ne peut ingérer (volumétrie, variété, vitesse — §1) |
+
+**Ce qui différencie vraiment l'entrepôt du data lake** — la question la
+plus fréquente sur ce sujet, y compris hors contexte pédagogique — n'est
+ni le volume ni le degré de nettoyage : c'est **le moment où le schéma
+est décidé**. Un entrepôt répond à des questions métier déjà identifiées
+au moment de sa conception (C13 : « quel taux de service par client ? »
+est tranché avant même de créer `Fait_Expedition`) — toute question
+vraiment nouvelle suppose une évolution de schéma. Un data lake accueille
+la donnée brute sans décider à l'avance de toutes les analyses futures :
+`rfid_scans.json` est stocké tel quel en `raw/` sans savoir encore quelles
+analyses en seront tirées — la structure n'est imposée qu'à la lecture
+(`curated/`), et peut évoluer sans réécrire ce qui a déjà été stocké.
+
+---
+
+## 3. Organisation en zones
 
 Reprend le principe à 3 zones déjà arrêté en C3
 ([architecture cible §2.2](architecture_cible.md#22-vue-en-couches)/[§2.3](architecture_cible.md#23-choix-technologiques-proposés)) :
@@ -54,7 +109,42 @@ staging » seule.
 |---|---|---|---|
 | `raw/` | Dépôt brut, fidèle à la source | Aucune — copie telle quelle | Oui, jamais réécrite ni supprimée |
 | `staging/` (zone du lake) | Nettoyage minimal | Typage, horodatage uniforme (ISO 8601), déduplication basique | Non — peut être régénérée depuis `raw/` |
-| `curated/` | Données prêtes à la consommation | Enrichissement par jointure aux clés naturelles (§4), agrégations utiles | Non — régénérable depuis `staging/` |
+| `curated/` | Données prêtes à la consommation | Enrichissement par jointure aux clés naturelles (§5), agrégations utiles | Non — régénérable depuis `staging/` |
+
+Ce qui se passe concrètement entre les 3 zones, pour les 5 flux :
+
+```mermaid
+flowchart LR
+    subgraph SOURCES["Sources IoT (§1)"]
+        direction TB
+        C1["capteurs_temperature.csv"]
+        C2["geoloc_flotte.csv"]
+        C3["camera_comptage.csv"]
+        C4["rfid_scans.json"]
+        C5["flux SSE<br/>/api/stream/capteurs"]
+    end
+
+    C1 --> RAW["raw/<br/>copie fidèle, immuable"]
+    C2 --> RAW
+    C3 --> RAW
+    C4 --> RAW
+    C5 --> RAW
+    RAW --> STGZ["staging/ (zone du lake)<br/>typage, horodatage ISO 8601,<br/>déduplication — Parquet"]
+    STGZ --> CUR["curated/<br/>jointures §5, agrégations — Parquet"]
+```
+
+**Analogie avec l'« architecture médaillon » (bronze / silver / gold)** :
+les zones `raw`/`staging`/`curated` retenues ici correspondent à ce que
+l'industrie appelle couramment l'architecture médaillon — popularisée par
+Databricks, et reprise comme motif recommandé dans les lakehouses
+Microsoft Fabric/OneLake (`bronze` ≈ `raw`, `silver` ≈ `staging` du lake,
+`gold` ≈ `curated`). Le vocabulaire diffère selon l'outil, le principe de
+zonage progressif est le même. Ce programme retient MinIO plutôt que
+Fabric pour des raisons déjà actées en C3 (fonctionnement local, coût,
+indépendance vis-à-vis d'un fournisseur cloud propriétaire — voir
+[architecture cible §2.5](architecture_cible.md#25-alternative-écartée--microsoft-fabric)),
+mais le principe de zonage progressif est transférable d'un outil à
+l'autre.
 
 Convention de chemin (bucket unique `omega-lake`, préfixes par zone) :
 
@@ -81,7 +171,7 @@ lignes/jour, pas un cas Spark/Hadoop).
 
 ---
 
-## 3. Ingestion : flux séparé de la base de staging relationnelle
+## 4. Ingestion : flux séparé de la base de staging relationnelle
 
 **Décision** : les 5 flux IoT sont ingérés **directement depuis leur
 source vers `omega-lake/raw/`**, sans jamais transiter par la base de
@@ -111,9 +201,9 @@ périmètre du Bloc 2 dès la topographie des données (C2).
 
 ---
 
-## 4. Curated : conçue pour être jointe à l'existant, pas fusionnée avec lui
+## 5. Curated : conçue pour être jointe à l'existant, pas fusionnée avec lui
 
-Si l'ingestion est séparée (§3), la zone `curated/` est en revanche
+Si l'ingestion est séparée (§4), la zone `curated/` est en revanche
 **conçue pour être jointe** aux données déjà en place — via de vraies
 clés naturelles, vérifiées dans les données réelles, pas supposées :
 
@@ -127,7 +217,7 @@ clés naturelles, vérifiées dans les données réelles, pas supposées :
 rapprochements se font par requête (le curated Parquet est interrogeable
 directement, ou via une vue applicative croisant lake et entrepôt), pas
 en copiant les données de l'entrepôt/de la base de staging dans le lake
-ni l'inverse — cohérent avec le principe de sobriété (§3) et avec le
+ni l'inverse — cohérent avec le principe de sobriété (§4) et avec le
 choix déjà fait en C13 de ne pas dupliquer inutilement (dimensions
 conformées, pas de copies).
 
@@ -144,7 +234,7 @@ sans nécessiter de fusionner les deux briques de stockage.
 
 ---
 
-## 5. Point de vigilance RGPD identifié en concevant cette architecture
+## 6. Point de vigilance RGPD identifié en concevant cette architecture
 
 **Constat nouveau, trouvé en vérifiant le recouvrement temporel des
 données** (pas une simple reprise du point déjà signalé en CoSu du
@@ -154,7 +244,7 @@ une trace de géolocalisation du lake (`geoloc_flotte`/flux SSE) à
 (donnée personnelle déjà répertoriée,
 [registre RGPD §1](registre_rgpd.md)) est sur la même ligne. Le
 recouvrement n'est pas seulement possible en théorie : les fenêtres
-temporelles se recouvrent réellement (§4) — une trace de géolocalisation
+temporelles se recouvrent réellement (§5) — une trace de géolocalisation
 du 2 août 2026 pour `VH-004` est donc, en pratique, ré-identifiable
 jusqu'au chauffeur via une jointure manuelle avec `tournees`.
 
@@ -170,18 +260,18 @@ ici pour que C21 ne le découvre pas tardivement.
 
 ---
 
-## 6. Ce qui reste à faire en C19
+## 7. Ce qui reste à faire en C19
 
 Ce document arrête la conception ; **rien n'est encore installé**. C19
 couvre : déploiement de MinIO (service Docker Compose), création du
 bucket `omega-lake` et de ses préfixes, script d'ingestion batch des 4
 fichiers CSV/JSON vers `raw/`, consommateur du flux SSE vers `raw/`
 (fenêtré par jour), et les transformations `raw/` → `staging/` →
-`curated/` (typage, Parquet, jointures définies en §4).
+`curated/` (typage, Parquet, jointures définies en §5).
 
 ---
 
-## 7. Références
+## 8. Références
 
 - [`architecture_cible.md`](architecture_cible.md) §2.2/§2.3/§2.5 — choix
   de principe (zones, MinIO) déjà actés en C3.
@@ -190,7 +280,7 @@ fichiers CSV/JSON vers `raw/`, consommateur du flux SSE vers `raw/`
 - [`sequencement_bloc4.md`](sequencement_bloc4.md) — ordre C18→C21 et
   volumétrie réelle vérifiée.
 - [`registre_rgpd.md`](registre_rgpd.md) — traitement existant sur
-  `tournees.chauffeur`, complété par le constat du §5 ci-dessus.
+  `tournees.chauffeur`, complété par le constat du §6 ci-dessus.
 - [`modelisation_omega_bi.md`](modelisation_omega_bi.md) §6 — dimensions
   conformées de l'entrepôt (`dim_site`, `dim_produit`) utilisées comme
-  cibles de jointure en §4.
+  cibles de jointure en §5.
