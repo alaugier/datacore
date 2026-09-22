@@ -101,7 +101,7 @@ supposé équivalent — §1.3bis ci-dessous.
 
 ### 1.3bis Même preuve, cette fois avec le Parquet réellement dans MinIO
 
-MinIO déployé (`docker compose up -d minio minio-init` — voir §2),
+MinIO déployé (`docker compose up -d minio minio-init` — voir §3),
 bucket `omega-lake` créé automatiquement au démarrage. Même script que
 §1.3, avec deux différences : le Parquet est écrit et lu via `s3://`
 plutôt qu'en local, et l'extension `httpfs` est configurée pour pointer
@@ -152,7 +152,49 @@ dépendances du projet (`requirements.txt`).
 
 ---
 
-## 2. État de l'implémentation
+## 2. Ingestion batch des 4 flux CSV/JSON vers `raw/`
+
+**Décision** : l'ingestion batch (`src/datacore/storage/lake/ingestion_batch.py`)
+utilise **`boto3`** (client S3 générique), pas DuckDB, pour déposer les
+4 fichiers dans `raw/`.
+
+**Pourquoi un outil différent de la jointure (§1)** : la zone `raw/`
+exige une copie fidèle, octet pour octet (C18 §3). Lire un CSV/JSON avec
+DuckDB puis le réécrire reformatterait potentiellement le contenu
+(quotage CSV, ordre des clés JSON) sans changer l'information portée —
+suffisant pour une jointure analytique, pas pour une zone dont la
+garantie est « aucune transformation ». `boto3` transfère des octets
+sans les interpréter ; c'est le bon outil pour ce rôle précis, DuckDB
+reste réservé aux étapes où une vraie lecture structurée a lieu
+(transformations `staging/`/`curated/`, jointures).
+
+**Partitionnement** : la clé S3 porte la **date d'ingestion**
+(`raw/<flux>/date=<AAAA-MM-JJ>/<fichier>`), pas une date déduite du
+contenu du fichier — `capteurs_temperature.csv` couvre à lui seul le
+01 au 03/08/2026 en une seule exécution, il n'y a donc pas de date
+unique « du contenu » à utiliser pour cette partition. Chaque nouvelle
+exécution du batch dépose un nouveau dossier `date=`, sans écraser les
+précédents.
+
+**Vérifié en conditions réelles** : script exécuté contre MinIO
+réellement déployé, puis **fidélité vérifiée par somme de contrôle
+SHA-256** entre chaque fichier source et l'objet déposé dans MinIO (pas
+seulement « l'upload n'a pas levé d'erreur ») :
+
+```
+raw/capteurs_temperature/date=2026-09-22/capteurs_temperature.csv: OK identique
+raw/geoloc_flotte/date=2026-09-22/geoloc_flotte.csv: OK identique
+raw/camera_comptage/date=2026-09-22/camera_comptage.csv: OK identique
+raw/rfid_scans/date=2026-09-22/rfid_scans.json: OK identique
+```
+
+Fichiers de test supprimés après vérification (`mc rm`), même discipline
+qu'en §1.3bis. 4 tests unitaires (`tests/unit/test_ingestion_batch.py`)
+avec un client S3 factice (aucune I/O réelle en test).
+
+---
+
+## 3. État de l'implémentation
 
 **Fait** :
 - MinIO déployé (services `minio`/`minio-init` dans
@@ -169,17 +211,21 @@ dépendances du projet (`requirements.txt`).
   `OMEGA_LAKE_S3_ENDPOINT`.
 - Mécanisme de jointure DuckDB↔MinIO↔Postgres vérifié en conditions
   réelles (§1.3bis).
+- Ingestion batch des 4 flux CSV/JSON vers `raw/` (§2), fidélité
+  vérifiée par somme de contrôle.
 
 **Reste à faire** :
-- Scripts d'ingestion batch des 4 fichiers CSV/JSON vers `raw/`.
 - Consommateur du flux SSE `/api/stream/capteurs` vers `raw/` (fenêtré
-  par jour, cf. `architecture_omega_lake.md` §3).
+  par jour, cf. `architecture_omega_lake.md` §3) — attention particulière
+  à la reprise après interruption (flux non borné, pas de rejeu possible
+  côté source), relevée en relecture externe : à tester explicitement,
+  pas seulement décrire le comportement attendu.
 - Scripts de transformation `raw/` → `staging/` → `curated/` (DuckDB,
   typage, Parquet) — réutiliseront le mécanisme vérifié en §1.3bis.
 
 ---
 
-## 3. Références
+## 4. Références
 
 - [`architecture_omega_lake.md`](architecture_omega_lake.md) §3-§5 —
   zones, formats, clés de jointure conçues en C18.
