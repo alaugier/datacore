@@ -81,16 +81,27 @@ services:
   # (convention documentee dans architecture_omega_lake.md §3) -- un
   # prefixe S3 n'a pas a etre cree explicitement, il apparait au premier
   # objet ecrit sous ce chemin.
+  #
+  # Cree aussi la politique et l'utilisateur en lecture seule (C21,
+  # droits d'acces par groupe -- meme principe que bi_reader pour
+  # l'entrepot, C14) : lake_reader ne peut que GetObject/ListBucket,
+  # jamais ecrire. Idempotent -- verifie en relancant deux fois de
+  # suite sans erreur.
   minio-init:
     image: quay.io/minio/mc:latest
     container_name: datacore-omega-lake-init
     depends_on:
       minio:
         condition: service_healthy
+    volumes:
+      - ../minio:/policies:ro
     entrypoint: >
       /bin/sh -c "
       mc alias set local http://minio:9000 ${MINIO_ROOT_USER:-datacore} ${MINIO_ROOT_PASSWORD:-datacore_lake} &&
-      mc mb --ignore-existing local/omega-lake
+      mc mb --ignore-existing local/omega-lake &&
+      mc admin policy create local lake-reader /policies/lake-reader-policy.json &&
+      mc admin user add local ${LAKE_READER_USER:-lake_reader} ${LAKE_READER_PASSWORD:-datacore_lake_reader} &&
+      mc admin policy attach local lake-reader --user ${LAKE_READER_USER:-lake_reader}
       "
 
 volumes:
