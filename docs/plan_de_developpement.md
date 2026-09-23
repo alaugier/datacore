@@ -91,8 +91,8 @@ pour M3). Release vers `main` via la PR #60.
 
 ### M3 — Data Lake OMEGA LAKE (en cours)
 - [x] Architecture du data lake C18 (#63)
-- [ ] Intégration infrastructure C19 (#64)
-- [ ] Catalogue de données C20 (#65)
+- [x] Intégration infrastructure C19 (#64)
+- [x] Catalogue de données C20 (#65)
 - [ ] Gouvernance des données C21 (#66)
 
 Ordre de traitement retenu pour C18-C21 et justification :
