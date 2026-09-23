@@ -123,7 +123,68 @@ dur), documenté pour ne pas être pris pour un bug plus tard.
 
 ---
 
-## 3. Ce qui n'est pas fait
+## 3. Explorer le contenu directement
+
+**Instantané au 23/09/2026** — 17 objets réellement présents dans le
+bucket à cette date. Cette liste **n'est pas figée** : une nouvelle
+exécution de l'ingestion batch crée une nouvelle partition `date=` sous
+`raw/`, donc de nouveaux chemins. Pour la liste à jour, toujours
+préférer `python3 -m datacore.storage.lake.catalogue` (§2) ou la
+première cellule de
+[`notebooks/exploration_omega_lake.ipynb`](../../notebooks/exploration_omega_lake.ipynb)
+à cette copie figée.
+
+```
+raw/
+  s3://omega-lake/raw/camera_comptage/date=2026-09-23/camera_comptage.csv
+  s3://omega-lake/raw/capteurs_temperature/date=2026-09-23/capteurs_temperature.csv
+  s3://omega-lake/raw/flux_sse_capteurs/date=2026-09-23/part-102732160283.ndjson
+  s3://omega-lake/raw/flux_sse_capteurs/date=2026-09-23/part-102736163048.ndjson
+  s3://omega-lake/raw/flux_sse_capteurs/date=2026-09-23/part-102738178957.ndjson
+  s3://omega-lake/raw/geoloc_flotte/date=2026-09-23/geoloc_flotte.csv
+  s3://omega-lake/raw/rfid_scans/date=2026-09-23/rfid_scans.json
+
+staging/
+  s3://omega-lake/staging/camera_comptage/part-0.parquet
+  s3://omega-lake/staging/capteurs_temperature/part-0.parquet
+  s3://omega-lake/staging/flux_sse_capteurs/part-0.parquet
+  s3://omega-lake/staging/geoloc_flotte/part-0.parquet
+  s3://omega-lake/staging/rfid_scans/part-0.parquet
+
+curated/
+  s3://omega-lake/curated/camera_comptage/part-0.parquet
+  s3://omega-lake/curated/capteurs_temperature/part-0.parquet
+  s3://omega-lake/curated/flux_sse_capteurs/part-0.parquet
+  s3://omega-lake/curated/geoloc_flotte/part-0.parquet
+  s3://omega-lake/curated/rfid_scans/part-0.parquet
+```
+
+**Lire un de ces fichiers depuis un terminal** (`.venv` actif, en une
+commande, sans notebook) :
+
+```bash
+python3 -c "
+from datacore.storage.lake.transform import connexion
+con = connexion()
+con.sql(\"SELECT * FROM 's3://omega-lake/curated/rfid_scans/part-0.parquet' LIMIT 20\").show()
+"
+```
+
+`connexion()` (voir §1, `transform.py`) fait tout le travail de
+configuration — extensions `httpfs`/`postgres` chargées, endpoint MinIO
+et style d'adressage `path` déjà réglés, bases `staging`/`entrepot`
+déjà attachées. Ne pas reconfigurer `httpfs` à la main à chaque fois :
+c'est précisément pour éviter ça que cette fonction existe.
+
+`notebooks/exploration_omega_lake.ipynb` fait la même chose pour les
+4 formats réellement présents dans le lake (CSV, JSON liste, NDJSON,
+Parquet), avec la sortie réellement exécutée plutôt qu'un exemple
+recopié — utile pour voir d'un coup d'œil ce qui change entre `raw/`,
+`staging/` et `curated/` pour un même flux.
+
+---
+
+## 4. Ce qui n'est pas fait
 
 - Le catalogue est généré à la demande (`python3 -m ...catalogue`), pas
   exposé via une interface consultable — hors périmètre de C20 tel que
@@ -136,7 +197,7 @@ dur), documenté pour ne pas être pris pour un bug plus tard.
 
 ---
 
-## 4. Références
+## 5. Références
 
 - [`architecture_omega_lake.md`](architecture_omega_lake.md) §5 — clés
   de jointure conçues en C18.
