@@ -100,7 +100,20 @@ voir `docs/architecture/sequencement_bloc4.md` — C18 → C19 → C20 → C21.
 
 Voir `docs/comptes_rendus/M3.md` pour le compte rendu de fin de
 milestone (livrables, compétences couvertes, décisions, points ouverts
-pour M4/M5). Release vers `main` à planifier.
+pour M4/M5). Release vers `main` à planifier, une fois la PR #73
+mergée.
+
+**Point ouvert non clos (23/09/2026)** : `registre_rgpd_lake.md` §2
+justifiait l'absence de pseudonymisation de `vehicule_id` par un
+argument technique incomplet (valable seulement pour la population
+ayant déjà accès à `tournees` en clair, pas pour `lake_reader`/Data
+Analysts). Correction en cours : pseudonymisation de `vehicule_id` dans
+les vues `curated/` exposées à `lake_reader`, clé de correspondance
+réservée aux Data Engineers. Confirmation demandée à Claude web avant
+implémentation (retour favorable reçu le 23/09 au soir, détail exact à
+relayer le 24/09) — ne pas implémenter avant cette confirmation
+détaillée. Concerne `registre_rgpd_lake.md` et `docs/comptes_rendus/M3.md`
+(§3/§4), qui répètent la même justification à corriger.
 
 ## Règles pour Claude Code
 - Ne jamais committer `data/raw/*` (voir `.gitignore`).
