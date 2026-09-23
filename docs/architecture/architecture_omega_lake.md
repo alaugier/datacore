@@ -267,7 +267,10 @@ couvre : déploiement de MinIO (service Docker Compose), création du
 bucket `omega-lake` et de ses préfixes, script d'ingestion batch des 4
 fichiers CSV/JSON vers `raw/`, consommateur du flux SSE vers `raw/`
 (fenêtré par jour), et les transformations `raw/` → `staging/` →
-`curated/` (typage, Parquet, jointures définies en §5).
+`curated/` (typage, Parquet, jointures définies en §5). Le mécanisme
+technique de ces jointures (outil, langage) est arrêté dans
+[`integration_infrastructure_omega_lake.md` §1](integration_infrastructure_omega_lake.md#1-mécanisme-de-jointure-retenu--duckdb) :
+**DuckDB**, vérifié contre les données et la base réelles du projet.
 
 ---
 
