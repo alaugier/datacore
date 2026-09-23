@@ -64,10 +64,31 @@ télécharger.
 Utilisé dans : vérification de fidélité SHA-256
 (`notebooks/verification_duckdb_minio_omega_lake.ipynb`).
 
-### `s3.delete_object(Bucket, Key)` / `s3.list_objects_v2(Bucket)`
-Suppression d'un objet ; `list_objects_v2` renvoie un dict avec
-`["KeyCount"]` (nombre d'objets) — absent (pas `0`) si le bucket est
-vide, d'où `reste.get("KeyCount", 0)` plutôt que `reste["KeyCount"]`.
+### `s3.delete_object(Bucket, Key)`
+Suppression d'un objet. Pas de suppression par motif/préfixe en un seul
+appel — pour vider un préfixe entier, il faut lister (`list_objects_v2`)
+puis supprimer chaque clé.
+
+### `s3.list_objects_v2(Bucket, Prefix=..., MaxKeys=...)`
+Liste les objets d'un bucket, filtrés par préfixe (`Prefix` — pas de
+wildcard, juste un préfixe de chemin littéral, ex. `"curated/rfid_scans/"`).
+Deux pièges :
+- `["KeyCount"]` (nombre d'objets) est **toujours présent**, mais
+  `["Contents"]` (la liste elle-même) est **absent**, pas une liste
+  vide, quand il n'y a aucun objet — d'où
+  `reponse.get("Contents", [])` plutôt que `reponse["Contents"]`, et
+  `reponse.get("KeyCount", 0)` par prudence symétrique.
+- `MaxKeys=1` est le moyen efficace de répondre « est-ce que ce
+  préfixe contient quelque chose ? » sans lister tout le contenu —
+  utilisé pour ça dans `catalogue.py::_entree_existe`, avant de lancer
+  une introspection DuckDB coûteuse pour rien sur un flux/zone vide.
+
+Chaque élément de `["Contents"]` porte `["LastModified"]` (un
+`datetime` timezone-aware, pas une chaîne) — c'est la source de la
+« fraîcheur » dans le catalogue (`catalogue.py`), pas une donnée du
+fichier lui-même.
+
+Utilisé dans : `catalogue.py::catalogue_entree()`.
 
 ---
 
@@ -108,11 +129,43 @@ schéma (`<alias>.<schéma_pg>.<table>`). `READ_ONLY` empêche toute
 écriture accidentelle depuis DuckDB — utilisé systématiquement dans ce
 projet (DuckDB ne doit jamais modifier la base de staging/l'entrepôt).
 
-### `read_csv_auto(chemin)` / `read_parquet(chemin)`
+### `read_csv_auto(chemin)` / `read_json_auto(chemin)` / `read_parquet(chemin)`
 Fonctions **table** : s'utilisent directement dans une clause `FROM`,
 pas en préambule séparé (`FROM read_parquet('s3://...')`, pas
 `df = read_parquet(...)` puis `FROM df`). Le chemin peut être local ou
-`s3://...` indifféremment, une fois `httpfs` chargé.
+`s3://...` indifféremment, une fois `httpfs` chargé — et accepte un
+**motif glob** (`s3://bucket/raw/<flux>/date=*/*.csv`), qui lit et
+concatène tous les fichiers correspondants en une seule requête, sans
+boucle Python (utilisé dans `transform.py` pour lire toutes les
+partitions `date=` d'un flux d'un coup).
+
+`read_csv_auto`/`read_json_auto` **devinent** les types de colonnes à
+partir du contenu (d'où le `_auto`) — pas besoin de déclarer un schéma
+à l'avance, contrairement à un `CREATE TABLE` classique. `read_json_auto`
+a deux formes distinctes selon la forme du JSON source :
+- un fichier **liste d'objets** (`[{...}, {...}]`, cas de `rfid_scans.json`) :
+  `read_json_auto('chemin')` suffit, chaque objet devient une ligne.
+- un fichier **NDJSON** (un objet JSON par ligne, sans `[`/`]`/virgules
+  — cas des fichiers déposés par `sse_consumer.py`) : nécessite
+  `read_json_auto('chemin', format='newline_delimited')` explicitement,
+  sinon DuckDB tente de parser tout le fichier comme un seul document
+  JSON et échoue.
+
+**Piège concret rencontré** : le motif glob `raw/<flux>/date=*/*.<ext>`
+active automatiquement le *hive partitioning* de DuckDB — le segment
+`date=AAAA-MM-JJ` du chemin devient une vraie colonne `date` dans le
+résultat, sans l'avoir demandé. Pas un bug : comportement documenté du
+moteur, gardé tel quel ici (trace utile la date d'ingestion) plutôt que
+supprimé — voir `catalogue_omega_lake.md` §2.
+
+### `DESCRIBE SELECT * FROM <lecture>`
+Renvoie le schéma (nom de colonne, type) d'une requête **sans
+l'exécuter pour de vrai** — utilisé pour introspecter le schéma réel
+d'un fichier Parquet/CSV/JSON dans le catalogue (`catalogue.py`) plutôt
+que de le documenter à la main. Chaque ligne du résultat a plus de deux
+colonnes (nom, type, nullable, clé, défaut, extra) — d'où le
+déballage `for nom, type_, *_ in schema_brut` (le `*_` absorbe le
+reste sans le nommer).
 
 ### `COPY (<requête>) TO '<chemin>' (FORMAT PARQUET)`
 Écrit le résultat d'une requête en Parquet — vers un chemin local ou
