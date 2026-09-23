@@ -271,7 +271,7 @@
 
   <section class="overview">
     <h2>Où en est le programme</h2>
-    <p class="sub">18 des 21 compétences du référentiel livrées, sur 4 blocs.</p>
+    <p class="sub">19 des 21 compétences du référentiel livrées, sur 4 blocs.</p>
     <table class="ledger">
       <thead>
         <tr><th>Jalon</th><th>Bloc</th><th>Épreuve(s)</th><th>Statut</th></tr>
@@ -293,9 +293,9 @@
           <td><span class="pill done">Clos 21/09</span></td>
         </tr>
         <tr>
-          <td><span class="m-name">M3 — Data Lake OMEGA LAKE</span><span class="m-detail">Architecture livrée — infrastructure, catalogue, gouvernance à venir</span></td>
+          <td><span class="m-name">M3 — Data Lake OMEGA LAKE</span><span class="m-detail">Architecture et infrastructure livrées — catalogue, gouvernance à venir</span></td>
           <td class="tagc">C18&ndash;C21</td><td class="tagc">E7</td>
-          <td><span class="pill review">1 / 4</span></td>
+          <td><span class="pill review">2 / 4</span></td>
         </tr>
         <tr>
           <td><span class="m-name">M4 — Rapport LaTeX</span><span class="m-detail">Consolidation continue, différée par choix</span></td>
@@ -506,9 +506,30 @@
           </div>
         </div>
 
+        <div class="sub-comp">
+          <div class="sub-comp-head">
+            <span class="sub-comp-code">C19</span><h3>Intégrer une infrastructure de données à partir de composants</h3>
+            <span class="sub-comp-meta">livré 23/09</span>
+          </div>
+          <p>MinIO déployé, ingestion batch des 4 fichiers IoT (fidélité vérifiée par somme de
+          contrôle, pas seulement « l'envoi n'a pas échoué »), consommateur du flux temps réel. Le
+          mécanisme de jointure retenu — DuckDB plutôt que la librairie habituelle (pandas) — a été
+          tranché avant d'écrire le moindre pipeline, puis vérifié contre une vraie instance MinIO,
+          pas seulement en local.</p>
+          <div class="discovery">
+            <span class="dk">Testé, pas seulement décrit — une coupure brutale simulée pour de vrai</span>
+            Le flux temps réel ne peut pas être rejoué : une coupure du consommateur perd pour de bon
+            ce qui n'a pas encore été déposé. Plutôt que d'écrire les données une fois par jour, le
+            consommateur les dépose par petites fenêtres de quelques minutes — pour le prouver, le
+            processus a été tué brutalement (<code>kill -9</code>, pas un arrêt propre) en pleine
+            réception, puis relancé. Résultat vérifié indépendamment : les dépôts déjà faits étaient
+            intacts, le redémarrage a repris sans collision ni donnée corrompue — seule la fenêtre en
+            cours au moment de la coupure a été perdue, jamais toute une journée.
+          </div>
+        </div>
+
         <div class="next-flags">
-          <span class="next-flag"><strong>C19</strong> — Intégration infrastructure (E7) — prochaine étape</span>
-          <span class="next-flag"><strong>C20</strong> — Catalogue de données (E7) — après C19</span>
+          <span class="next-flag"><strong>C20</strong> — Catalogue de données (E7) — prochaine étape</span>
           <span class="next-flag"><strong>C21</strong> — Gouvernance des données (E7) — après C20</span>
         </div>
       </div>
