@@ -66,3 +66,30 @@ même numérotation croissante que l'ordre de traitement — contrairement
 au Bloc 3 où l'ordre de traitement (#48 avant #47) ne suivait pas l'ordre
 de création. Le [plan de développement](../plan_de_developpement.md)
 référence ce document, sur le même principe que pour les Blocs 2 et 3.
+
+---
+
+## 4. Point de vigilance identifié à la clôture de C19 : périmètre de C20
+
+**Constat** : C19 (#64) livre `raw/` — les 4 flux batch et le flux SSE y
+sont réellement déposés (MinIO), vérifié en conditions réelles. Mais
+`staging/` et `curated/` (zone du lake) restent **vides** : leur
+alimentation (transformations DuckDB depuis `raw/`, jointures aux clés
+naturelles conçues en C18 §5) n'était pas dans le texte de l'issue #64.
+
+Le texte initial de l'issue #65 (C20) dit cataloguer « les données
+réellement présentes dans le data lake **après C19** » — lu
+littéralement, un catalogue de C20 ne porterait donc que sur `raw/`, pas
+sur les 3 zones prévues dans la conception C18. Point relevé en relecture
+externe avant de commencer C20 (même logique de vigilance que l'écart
+C4/C6/C7 découvert à la clôture de M0 — mieux vaut le documenter
+maintenant que de le découvrir à la fin de C20).
+
+**Décision retenue** : élargir le périmètre de l'issue #65 plutôt que
+créer une issue intermédiaire sans compétence RNCP propre (C18-C21 sont
+les 4 seules compétences du Bloc 4, pas de C19bis disponible) — C20
+(« Développer un catalogue de données ») couvre donc explicitement la
+construction d'un contenu `staging/`/`curated/` réel **et** son
+catalogage, pas seulement le second. Cohérent avec l'esprit de C20 : un
+catalogue qui ne documenterait que des fichiers bruts non transformés
+serait un livrable peu convaincant pour l'épreuve E7.
