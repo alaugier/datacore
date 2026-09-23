@@ -89,7 +89,7 @@ Voir `docs/comptes_rendus/M2.md` pour le compte rendu de fin de
 milestone (livrables, compétences couvertes, décisions, points ouverts
 pour M3). Release vers `main` via la PR #60.
 
-### M3 — Data Lake OMEGA LAKE (en cours)
+### M3 — Data Lake OMEGA LAKE (clos le 23/09/2026)
 - [x] Architecture du data lake C18 (#63)
 - [x] Intégration infrastructure C19 (#64)
 - [x] Catalogue de données C20 (#65)
@@ -97,6 +97,10 @@ pour M3). Release vers `main` via la PR #60.
 
 Ordre de traitement retenu pour C18-C21 et justification :
 voir `docs/architecture/sequencement_bloc4.md` — C18 → C19 → C20 → C21.
+
+Voir `docs/comptes_rendus/M3.md` pour le compte rendu de fin de
+milestone (livrables, compétences couvertes, décisions, points ouverts
+pour M4/M5). Release vers `main` à planifier.
 
 ## Règles pour Claude Code
 - Ne jamais committer `data/raw/*` (voir `.gitignore`).
