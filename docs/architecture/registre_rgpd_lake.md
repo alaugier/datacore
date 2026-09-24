@@ -150,6 +150,63 @@ sans `LAKE_PSEUDONYM_KEY` dans l'environnement → la valeur codée en dur
   (lit le fichier directement), pour que le garde-fou ne devienne pas
   silencieusement obsolète si l'un des deux changeait sans l'autre.
 
+### Circuit de la clé, de `.env` au garde-fou
+
+Point de confusion possible, clarifié ici car il s'est posé en
+relecture : il n'existe qu'**une seule clé**, lue à une seule adresse.
+Ce n'est pas un couple identifiant/mot de passe où une valeur "entrée"
+serait comparée à une valeur "de référence" stockée ailleurs (comme
+pour se connecter à MinIO, par exemple) — il n'y a qu'un unique canal
+de configuration, et `verifier_cle_configuree()` valide cette même
+valeur contre elle-même (absente ? valeur publique connue ? trop
+courte ?), pas contre une seconde copie.
+
+```mermaid
+flowchart LR
+    ENV[(".env<br/>LAKE_PSEUDONYM_KEY=...")] -->|"load_dotenv()"| PROC["Environnement du process Python"]
+    PROC -->|"os.environ.get(...)<br/>None si absente"| CFG["config.py<br/>LAKE_PSEUDONYM_KEY"]
+    CFG -->|"import"| PSD["curated_bi.py<br/>pseudonyme(cle=LAKE_PSEUDONYM_KEY)"]
+    PSD -->|"cle"| GUARD{"verifier_cle_configuree(cle)"}
+    GUARD -->|"absente/vide,<br/>valeur publique connue,<br/>ou < 32 caractères"| ERR["RuntimeError<br/>(arrêt, pas de curated_bi/)"]
+    GUARD -->|"valide"| HMAC["hmac.new(cle, vehicule_id, sha256)"]
+```
+
+**Pourquoi `VALEUR_EXEMPLE_ENV` et `ANCIENNE_VALEUR_REPLI_SUPPRIMEE`
+restent codées en dur dans `curated_bi.py`, et ne doivent pas être
+lues via `os.environ.get("LAKE_PSEUDONYM_KEY")`** : ce sont des
+**valeurs de référence connues et publiques** (le texte exact du
+placeholder de `.env.example`, et l'ancien repli supprimé de
+`config.py`), utilisées pour détecter que la vraie clé n'a jamais été
+changée. Si elles étaient lues depuis `os.environ.get(...)`, elles
+renverraient — par définition — la valeur *actuellement* configurée
+dans `.env`, c'est-à-dire la même valeur que `cle` : la comparaison
+`cle == VALEUR_EXEMPLE_ENV` deviendrait toujours vraie quelle que soit
+la clé réellement en place (`.env` contiendrait un vrai secret aléatoire
+→ `VALEUR_EXEMPLE_ENV` vaudrait ce même secret → l'égalité serait
+toujours vérifiée), rendant le garde-fou inopérant dans les deux sens.
+Ces deux constantes ne représentent pas "la valeur actuelle" : elles
+représentent des valeurs *fixes et connues à l'avance* qu'on sait
+publiques, contre lesquelles on compare la valeur actuelle.
+
+**La clé est fixe pour une machine/un déploiement donné, mais rien ne
+garantit sa stabilité dans le temps ou entre environnements** —
+vérifié par grep : aucun code de ce dépôt n'écrit dans `.env` ni ne
+modifie `LAKE_PSEUDONYM_KEY` programmatiquement ; seule une action
+humaine peut la faire changer (édition manuelle de `.env`, rotation
+volontaire du secret, `cp .env.example .env` répété sur un poste qui
+avait déjà une vraie clé, ou simplement un clone différent avec sa
+propre valeur générée localement). Dans tous ces cas, `pseudonyme()`
+continue de fonctionner (la nouvelle clé passe le garde-fou si elle
+est valide) mais produit, pour le même `vehicule_id`, un pseudonyme
+**différent** de celui des exports `curated_bi/` précédents — rompant
+silencieusement la continuité analytique que le docstring de
+`pseudonyme()` revendique. **Point ouvert, non traité ici** : aucun
+mécanisme ne détecte ni n'avertit qu'un run donné utilise une clé
+différente du run précédent (empreinte de la clé non journalisée,
+aucune comparaison entre exports). Risque limité dans le contexte de
+ce projet (poste de développement unique), mais à traiter avant tout
+déploiement multi-environnements réel.
+
 ---
 
 ## 3. Procédure de purge
