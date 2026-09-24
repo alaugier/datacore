@@ -1,0 +1,324 @@
+# Registre RGPD — Data Lake OMEGA LAKE
+
+**Compétence couverte : C21 — Garantir la gouvernance des données**
+**Épreuve associée : E7**
+
+Applique au data lake la même discipline que
+[`registre_rgpd.md`](registre_rgpd.md) (base de travail, C11) et
+[`registre_rgpd_entrepot.md`](registre_rgpd_entrepot.md) (entrepôt,
+C16) : un audit **réel et répétable**, pas une conclusion supposée —
+à partir de l'inventaire généré par le catalogue (C20).
+
+---
+
+## 1. Résultat de l'audit lexical : aucune colonne directement personnelle
+
+`datacore.governance.audit_rgpd.auditer_lake()` réutilise
+`colonnes_suspectes()` (déjà utilisée pour l'entrepôt, C16) sur le
+schéma de chaque flux/zone renvoyé par le catalogue — mêmes motifs
+(chauffeur/conducteur, adresse, contact, téléphone, email,
+prénom/nom complet).
+
+```bash
+python3 -m datacore.governance.audit_rgpd
+```
+
+Vérifié pour de vrai contre le lake réel (15 entrées, 5 flux × 3
+zones) : **aucune colonne suspecte détectée**, entrepôt et lake
+confondus (code de sortie 0).
+
+**Ce que cet audit ne couvre pas, volontairement** : la détection est
+lexicale (un nom de colonne), pas relationnelle. Elle ne peut pas
+repérer un risque de ré-identification qui n'existe qu'en combinant
+deux jeux de données — objet du §2.
+
+---
+
+## 2. Traitement identifié : géolocalisation de flotte
+
+**`geoloc_flotte`** (CSV batch) et **`flux_sse_capteurs`** (SSE temps
+réel) portent tous deux `vehicule_id`/`lat`/`lon`. Aucun des deux ne
+porte de nom de personne — mais `vehicule_id` (`VH-0NN`) se retrouve
+aussi dans `tournees.vehicule_id` (base de staging), à côté de
+`tournees.chauffeur` (donnée personnelle déjà répertoriée,
+[`registre_rgpd.md`](registre_rgpd.md) §1). Le recouvrement temporel
+entre les deux jeux de données est **réel**, pas théorique — vérifié en
+C18 : `geoloc_flotte` couvre le 01–03/08/2026, `tournees` va jusqu'au
+04/08/2026.
+
+Une trace de géolocalisation du lake est donc, en pratique,
+ré-identifiable jusqu'au chauffeur par une simple jointure — c'est la
+CNIL qui tranche cette qualification pour la géolocalisation de flotte
+professionnelle en général : liée à un salarié identifiable, elle est
+traitée comme une donnée personnelle, même sans nom explicite dans le
+jeu de données lui-même.
+
+| Élément | Valeur |
+|---|---|
+| Finalité | Suivi opérationnel de la flotte (position, vitesse), amélioration continue |
+| Base légale | Intérêt légitime, avec information des salariés concernés (chauffeurs) |
+| Mesures de sécurité en place | (1) **Aucune jointure automatisée `vehicule_id` → `chauffeur`** dans le pipeline `curated/` (C18 §6) ; (2) **pseudonymisation HMAC de `vehicule_id`** dans l'export `curated_bi/` exposé à `lake_reader` (§4bis) — défense en profondeur, pas une mesure de plus par principe |
+| Durée de conservation | 90 jours pour la donnée brute (`raw/`), purge automatisée — §3 |
+
+### Révision de la position initiale sur la pseudonymisation
+
+Première analyse (C18/C21, avant relecture externe) : pseudonymiser
+`vehicule_id` (ex. par un hash) semblait n'apporter aucune protection
+réelle, l'argument étant qu'un hash stable resterait tout aussi
+joignable qu'un identifiant en clair. **Cet argument était incomplet**,
+pas seulement imprécis — il ne valait que pour la population qui a déjà
+accès à la fois au lake et à `tournees` en clair (les Data Engineers).
+Il ne tenait pas pour `lake_reader` (Data Analysts, accès lake seul,
+**sans** accès à la base de staging) : pour cette population, un
+pseudonyme HMAC dont la clé de correspondance reste hors de portée
+constitue une vraie défense en profondeur — c'est précisément la
+définition de la pseudonymisation au sens de l'article 4(5) du RGPD
+(protège tant que la clé de ré-identification n'est pas elle-même
+compromise).
+
+Revu et corrigé après relecture externe, avec 4 exigences explicites,
+toutes vérifiées en conditions réelles :
+
+1. **HMAC à clé secrète, pas un hash simple.** Ce jeu de données ne
+   compte que 15 véhicules (`VH-001` à `VH-015`) — un hash sans clé
+   serait recalculable par force brute par quiconque connaît cette
+   plage (`sha256("VH-001")`, `sha256("VH-002")`, ...). La clé
+   (`LAKE_PSEUDONYM_KEY`) n'est jamais distribuée à `lake_reader`.
+2. **Mécanisme d'accès de `lake_reader` confirmé avant correction** :
+   vérifié que la politique MinIO d'origine (C21) portait sur le bucket
+   entier — `lake_reader` pouvait lire `raw/`/`staging/`/`curated/` en
+   clair, ce qui aurait rendu une pseudonymisation limitée à un export
+   séparé inopérante (contournable en lisant `curated/` directement).
+   Corrigé en même temps — §4bis.
+3. **Export dédié (`curated_bi/`), `curated/` jamais modifiée** — les
+   Data Engineers gardent `vehicule_id` en clair (jointure opérationnelle
+   légitime vers `tournees`), seul `lake_reader` voit la version
+   pseudonymisée.
+4. **Limite assumée, documentée, pas traitée ici** : même
+   `vehicule_id` pseudonymisé, une série temporelle de géolocalisation
+   dense (1 point/2s, `lat`/`lon`) reste en général ré-identifiable par
+   motif de déplacement (domicile, horaires réguliers) — connu dans la
+   littérature sur les données de mobilité. La pseudonymisation réduit
+   le risque de jointure directe, elle ne l'élimine pas entièrement.
+
+### Faille trouvée en seconde relecture externe : la protection HMAC dépendait d'un repli codé en dur
+
+`config.py` fournissait, comme le reste de ses variables, une valeur de
+repli si `LAKE_PSEUDONYM_KEY` n'était pas définie
+(`"datacore_pseudonym_key_dev_only"`). **Cohérent avec le reste du
+module, mais dangereux ici** : cette valeur est visible dans le dépôt
+public — un déploiement qui oublierait de définir la vraie clé
+utiliserait silencieusement une clé connue de quiconque lit le code
+source, rendant les 4 points ci-dessus inopérants sans le moindre
+avertissement. Vérifié avant correction (import de `datacore.config`
+sans `LAKE_PSEUDONYM_KEY` dans l'environnement → la valeur codée en dur
+était bien utilisée, aucune erreur, aucun avertissement).
+
+**Corrigé** :
+- `config.py` ne fournit plus aucune valeur de repli pour cette
+  variable (`os.environ.get("LAKE_PSEUDONYM_KEY")`, sans défaut — `None`
+  si absente). Pas un `os.environ["LAKE_PSEUDONYM_KEY"]` strict comme
+  suggéré littéralement : `config.py` est importé par des scripts sans
+  aucun rapport avec le lake (`ingestion.fluxpro`, etc.) — vérifié
+  qu'un accès direct par crochets y aurait fait échouer leur import
+  aussi, un effet de bord disproportionné pour une variable qu'ils
+  n'utilisent jamais. L'échec explicite est déplacé au point d'usage.
+- `curated_bi.py::verifier_cle_configuree()` refuse explicitement de
+  continuer (`RuntimeError`, pas un avertissement silencieux) si la clé
+  est absente, vaut une **valeur publique connue** (l'exemple de
+  `.env.example`, ou l'ancien repli codé en dur — retiré du code mais
+  toujours rejeté explicitement au cas où il serait réutilisé par
+  erreur), ou est **manifestement trop courte** (moins de 32 caractères
+  — pas une mesure d'entropie réelle, juste une garde bon marché contre
+  une clé du type `"test123"`, point relevé après une question sur la
+  couverture du garde-fou au-delà du seul cas de la valeur d'exemple).
+  Appelée systématiquement à l'intérieur de `pseudonyme()` elle-même,
+  pas seulement aux points d'entrée du pipeline, pour qu'aucun appel ne
+  puisse contourner le garde-fou.
+- **Vérifié en conditions réelles, les deux cas** : `.env` remis à la
+  valeur d'exemple, puis à une clé de 7 caractères (`"test123"`) —
+  `python3 -m datacore.storage.lake.curated_bi` lève l'erreur explicite
+  attendue dans les deux cas et s'arrête (code de sortie non nul)
+  plutôt que de produire silencieusement un `curated_bi/` non protégé.
+- **Test du scénario de fuite** (`test_curated_bi.py`) : un
+  `vehicule_id` connu en clair (simulant une fuite de
+  `tournees.vehicule_id`) ne permet pas de reconstituer le pseudonyme
+  réel — les clés absente/vide/valeur d'exemple sont explicitement
+  refusées, et une clé plausible mais fausse produit un pseudonyme
+  différent du vrai. Un test dédié vérifie aussi que la valeur d'exemple
+  codée dans `curated_bi.py` reste synchronisée avec `.env.example`
+  (lit le fichier directement), pour que le garde-fou ne devienne pas
+  silencieusement obsolète si l'un des deux changeait sans l'autre.
+
+### Circuit de la clé, de `.env` au garde-fou
+
+Point de confusion possible, clarifié ici car il s'est posé en
+relecture : il n'existe qu'**une seule clé**, lue à une seule adresse.
+Ce n'est pas un couple identifiant/mot de passe où une valeur "entrée"
+serait comparée à une valeur "de référence" stockée ailleurs (comme
+pour se connecter à MinIO, par exemple) — il n'y a qu'un unique canal
+de configuration, et `verifier_cle_configuree()` valide cette même
+valeur contre elle-même (absente ? valeur publique connue ? trop
+courte ?), pas contre une seconde copie.
+
+```mermaid
+flowchart LR
+    ENV[(".env<br/>LAKE_PSEUDONYM_KEY=...")] -->|"load_dotenv()"| PROC["Environnement du process Python"]
+    PROC -->|"os.environ.get(...)<br/>None si absente"| CFG["config.py<br/>LAKE_PSEUDONYM_KEY"]
+    CFG -->|"import"| PSD["curated_bi.py<br/>pseudonyme(cle=LAKE_PSEUDONYM_KEY)"]
+    PSD -->|"cle"| GUARD{"verifier_cle_configuree(cle)"}
+    GUARD -->|"absente/vide,<br/>valeur publique connue,<br/>ou < 32 caractères"| ERR["RuntimeError<br/>(arrêt, pas de curated_bi/)"]
+    GUARD -->|"valide"| HMAC["hmac.new(cle, vehicule_id, sha256)"]
+```
+
+**Pourquoi `VALEUR_EXEMPLE_ENV` et `ANCIENNE_VALEUR_REPLI_SUPPRIMEE`
+restent codées en dur dans `curated_bi.py`, et ne doivent pas être
+lues via `os.environ.get("LAKE_PSEUDONYM_KEY")`** : ce sont des
+**valeurs de référence connues et publiques** (le texte exact du
+placeholder de `.env.example`, et l'ancien repli supprimé de
+`config.py`), utilisées pour détecter que la vraie clé n'a jamais été
+changée. Si elles étaient lues depuis `os.environ.get(...)`, elles
+renverraient — par définition — la valeur *actuellement* configurée
+dans `.env`, c'est-à-dire la même valeur que `cle` : la comparaison
+`cle == VALEUR_EXEMPLE_ENV` deviendrait toujours vraie quelle que soit
+la clé réellement en place (`.env` contiendrait un vrai secret aléatoire
+→ `VALEUR_EXEMPLE_ENV` vaudrait ce même secret → l'égalité serait
+toujours vérifiée), rendant le garde-fou inopérant dans les deux sens.
+Ces deux constantes ne représentent pas "la valeur actuelle" : elles
+représentent des valeurs *fixes et connues à l'avance* qu'on sait
+publiques, contre lesquelles on compare la valeur actuelle.
+
+**La clé est fixe pour une machine/un déploiement donné, mais rien ne
+garantit sa stabilité dans le temps ou entre environnements** —
+vérifié par grep : aucun code de ce dépôt n'écrit dans `.env` ni ne
+modifie `LAKE_PSEUDONYM_KEY` programmatiquement ; seule une action
+humaine peut la faire changer (édition manuelle de `.env`, rotation
+volontaire du secret, `cp .env.example .env` répété sur un poste qui
+avait déjà une vraie clé, ou simplement un clone différent avec sa
+propre valeur générée localement). Dans tous ces cas, `pseudonyme()`
+continue de fonctionner (la nouvelle clé passe le garde-fou si elle
+est valide) mais produit, pour le même `vehicule_id`, un pseudonyme
+**différent** de celui des exports `curated_bi/` précédents — rompant
+silencieusement la continuité analytique que le docstring de
+`pseudonyme()` revendique. **Point ouvert, non traité ici** : aucun
+mécanisme ne détecte ni n'avertit qu'un run donné utilise une clé
+différente du run précédent (empreinte de la clé non journalisée,
+aucune comparaison entre exports). Risque limité dans le contexte de
+ce projet (poste de développement unique), mais à traiter avant tout
+déploiement multi-environnements réel.
+
+---
+
+## 3. Procédure de purge
+
+`src/datacore/storage/lake/purge.py` — purge les partitions `raw/`
+de `geoloc_flotte`/`flux_sse_capteurs` de plus de 90 jours (durée
+reprise telle quelle du plan C3), puis reconstruit `staging/`/`curated/`
+pour rester cohérent avec `raw/` après coup. Les 3 autres flux (aucune
+donnée personnelle, §1) ne sont pas concernés.
+
+```bash
+python3 -m datacore.storage.lake.purge
+```
+
+**Vérifié en conditions réelles**, pas seulement décrit : une partition
+synthétique volontairement datée du 01/01/2026 a été injectée dans
+`raw/geoloc_flotte/` (contenu réel, copie d'un fichier source existant,
+juste redaté), à côté de la partition réelle du jour. Après exécution :
+
+- La partition ancienne a bien disparu (`1 partition(s) purgée(s)`),
+  confirmé indépendamment par une nouvelle liste MinIO (`boto3`, hors du
+  processus de purge) — seule la partition du jour reste.
+- `flux_sse_capteurs` (aucune partition ancienne) : `0 partition(s)
+  purgée(s)` — pas de reconstruction inutile.
+- `staging/`/`curated/geoloc_flotte` reconstruits sans erreur (2160
+  lignes, cohérent avec le volume réel du flux).
+
+**Limite connue** : si *toutes* les partitions `raw/` d'un flux
+venaient à être purgées d'un coup, `staging/`/`curated/` ne seraient pas
+automatiquement vidés (la reconstruction est sautée s'il ne reste plus
+rien à lire) — cas non rencontré sur ce jeu de données pédagogique (les
+partitions réelles n'ont que quelques jours), documenté comme limite
+plutôt que traité par du code pour un scénario qui ne se produit pas
+ici.
+
+---
+
+## 4. Droits d'accès par groupe
+
+Reprend le modèle par rôle déjà en place pour l'entrepôt (`bi_reader`,
+C14/C16) — un utilisateur MinIO dédié, **lecture seule** :
+
+| Élément | Valeur |
+|---|---|
+| Utilisateur | `lake_reader` (créé automatiquement par le service `minio-init`) |
+| Politique | `lake-reader` (`infra/minio/lake-reader-policy.json`) |
+| Groupe visé | Data Analysts / consommateurs BI (`architecture_cible.md` §4.3) — pas les Data Engineers, qui gardent l'accès complet via `MINIO_ROOT_USER` pour l'ingestion/les transformations |
+
+**Périmètre de la politique, corrigé après relecture externe** : la
+première version (C21) accordait `s3:GetObject`/`s3:ListBucket` sur le
+**bucket entier** — vérifié que `lake_reader` pouvait donc lire
+`raw/`/`staging/`/`curated/` en clair, pas seulement l'export prévu.
+Corrigée pour ne porter que sur `curated_bi/` (§4bis) : `s3:ListBucket`
+restreint par une condition `s3:prefix` (`curated_bi/*`), `s3:GetObject`
+scopé à `arn:aws:s3:::omega-lake/curated_bi/*` — mêmes principes qu'une
+politique IAM S3 standard (condition de préfixe pour le listing,
+ressource explicite pour la lecture).
+
+**Vérifié en conditions réelles, avant et après correction** :
+- *Avant* : `lake_reader` lisait bien `raw/geoloc_flotte/.../*.csv` en
+  clair (`mc cat` a renvoyé le contenu réel, `vehicule_id` inclus) —
+  confirme que le risque signalé en relecture externe était réel, pas
+  supposé.
+- *Après* : `mc ls`/`mc cat` sur `raw/`, `staging/`, `curated/` échouent
+  (`Access Denied`) ; `mc ls --recursive` sur `curated_bi/` fonctionne et
+  liste les 5 flux.
+- **Bout en bout via DuckDB avec les vraies clés `lake_reader`** (pas
+  seulement `mc`) : lecture de `curated_bi/geoloc_flotte` réussit et
+  renvoie `vehicule_id` pseudonymisé ; la même requête contre
+  `curated/geoloc_flotte` échoue avec `HTTP 403 Forbidden`.
+
+Mise en place idempotente : `mc admin policy create`/`mc admin user
+add`/`mc admin policy attach` dans le service `minio-init` de
+`docker-compose.yml`, revérifiés en relançant `docker compose up`
+plusieurs fois sans erreur (y compris après la mise à jour de la
+politique — `mc admin policy create` sur un nom existant remplace son
+contenu) — même discipline que la création du bucket (C19).
+
+## 4bis. Export pseudonymisé `curated_bi/`
+
+`src/datacore/storage/lake/curated_bi.py` — reconstruit `curated_bi/`
+depuis `curated/` pour les 5 flux : copie telle quelle pour les 3 flux
+sans géolocalisation, `vehicule_id` remplacé par son pseudonyme HMAC
+(`pseudonyme()`, clé `LAKE_PSEUDONYM_KEY`) pour `geoloc_flotte`/
+`flux_sse_capteurs`.
+
+```bash
+python3 -m datacore.storage.lake.curated_bi
+```
+
+**Propriétés vérifiées en conditions réelles** :
+- **Stabilité** : `pseudonyme("VH-001")` produit la même valeur dans
+  `curated_bi/geoloc_flotte` et `curated_bi/flux_sse_capteurs` —
+  continuité analytique préservée (suivre un véhicule dans le temps
+  reste possible sans connaître son identifiant réel).
+- **Aucune perte de ligne** : mêmes effectifs `curated/`/`curated_bi/`
+  pour les 3 flux vérifiés (2160/2160, 6/6, 3000/3000) — la jointure
+  contre la table de correspondance ne rejette aucune ligne.
+- **`curated/` inchangée** : `vehicule_id` y reste en clair, vérifié en
+  relisant `curated/geoloc_flotte` après construction de `curated_bi/`.
+
+---
+
+## 5. Références
+
+- [`architecture_omega_lake.md`](architecture_omega_lake.md) §6 —
+  découverte initiale du risque de ré-identification (C18).
+- [`architecture_cible.md`](architecture_cible.md) §4.2/§4.3 — plan de
+  gouvernance initial (C3), revu au §2 après relecture externe.
+- [`registre_rgpd.md`](registre_rgpd.md) — `tournees.chauffeur`, la
+  donnée personnelle réelle du programme.
+- [`registre_rgpd_entrepot.md`](registre_rgpd_entrepot.md) — même
+  discipline d'audit appliquée à l'entrepôt (C16).
+- [`catalogue_omega_lake.md`](catalogue_omega_lake.md) — inventaire
+  généré dont ce registre dépend (C20).

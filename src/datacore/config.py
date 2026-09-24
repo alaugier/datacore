@@ -45,6 +45,35 @@ OMEGA_BI_DB_DSN = os.environ.get(
     f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@localhost:{POSTGRES_PORT}/{OMEGA_BI_DB}",
 )
 
+# Data lake OMEGA LAKE (C18-C19) : MinIO, meme instance locale que le
+# reste (sobriete RGESN) -- voir docker-compose.yml et
+# architecture_omega_lake.md. Bucket unique, zones raw/staging/curated
+# comme prefixes internes, pas comme buckets separes.
+MINIO_ROOT_USER = os.environ.get("MINIO_ROOT_USER", "datacore")
+MINIO_ROOT_PASSWORD = os.environ.get("MINIO_ROOT_PASSWORD", "datacore_lake")
+OMEGA_LAKE_S3_ENDPOINT = os.environ.get(
+    "OMEGA_LAKE_S3_ENDPOINT", f"localhost:{os.environ.get('MINIO_API_PORT', '9000')}"
+)
+OMEGA_LAKE_BUCKET = os.environ.get("OMEGA_LAKE_BUCKET", "omega-lake")
+
+# Pseudonymisation de vehicule_id pour l'export curated_bi/ exposé à
+# lake_reader (C21bis) -- clé HMAC secrète, jamais distribuée avec le
+# lake ni accessible depuis la couche lake_reader (voir
+# storage/lake/curated_bi.py et registre_rgpd_lake.md §2).
+#
+# Délibérément SANS valeur de repli, contrairement au reste de ce module
+# -- corrigé après relecture externe : un repli codé en dur pour un
+# secret cryptographique est visible dans le dépôt public, donc pas un
+# secret du tout ; un démarrage silencieux avec cette valeur romprait la
+# pseudonymisation sans avertissement. `os.environ.get()` (pas
+# `os.environ[...]`) : la variable manquante renvoie None ici plutôt que
+# de faire échouer l'import de ce module pour tout le projet (`config.py`
+# est partagé par des scripts qui n'utilisent jamais cette clé) --
+# `storage/lake/curated_bi.py::verifier_cle_configuree()` refuse
+# explicitement de continuer si elle vaut None ou la valeur d'exemple de
+# .env.example, au point d'usage plutôt qu'à l'import.
+LAKE_PSEUDONYM_KEY = os.environ.get("LAKE_PSEUDONYM_KEY")
+
 RAW_DIR = Path(os.environ.get("DATACORE_RAW_DIR", REPO_ROOT / "data" / "raw"))
 CLIENTS_FILES_DIR = RAW_DIR / "clients_fichiers"
 HISTORIQUE_PATH = RAW_DIR / "historique" / "omega_historique_expeditions.csv"
