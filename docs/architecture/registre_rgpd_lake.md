@@ -101,6 +101,48 @@ toutes vérifiées en conditions réelles :
    littérature sur les données de mobilité. La pseudonymisation réduit
    le risque de jointure directe, elle ne l'élimine pas entièrement.
 
+### Faille trouvée en seconde relecture externe : la protection HMAC dépendait d'un repli codé en dur
+
+`config.py` fournissait, comme le reste de ses variables, une valeur de
+repli si `LAKE_PSEUDONYM_KEY` n'était pas définie
+(`"datacore_pseudonym_key_dev_only"`). **Cohérent avec le reste du
+module, mais dangereux ici** : cette valeur est visible dans le dépôt
+public — un déploiement qui oublierait de définir la vraie clé
+utiliserait silencieusement une clé connue de quiconque lit le code
+source, rendant les 4 points ci-dessus inopérants sans le moindre
+avertissement. Vérifié avant correction (import de `datacore.config`
+sans `LAKE_PSEUDONYM_KEY` dans l'environnement → la valeur codée en dur
+était bien utilisée, aucune erreur, aucun avertissement).
+
+**Corrigé** :
+- `config.py` ne fournit plus aucune valeur de repli pour cette
+  variable (`os.environ.get("LAKE_PSEUDONYM_KEY")`, sans défaut — `None`
+  si absente). Pas un `os.environ["LAKE_PSEUDONYM_KEY"]` strict comme
+  suggéré littéralement : `config.py` est importé par des scripts sans
+  aucun rapport avec le lake (`ingestion.fluxpro`, etc.) — vérifié
+  qu'un accès direct par crochets y aurait fait échouer leur import
+  aussi, un effet de bord disproportionné pour une variable qu'ils
+  n'utilisent jamais. L'échec explicite est déplacé au point d'usage.
+- `curated_bi.py::verifier_cle_configuree()` refuse explicitement de
+  continuer (`RuntimeError`, pas un avertissement silencieux) si la clé
+  est absente **ou** vaut encore la valeur d'exemple de `.env.example`
+  — appelée systématiquement à l'intérieur de `pseudonyme()` elle-même,
+  pas seulement aux points d'entrée du pipeline, pour qu'aucun appel ne
+  puisse contourner le garde-fou.
+- **Vérifié en conditions réelles** : `.env` remis à la valeur
+  d'exemple, `python3 -m datacore.storage.lake.curated_bi` lève bien
+  l'erreur explicite et s'arrête (code de sortie 1) plutôt que de
+  produire silencieusement un `curated_bi/` non protégé.
+- **Test du scénario de fuite** (`test_curated_bi.py`) : un
+  `vehicule_id` connu en clair (simulant une fuite de
+  `tournees.vehicule_id`) ne permet pas de reconstituer le pseudonyme
+  réel — les clés absente/vide/valeur d'exemple sont explicitement
+  refusées, et une clé plausible mais fausse produit un pseudonyme
+  différent du vrai. Un test dédié vérifie aussi que la valeur d'exemple
+  codée dans `curated_bi.py` reste synchronisée avec `.env.example`
+  (lit le fichier directement), pour que le garde-fou ne devienne pas
+  silencieusement obsolète si l'un des deux changeait sans l'autre.
+
 ---
 
 ## 3. Procédure de purge

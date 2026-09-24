@@ -31,6 +31,15 @@ dense (1 point/2s, `lat`/`lon`) reste en général ré-identifiante par
 motif de déplacement (domicile, horaires réguliers) — connu dans la
 littérature sur les données de mobilité. La pseudonymisation réduit le
 risque de jointure directe, elle ne l'élimine pas entièrement.
+
+**Garde-fou sur la clé (ajouté après une seconde relecture externe)** :
+`config.py` ne fournit plus de valeur de repli pour
+`LAKE_PSEUDONYM_KEY` — un repli codé en dur pour un secret
+cryptographique est visible dans le dépôt public, donc pas un secret du
+tout. `verifier_cle_configuree()` refuse explicitement de continuer
+(lève `RuntimeError`) si la clé est absente **ou** vaut encore la valeur
+d'exemple de `.env.example` — un démarrage silencieux avec l'une ou
+l'autre romprait la pseudonymisation sans avertissement.
 """
 import hashlib
 import hmac
@@ -40,8 +49,43 @@ from datacore.storage.lake.transform import FLUX
 
 FLUX_A_PSEUDONYMISER = ("geoloc_flotte", "flux_sse_capteurs")
 
+# Doit rester identique à la valeur d'exemple de .env.example -- un test
+# dédié (test_curated_bi.py) vérifie cette synchronisation.
+VALEUR_EXEMPLE_ENV = "changez-moi-avec-une-vraie-cle-aleatoire"
 
-def pseudonyme(vehicule_id: str, cle: str = LAKE_PSEUDONYM_KEY) -> str:
+
+def verifier_cle_configuree(cle: str | None) -> str:
+    """Refuse explicitement de continuer si la clé est absente ou reste la valeur d'exemple.
+
+    Args:
+        cle: la valeur de `LAKE_PSEUDONYM_KEY` à vérifier.
+
+    Returns:
+        La clé, inchangée, si elle est valide.
+
+    Raises:
+        RuntimeError: si la clé est absente/vide, ou vaut encore la
+            valeur d'exemple de `.env.example` -- un démarrage silencieux
+            avec l'une ou l'autre romprait la protection HMAC sans
+            avertissement (la valeur serait publique, visible dans le
+            dépôt).
+    """
+    if not cle:
+        raise RuntimeError(
+            "LAKE_PSEUDONYM_KEY n'est pas définie. Copier .env.example en .env et "
+            'générer une vraie valeur aléatoire (`python3 -c "import secrets; '
+            'print(secrets.token_hex(32))"`) avant de construire curated_bi/.'
+        )
+    if cle == VALEUR_EXEMPLE_ENV:
+        raise RuntimeError(
+            "LAKE_PSEUDONYM_KEY vaut encore la valeur d'exemple de .env.example -- "
+            "cette valeur est publique (visible dans le dépôt). Générer une vraie "
+            "clé aléatoire avant de construire curated_bi/."
+        )
+    return cle
+
+
+def pseudonyme(vehicule_id: str, cle: str | None = LAKE_PSEUDONYM_KEY) -> str:
     """Calcule le pseudonyme HMAC-SHA256 stable d'un identifiant véhicule.
 
     Args:
@@ -53,7 +97,14 @@ def pseudonyme(vehicule_id: str, cle: str = LAKE_PSEUDONYM_KEY) -> str:
         `vehicule_id` produit toujours le même pseudonyme (continuité
         analytique préservée d'une exécution à l'autre), mais
         impossible à recalculer sans la clé.
+
+    Raises:
+        RuntimeError: voir `verifier_cle_configuree()` -- appelée
+            systématiquement ici, pas seulement aux points d'entrée du
+            pipeline, pour qu'aucun appel (test compris) ne puisse
+            contourner le garde-fou.
     """
+    cle = verifier_cle_configuree(cle)
     return hmac.new(cle.encode(), vehicule_id.encode(), hashlib.sha256).hexdigest()[:16]
 
 
