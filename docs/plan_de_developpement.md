@@ -13,8 +13,16 @@ Pack technique source : `datacore-dataset` (copié dans `data/raw/`, jamais vers
 | M1 — Collecte & Stockage | Bloc 2 | C8-C12 | E4 |
 | M2 — Entrepôt OMEGA BI | Bloc 3 | C13-C17 | E5, E6 |
 | M3 — Data Lake OMEGA LAKE | Bloc 4 | C18-C21 | E7 |
-| M4 — Rapport LaTeX | Transverse | — | — |
-| M5 — Présentation orale | Transverse | — | — |
+| M4 — Restitution BI (Grafana) | Transverse (blocs 3/4) | C16bis, C20bis | — |
+| M5 — Rapport LaTeX | Transverse | — | — |
+| M6 — Présentation orale | Transverse | — | — |
+
+**Renumérotation du 24/09/2026** : M4 (Grafana) est un ajout décidé après
+la clôture de M3, suite à un retour de formateur (vues SQL + notebook
+jugés insuffisants comme preuve de restitution pour C16 ; même besoin
+anticipé côté C20). Les jalons transverses prévus initialement sous les
+noms M4/M5 sont renumérotés M5/M6 en conséquence — voir
+`docs/architecture/feuille_de_route.md` §1 pour le détail.
 
 ## Convention de branches
 
@@ -100,7 +108,9 @@ voir `docs/architecture/sequencement_bloc4.md` — C18 → C19 → C20 → C21.
 
 Voir `docs/comptes_rendus/M3.md` pour le compte rendu de fin de
 milestone (livrables, compétences couvertes, décisions, points ouverts
-pour M4/M5). Release vers `main` via la PR #74.
+pour ce qui s'appelait M4/M5 à l'époque de sa rédaction, renumérotés
+M5/M6 depuis le 24/09/2026 — voir note ci-dessus). Release vers `main`
+via la PR #74.
 
 **Point ouvert du 23/09/2026 résolu le 24/09/2026** : pseudonymisation
 HMAC de `vehicule_id` implémentée pour l'export `curated_bi/` exposé à
@@ -112,6 +122,15 @@ limite de ré-identification par motif de mobilité documentée). Politique
 entier jusque-là). Vérifié bout en bout avec les vraies clés
 `lake_reader` via DuckDB. `registre_rgpd_lake.md` §2/§4/§4bis et
 `docs/comptes_rendus/M3.md` §3/§4 mis à jour en conséquence.
+
+### M4 — Restitution BI (Grafana) (ouvert le 24/09/2026)
+- [ ] Restitution OMEGA BI dans Grafana — vues SQL + KPI SLA, C16bis (#79)
+- [ ] Monitoring du data lake dans Grafana — KPI, métriques, alertes, C20bis (#80)
+
+Décision et choix de l'outil documentés dans
+`docs/architecture/gestion_operationnelle_omega_bi.md` §3.5 (PR #78) —
+Grafana retenu plutôt que Power BI ou Databricks SQL/Lakeview pour rester
+auto-hébergé dans l'infra locale existante.
 
 ## Règles pour Claude Code
 - Ne jamais committer `data/raw/*` (voir `.gitignore`).

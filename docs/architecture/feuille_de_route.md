@@ -25,10 +25,20 @@ jalon (« milestone ») GitHub :
 | Phase 3 — Entrepôt OMEGA BI | M2 | Construire et maintenir l'entrepôt décisionnel de pilotage de la performance logistique | C13-C17 | E5, E6 |
 | Phase 4 — Data Lake OMEGA LAKE | M3 | Concevoir et opérer le data lake pour absorber la donnée massive IoT | C18-C21 | E7 |
 
-Deux jalons transverses accompagnent l'ensemble du programme sans lui être
-séquentiels : **M4 — Rapport LaTeX** (consolidation continue de la
-documentation) et **M5 — Présentation orale** (préparation de la
-soutenance finale), finalisés à l'issue de la Phase 4.
+Trois jalons transverses accompagnent l'ensemble du programme :
+**M4 — Restitution BI (Grafana)**, **M5 — Rapport LaTeX** (consolidation
+continue de la documentation) et **M6 — Présentation orale** (préparation
+de la soutenance finale), finalisés à l'issue de la Phase 4.
+
+**Note du 24/09/2026** : M4 — Restitution BI (Grafana) n'était pas prévu
+dans la planification initiale ci-dessous. Ajouté après un retour de
+formateur constatant que les livrables déjà produits pour C16 (vues SQL
++ notebook) et, par anticipation, pour C20 (catalogue par introspection)
+ne suffisent pas comme preuve de restitution/monitoring — un outil de BI
+dédié est attendu. Les jalons transverses prévus initialement sous les
+noms M4 (Rapport LaTeX) et M5 (Présentation orale) sont renumérotés
+M5/M6 en conséquence (voir `docs/plan_de_developpement.md` et les
+issues GitHub #79/#80 pour le détail).
 
 Ce séquencement respecte la priorisation établie par l'
 [analyse RICE](etude_faisabilite.md#6-analyse-rice) : la centralisation de
@@ -113,8 +123,9 @@ gantt
     Catalogue de donnees (C20)         :        p4c, after p4b, 7d
     Gouvernance des donnees (C21)      :        p4d, after p4c, 7d
     section Transverse
-    Rapport LaTeX (M4, continu)        :        m4, 2026-08-10, 165d
-    Preparation soutenance (M5)        :        m5, 2027-01-25, 10d
+    Restitution BI Grafana (M4)        :        m4bi, 2026-09-24, 12d
+    Rapport LaTeX (M5, continu)        :        m5, 2026-08-10, 165d
+    Preparation soutenance (M6)        :        m6, 2027-01-25, 10d
 ```
 
 ### 4.2 Roadmap / dépendances (PERT simplifié)
@@ -124,17 +135,18 @@ flowchart LR
     A["Phase 1\nCadrage (M0)"] --> B["Phase 2\nCollecte & Stockage (M1)"]
     B --> C["Phase 3\nEntrepot OMEGA BI (M2)"]
     C --> D["Phase 4\nData Lake OMEGA LAKE (M3)"]
-    D --> E["Rapport LaTeX (M4)"]
-    E --> F["Soutenance orale (M5)"]
+    D --> G["Restitution BI Grafana (M4)"]
+    G --> E["Rapport LaTeX (M5)"]
+    E --> F["Soutenance orale (M6)"]
     A -. "C3 architecture cible" .-> D
     B -. "C11 base de staging" .-> C
     D -. "C20 catalogue de donnees" .-> E
 ```
 
-Le chemin critique suit les 4 phases dans l'ordre (A → B → C → D → E → F) :
-aucune phase technique ne peut démarrer avant que la précédente ait livré
-sa brique de stockage (base de staging pour la Phase 3, data lake pour la
-finalisation du rapport). L'architecture cible définie en Phase 1 (C3)
+Le chemin critique suit les 4 phases dans l'ordre (A → B → C → D → G → E →
+F) : aucune phase technique ne peut démarrer avant que la précédente ait
+livré sa brique de stockage (base de staging pour la Phase 3, data lake
+pour la restitution Grafana puis la finalisation du rapport). L'architecture cible définie en Phase 1 (C3)
 conditionne directement les choix techniques de la Phase 4 (zones du data
 lake définies dès le cadrage, cf. [architecture cible
 §2.2](architecture_cible.md#22-vue-en-couches)).
@@ -151,7 +163,7 @@ branches du projet :
 | Élément du board | Correspondance |
 |---|---|
 | Colonnes (statut) | `Todo` → `In Progress` → `Done`, une carte par issue GitHub |
-| Jalons | Un milestone GitHub par phase (M0 à M3) + M4/M5 transverses |
+| Jalons | Un milestone GitHub par phase (M0 à M3) + M4 (Grafana) + M5/M6 transverses |
 | Cartes | Une issue par livrable de compétence (ex. issue #2 = C1, issue #6 = C5) |
 | Labels | `bloc-1` à `bloc-4` (phase), `docs`/`infra`/`ci` (nature du livrable) |
 | Traçabilité | Chaque carte est reliée à une Pull Request (`feat-<numéro>-<nom>` → `dev`), fermée automatiquement à la fusion |
