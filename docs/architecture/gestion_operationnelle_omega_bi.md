@@ -141,10 +141,48 @@ SQL/Lakeview, Grafana) :
   écarté : nécessite un workspace Databricks dédié, sans lien avec le
   reste de l'infra (Postgres + MinIO en local).
 
-**À implémenter** : service `grafana` dans `docker-compose.yml`,
-source de données Postgres pointant sur `datacore_omega_bi` avec les
-identifiants `bi_reader`, dashboard(s) reprenant les 3 indicateurs de
-§3.1-3.3.
+**Implémenté (issue #79, C16bis)** :
+- Service `grafana` (`grafana/grafana-oss`) dans `docker-compose.yml`,
+  auto-hébergé, volume dédié pour la persistance (`datacore-grafana-data`).
+- Source de données provisionnée automatiquement
+  (`infra/grafana/provisioning/datasources/omega_bi.yaml`) : Postgres,
+  base `datacore_omega_bi`, utilisateur `bi_reader` — mot de passe lu
+  depuis `BI_READER_PASSWORD` (`.env`), jamais codé en dur (même
+  principe que `LAKE_PSEUDONYM_KEY`, voir `registre_rgpd_lake.md`).
+- Dashboard provisionné automatiquement
+  (`infra/grafana/dashboards/sla_omega_bi.json`) : les 3 indicateurs de
+  §3.1-3.3 (taux de service par client, délai moyen par transporteur,
+  stock disponible par site).
+
+**Vérifié en conditions réelles** (24/09/2026) :
+- Les 3 panels interrogés via l'API Grafana (`/api/ds/query`) renvoient
+  des données réelles de l'entrepôt (ex. FreshMarket 90.6 % de taux de
+  service, entrepôt de Lyon 11 190 unités en stock).
+- Connexion confirmée avec les identifiants `bi_reader` réels (pas un
+  compte admin) : `/api/datasources/uid/omega_bi_reader/health` renvoie
+  `Database Connection OK`.
+- Portée du rôle `bi_reader` reconfirmée côté Grafana : une lecture de
+  `gouvernance.v_dernieres_operations` échoue en
+  `permission denied for schema gouvernance` — cohérent avec le choix
+  délibéré d'exclure `gouvernance` de `bi_reader` (§4, "préoccupation
+  d'exploitation technique, pas un objet d'analyse métier"). Écriture
+  non testée en direct (bloqué par la sandbox d'exécution), mais exclue
+  par construction : seul `GRANT SELECT` est accordé à `bi_reader`
+  (`sql/schema_entrepot_omega_bi.sql`), aucun `INSERT`/`UPDATE`/`DELETE`.
+- **Faille d'infrastructure trouvée et corrigée en vérifiant** : les
+  identifiants `.env` (`GRAFANA_ADMIN_PASSWORD` notamment) n'étaient pas
+  réellement appliqués par `docker compose -f infra/docker/docker-compose.yml
+  up -d` sans l'option `--env-file .env` — Docker Compose résout le
+  fichier `.env` depuis le répertoire du fichier compose
+  (`infra/docker/`), pas depuis le répertoire courant, donc silencieux
+  retour aux valeurs par défaut codées dans `docker-compose.yml`.
+  `README.md` et `api_omega_data.md` avaient déjà cette option ;
+  `creation_entrepot_omega_bi.md` et `test_lake_pipeline.py` ne
+  l'avaient pas — corrigés en conséquence. Sans ce correctif, le mot de
+  passe admin Grafana serait resté silencieusement la valeur par défaut
+  du fichier compose plutôt que celle, réelle, de `.env`.
+
+Accès : voir `README.md` §"Entrepôt OMEGA BI (C13-C17)".
 
 ---
 

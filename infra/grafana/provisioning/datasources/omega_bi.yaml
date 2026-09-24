@@ -1,0 +1,26 @@
+# Source de donnees Grafana provisionnee automatiquement (C16bis).
+#
+# Connecte en lecture seule via le role bi_reader (C14) -- jamais avec
+# les identifiants admin Postgres utilises par l'ETL (load_warehouse.py)
+# ou les migrations Alembic. $GF_OMEGA_BI_DB / $GF_BI_READER_PASSWORD
+# sont substitues par Grafana depuis les variables d'environnement du
+# conteneur (voir infra/docker/docker-compose.yml, service grafana).
+apiVersion: 1
+
+datasources:
+  - name: OMEGA BI (bi_reader)
+    uid: omega_bi_reader
+    type: postgres
+    access: proxy
+    url: db:5432
+    database: $GF_OMEGA_BI_DB
+    user: bi_reader
+    isDefault: true
+    editable: false
+    secureJsonData:
+      password: $GF_BI_READER_PASSWORD
+    jsonData:
+      sslmode: disable
+      postgresVersion: 1600
+      maxOpenConns: 5
+      maxIdleConns: 2

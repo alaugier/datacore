@@ -1,0 +1,10 @@
+# Fournisseur de dashboards Grafana provisionnes automatiquement (C16bis).
+apiVersion: 1
+
+providers:
+  - name: OMEGA BI
+    type: file
+    updateIntervalSeconds: 30
+    allowUiUpdates: false
+    options:
+      path: /etc/grafana/dashboards
