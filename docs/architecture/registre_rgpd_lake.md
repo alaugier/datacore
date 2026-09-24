@@ -125,14 +125,21 @@ sans `LAKE_PSEUDONYM_KEY` dans l'environnement → la valeur codée en dur
   n'utilisent jamais. L'échec explicite est déplacé au point d'usage.
 - `curated_bi.py::verifier_cle_configuree()` refuse explicitement de
   continuer (`RuntimeError`, pas un avertissement silencieux) si la clé
-  est absente **ou** vaut encore la valeur d'exemple de `.env.example`
-  — appelée systématiquement à l'intérieur de `pseudonyme()` elle-même,
+  est absente, vaut une **valeur publique connue** (l'exemple de
+  `.env.example`, ou l'ancien repli codé en dur — retiré du code mais
+  toujours rejeté explicitement au cas où il serait réutilisé par
+  erreur), ou est **manifestement trop courte** (moins de 32 caractères
+  — pas une mesure d'entropie réelle, juste une garde bon marché contre
+  une clé du type `"test123"`, point relevé après une question sur la
+  couverture du garde-fou au-delà du seul cas de la valeur d'exemple).
+  Appelée systématiquement à l'intérieur de `pseudonyme()` elle-même,
   pas seulement aux points d'entrée du pipeline, pour qu'aucun appel ne
   puisse contourner le garde-fou.
-- **Vérifié en conditions réelles** : `.env` remis à la valeur
-  d'exemple, `python3 -m datacore.storage.lake.curated_bi` lève bien
-  l'erreur explicite et s'arrête (code de sortie 1) plutôt que de
-  produire silencieusement un `curated_bi/` non protégé.
+- **Vérifié en conditions réelles, les deux cas** : `.env` remis à la
+  valeur d'exemple, puis à une clé de 7 caractères (`"test123"`) —
+  `python3 -m datacore.storage.lake.curated_bi` lève l'erreur explicite
+  attendue dans les deux cas et s'arrête (code de sortie non nul)
+  plutôt que de produire silencieusement un `curated_bi/` non protégé.
 - **Test du scénario de fuite** (`test_curated_bi.py`) : un
   `vehicule_id` connu en clair (simulant une fuite de
   `tournees.vehicule_id`) ne permet pas de reconstituer le pseudonyme

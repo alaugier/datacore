@@ -11,26 +11,42 @@ from pathlib import Path
 import pytest
 
 from datacore.storage.lake.curated_bi import (
+    ANCIENNE_VALEUR_REPLI_SUPPRIMEE,
     FLUX_A_PSEUDONYMISER,
+    LONGUEUR_MINIMALE,
     VALEUR_EXEMPLE_ENV,
     pseudonyme,
     verifier_cle_configuree,
 )
 
+# Clés de test >= LONGUEUR_MINIMALE caractères -- le garde-fou de
+# verifier_cle_configuree() s'applique aussi aux tests, aucun raccourci
+# (voir pseudonyme() : appelée systématiquement, non contournable).
+CLE_TEST = "cle-de-test-0000000000000000000000000"
+CLE_TEST_A = "cle-de-test-aaaaaaaaaaaaaaaaaaaaaaaaaaa"
+CLE_TEST_B = "cle-de-test-bbbbbbbbbbbbbbbbbbbbbbbbbbb"
+CLE_SESSION_REELLE = "cle-secrete-generee-localement-jamais-partagee"
+CLE_DEVINEE_PAR_ATTAQUANT = "cle-devinee-par-lattaquant-00000000000"
+
+assert all(
+    len(c) >= LONGUEUR_MINIMALE
+    for c in (CLE_TEST, CLE_TEST_A, CLE_TEST_B, CLE_SESSION_REELLE, CLE_DEVINEE_PAR_ATTAQUANT)
+), "une clé de test de ce fichier est passée sous LONGUEUR_MINIMALE -- à corriger avant les tests"
+
 
 def test_pseudonyme_est_stable_pour_le_meme_identifiant():
     """Le même vehicule_id produit toujours le même pseudonyme (continuité analytique)."""
-    assert pseudonyme("VH-001", cle="cle-de-test") == pseudonyme("VH-001", cle="cle-de-test")
+    assert pseudonyme("VH-001", cle=CLE_TEST) == pseudonyme("VH-001", cle=CLE_TEST)
 
 
 def test_pseudonyme_differe_entre_identifiants_distincts():
     """Deux véhicules différents ne doivent pas produire le même pseudonyme."""
-    assert pseudonyme("VH-001", cle="cle-de-test") != pseudonyme("VH-002", cle="cle-de-test")
+    assert pseudonyme("VH-001", cle=CLE_TEST) != pseudonyme("VH-002", cle=CLE_TEST)
 
 
 def test_pseudonyme_depend_de_la_cle():
     """Sans la bonne clé, le pseudonyme obtenu est différent -- la clé est bien nécessaire."""
-    assert pseudonyme("VH-001", cle="cle-a") != pseudonyme("VH-001", cle="cle-b")
+    assert pseudonyme("VH-001", cle=CLE_TEST_A) != pseudonyme("VH-001", cle=CLE_TEST_B)
 
 
 def test_pseudonyme_nest_pas_un_hash_simple_devinable():
@@ -39,12 +55,12 @@ def test_pseudonyme_nest_pas_un_hash_simple_devinable():
     import hashlib
 
     hash_nu = hashlib.sha256(b"VH-001").hexdigest()[:16]
-    assert pseudonyme("VH-001", cle="cle-de-test") != hash_nu
+    assert pseudonyme("VH-001", cle=CLE_TEST) != hash_nu
 
 
 def test_pseudonyme_ne_revele_pas_lidentifiant_original():
     """Le pseudonyme ne contient pas l'identifiant d'origine en clair."""
-    assert "VH-001" not in pseudonyme("VH-001", cle="cle-de-test")
+    assert "VH-001" not in pseudonyme("VH-001", cle=CLE_TEST)
 
 
 def test_flux_a_pseudonymiser_couvre_bien_les_2_flux_geolocalisation():
@@ -69,13 +85,29 @@ def test_verifier_cle_configuree_leve_une_erreur_si_cle_vide():
 
 def test_verifier_cle_configuree_leve_une_erreur_si_valeur_dexemple():
     """La valeur d'exemple de .env.example, oubliée telle quelle, doit être refusée."""
-    with pytest.raises(RuntimeError, match="valeur d'exemple"):
+    with pytest.raises(RuntimeError, match="valeur publique connue"):
         verifier_cle_configuree(VALEUR_EXEMPLE_ENV)
 
 
+def test_verifier_cle_configuree_leve_une_erreur_si_ancien_repli_supprime():
+    """L'ancien repli codé en dur, retiré de config.py, reste explicitement rejeté --
+    au cas où il serait réutilisé par erreur (copié depuis un ancien commit, une ancienne
+    doc, ou cette conversation elle-même)."""
+    with pytest.raises(RuntimeError, match="valeur publique connue"):
+        verifier_cle_configuree(ANCIENNE_VALEUR_REPLI_SUPPRIMEE)
+
+
+def test_verifier_cle_configuree_leve_une_erreur_si_cle_trop_courte():
+    """Une clé fausse quelconque, ni absente ni la valeur d'exemple, mais manifestement
+    trop courte pour un usage HMAC (ex. "test123"), doit aussi être refusée."""
+    with pytest.raises(RuntimeError, match="trop courte"):
+        verifier_cle_configuree("test123")
+
+
 def test_verifier_cle_configuree_accepte_une_vraie_cle():
-    """Une clé valide (ni absente, ni la valeur d'exemple) est renvoyée inchangée."""
-    assert verifier_cle_configuree("une-vraie-cle-secrete") == "une-vraie-cle-secrete"
+    """Une clé valide (assez longue, ni absente, ni une valeur publique connue)
+    est renvoyée inchangée."""
+    assert verifier_cle_configuree(CLE_TEST) == CLE_TEST
 
 
 def test_pseudonyme_leve_une_erreur_si_cle_non_configuree():
@@ -85,6 +117,10 @@ def test_pseudonyme_leve_une_erreur_si_cle_non_configuree():
         pseudonyme("VH-001", cle=None)
     with pytest.raises(RuntimeError):
         pseudonyme("VH-001", cle=VALEUR_EXEMPLE_ENV)
+    with pytest.raises(RuntimeError):
+        pseudonyme("VH-001", cle=ANCIENNE_VALEUR_REPLI_SUPPRIMEE)
+    with pytest.raises(RuntimeError):
+        pseudonyme("VH-001", cle="trop-court")
 
 
 def test_valeur_exemple_env_reste_synchronisee_avec_env_example():
@@ -103,19 +139,19 @@ def test_valeur_exemple_env_reste_synchronisee_avec_env_example():
 def test_scenario_fuite_vehicule_id_connu_ne_permet_pas_de_deviner_le_pseudonyme_reel():
     """Un attaquant qui connaît vehicule_id en clair (ex. fuite de tournees.vehicule_id)
     mais pas la vraie clé de session ne peut pas reconstituer le pseudonyme réel, même en
-    essayant les clés les plus prévisibles (absente, vide, valeur d'exemple oubliée)."""
+    essayant les clés les plus prévisibles (absente, vide, valeur d'exemple, ancien repli,
+    ou une clé plausible mais trop courte/fausse)."""
     vehicule_id_fuite = "VH-001"  # connu de l'attaquant, ex. via tournees.vehicule_id
-    cle_reelle_de_session = "cle-secrete-generee-localement-jamais-partagee"
 
-    pseudonyme_reel_dans_curated_bi = pseudonyme(vehicule_id_fuite, cle=cle_reelle_de_session)
+    pseudonyme_reel_dans_curated_bi = pseudonyme(vehicule_id_fuite, cle=CLE_SESSION_REELLE)
 
     # L'attaquant ne connaît pas la vraie clé : les valeurs les plus prévisibles
     # sont explicitement refusées avant même de produire un résultat exploitable.
-    for cle_tentee in (None, "", VALEUR_EXEMPLE_ENV):
+    for cle_tentee in (None, "", VALEUR_EXEMPLE_ENV, ANCIENNE_VALEUR_REPLI_SUPPRIMEE, "test123"):
         with pytest.raises(RuntimeError):
             pseudonyme(vehicule_id_fuite, cle=cle_tentee)
 
     # Et si l'attaquant tente malgré tout une clé plausible mais fausse, le résultat
     # ne correspond pas à l'entrée réelle de curated_bi/ construite avec la vraie clé.
-    pseudonyme_devine = pseudonyme(vehicule_id_fuite, cle="cle-devinee-par-lattaquant")
+    pseudonyme_devine = pseudonyme(vehicule_id_fuite, cle=CLE_DEVINEE_PAR_ATTAQUANT)
     assert pseudonyme_devine != pseudonyme_reel_dans_curated_bi
