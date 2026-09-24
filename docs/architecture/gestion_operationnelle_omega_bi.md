@@ -115,6 +115,37 @@ graphiques (matplotlib) en plus des tables texte déjà utilisées ailleurs
 dans le projet — exécuté pour de vrai contre l'entrepôt, sorties et
 figures capturées.
 
+### 3.5 Outil de restitution de production : Grafana
+
+**Décision prise le 24/09/2026**, après retour de formateur sur M2
+(déjà clos) : vues SQL + notebook, bien que réels et vérifiés, ne
+constituent pas une preuve de restitution suffisante pour C16 — un
+outil de BI dédié est attendu.
+
+**Le notebook n'est pas retiré ni réécrit** (voir §3.4 et `M2.md` §5,
+mise à jour du 24/09/2026) : il reste la preuve exploratoire telle
+qu'elle a été produite et validée au moment de la clôture de M2.
+Grafana devient l'outil de restitution *de production*, en complément.
+
+**Choix de Grafana parmi les options proposées** (Power BI, Databricks
+SQL/Lakeview, Grafana) :
+- Auto-hébergé, ajouté au `docker-compose.yml` existant du projet (au
+  même titre que MinIO) — aucun compte ni service cloud externe requis,
+  cohérent avec l'infrastructure 100 % locale du reste du programme.
+- Se connecte directement en lecture aux 3 vues SQL du schéma
+  `exploitation` (§3.1-3.3) via le rôle `bi_reader` déjà existant et
+  déjà scopé (C14) — aucune vue ni droit supplémentaire à créer.
+- Power BI écarté : usage réel passe par le Power BI Service (cloud
+  Microsoft), hors du stack local du projet ; les fichiers `.pbix` ne
+  se versionnent pas proprement dans git. Databricks SQL/Lakeview
+  écarté : nécessite un workspace Databricks dédié, sans lien avec le
+  reste de l'infra (Postgres + MinIO en local).
+
+**À implémenter** : service `grafana` dans `docker-compose.yml`,
+source de données Postgres pointant sur `datacore_omega_bi` avec les
+identifiants `bi_reader`, dashboard(s) reprenant les 3 indicateurs de
+§3.1-3.3.
+
 ---
 
 ## 4. Références
