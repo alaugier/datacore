@@ -57,23 +57,49 @@ jeu de données lui-même.
 |---|---|
 | Finalité | Suivi opérationnel de la flotte (position, vitesse), amélioration continue |
 | Base légale | Intérêt légitime, avec information des salariés concernés (chauffeurs) |
-| Mesure de sécurité déjà en place | **Aucune jointure automatisée `vehicule_id` → `chauffeur`** dans le pipeline curated (décision de conception, C18 §6 — la mesure porte sur le risque réel identifié, pas sur `vehicule_id` isolément) |
+| Mesures de sécurité en place | (1) **Aucune jointure automatisée `vehicule_id` → `chauffeur`** dans le pipeline `curated/` (C18 §6) ; (2) **pseudonymisation HMAC de `vehicule_id`** dans l'export `curated_bi/` exposé à `lake_reader` (§4bis) — défense en profondeur, pas une mesure de plus par principe |
 | Durée de conservation | 90 jours pour la donnée brute (`raw/`), purge automatisée — §3 |
 
-### Écart assumé par rapport au plan initial de C3
+### Révision de la position initiale sur la pseudonymisation
 
-L'étude d'architecture cible (`architecture_cible.md` §4.2, rédigée
-avant que la moindre donnée réelle ne soit manipulée) envisageait une
-« pseudonymisation des identifiants véhicule/chauffeur ». Une fois
-l'analyse réelle faite en C18, ce n'est **pas** ce qui a été retenu :
-pseudonymiser `vehicule_id` (ex. le remplacer par un hash) n'apporterait
-aucune protection réelle — l'identifiant reste nécessaire au suivi
-opérationnel légitime de la flotte, et un hash stable serait tout aussi
-ré-identifiable par jointure qu'un identifiant en clair. La vraie mesure
-de protection est **l'absence de la jointure elle-même**, pas
-l'obfuscation d'une clé qui doit rester exploitable. Écart documenté
-plutôt que silencieusement abandonné : le plan initial visait le bon
-risque avec la mauvaise mesure.
+Première analyse (C18/C21, avant relecture externe) : pseudonymiser
+`vehicule_id` (ex. par un hash) semblait n'apporter aucune protection
+réelle, l'argument étant qu'un hash stable resterait tout aussi
+joignable qu'un identifiant en clair. **Cet argument était incomplet**,
+pas seulement imprécis — il ne valait que pour la population qui a déjà
+accès à la fois au lake et à `tournees` en clair (les Data Engineers).
+Il ne tenait pas pour `lake_reader` (Data Analysts, accès lake seul,
+**sans** accès à la base de staging) : pour cette population, un
+pseudonyme HMAC dont la clé de correspondance reste hors de portée
+constitue une vraie défense en profondeur — c'est précisément la
+définition de la pseudonymisation au sens de l'article 4(5) du RGPD
+(protège tant que la clé de ré-identification n'est pas elle-même
+compromise).
+
+Revu et corrigé après relecture externe, avec 4 exigences explicites,
+toutes vérifiées en conditions réelles :
+
+1. **HMAC à clé secrète, pas un hash simple.** Ce jeu de données ne
+   compte que 15 véhicules (`VH-001` à `VH-015`) — un hash sans clé
+   serait recalculable par force brute par quiconque connaît cette
+   plage (`sha256("VH-001")`, `sha256("VH-002")`, ...). La clé
+   (`LAKE_PSEUDONYM_KEY`) n'est jamais distribuée à `lake_reader`.
+2. **Mécanisme d'accès de `lake_reader` confirmé avant correction** :
+   vérifié que la politique MinIO d'origine (C21) portait sur le bucket
+   entier — `lake_reader` pouvait lire `raw/`/`staging/`/`curated/` en
+   clair, ce qui aurait rendu une pseudonymisation limitée à un export
+   séparé inopérante (contournable en lisant `curated/` directement).
+   Corrigé en même temps — §4bis.
+3. **Export dédié (`curated_bi/`), `curated/` jamais modifiée** — les
+   Data Engineers gardent `vehicule_id` en clair (jointure opérationnelle
+   légitime vers `tournees`), seul `lake_reader` voit la version
+   pseudonymisée.
+4. **Limite assumée, documentée, pas traitée ici** : même
+   `vehicule_id` pseudonymisé, une série temporelle de géolocalisation
+   dense (1 point/2s, `lat`/`lon`) reste en général ré-identifiable par
+   motif de déplacement (domicile, horaires réguliers) — connu dans la
+   littérature sur les données de mobilité. La pseudonymisation réduit
+   le risque de jointure directe, elle ne l'élimine pas entièrement.
 
 ---
 
@@ -120,20 +146,61 @@ C14/C16) — un utilisateur MinIO dédié, **lecture seule** :
 | Élément | Valeur |
 |---|---|
 | Utilisateur | `lake_reader` (créé automatiquement par le service `minio-init`) |
-| Politique | `lake-reader` (`infra/minio/lake-reader-policy.json`) : `s3:GetObject`, `s3:ListBucket` uniquement |
+| Politique | `lake-reader` (`infra/minio/lake-reader-policy.json`) |
 | Groupe visé | Data Analysts / consommateurs BI (`architecture_cible.md` §4.3) — pas les Data Engineers, qui gardent l'accès complet via `MINIO_ROOT_USER` pour l'ingestion/les transformations |
 
-**Vérifié en conditions réelles** : avec l'utilisateur `lake_reader`,
-`mc ls` sur le bucket fonctionne (lecture confirmée) ; une tentative
-d'upload (`mc cp`) échoue avec `Insufficient permissions to access this
-path` — l'écriture est bien refusée, pas seulement supposée absente de
-la politique.
+**Périmètre de la politique, corrigé après relecture externe** : la
+première version (C21) accordait `s3:GetObject`/`s3:ListBucket` sur le
+**bucket entier** — vérifié que `lake_reader` pouvait donc lire
+`raw/`/`staging/`/`curated/` en clair, pas seulement l'export prévu.
+Corrigée pour ne porter que sur `curated_bi/` (§4bis) : `s3:ListBucket`
+restreint par une condition `s3:prefix` (`curated_bi/*`), `s3:GetObject`
+scopé à `arn:aws:s3:::omega-lake/curated_bi/*` — mêmes principes qu'une
+politique IAM S3 standard (condition de préfixe pour le listing,
+ressource explicite pour la lecture).
+
+**Vérifié en conditions réelles, avant et après correction** :
+- *Avant* : `lake_reader` lisait bien `raw/geoloc_flotte/.../*.csv` en
+  clair (`mc cat` a renvoyé le contenu réel, `vehicule_id` inclus) —
+  confirme que le risque signalé en relecture externe était réel, pas
+  supposé.
+- *Après* : `mc ls`/`mc cat` sur `raw/`, `staging/`, `curated/` échouent
+  (`Access Denied`) ; `mc ls --recursive` sur `curated_bi/` fonctionne et
+  liste les 5 flux.
+- **Bout en bout via DuckDB avec les vraies clés `lake_reader`** (pas
+  seulement `mc`) : lecture de `curated_bi/geoloc_flotte` réussit et
+  renvoie `vehicule_id` pseudonymisé ; la même requête contre
+  `curated/geoloc_flotte` échoue avec `HTTP 403 Forbidden`.
 
 Mise en place idempotente : `mc admin policy create`/`mc admin user
 add`/`mc admin policy attach` dans le service `minio-init` de
-`docker-compose.yml`, revérifiés en relançant `docker compose up` deux
-fois de suite sans erreur — même discipline que la création du bucket
-(C19).
+`docker-compose.yml`, revérifiés en relançant `docker compose up`
+plusieurs fois sans erreur (y compris après la mise à jour de la
+politique — `mc admin policy create` sur un nom existant remplace son
+contenu) — même discipline que la création du bucket (C19).
+
+## 4bis. Export pseudonymisé `curated_bi/`
+
+`src/datacore/storage/lake/curated_bi.py` — reconstruit `curated_bi/`
+depuis `curated/` pour les 5 flux : copie telle quelle pour les 3 flux
+sans géolocalisation, `vehicule_id` remplacé par son pseudonyme HMAC
+(`pseudonyme()`, clé `LAKE_PSEUDONYM_KEY`) pour `geoloc_flotte`/
+`flux_sse_capteurs`.
+
+```bash
+python3 -m datacore.storage.lake.curated_bi
+```
+
+**Propriétés vérifiées en conditions réelles** :
+- **Stabilité** : `pseudonyme("VH-001")` produit la même valeur dans
+  `curated_bi/geoloc_flotte` et `curated_bi/flux_sse_capteurs` —
+  continuité analytique préservée (suivre un véhicule dans le temps
+  reste possible sans connaître son identifiant réel).
+- **Aucune perte de ligne** : mêmes effectifs `curated/`/`curated_bi/`
+  pour les 3 flux vérifiés (2160/2160, 6/6, 3000/3000) — la jointure
+  contre la table de correspondance ne rejette aucune ligne.
+- **`curated/` inchangée** : `vehicule_id` y reste en clair, vérifié en
+  relisant `curated/geoloc_flotte` après construction de `curated_bi/`.
 
 ---
 
@@ -142,7 +209,7 @@ fois de suite sans erreur — même discipline que la création du bucket
 - [`architecture_omega_lake.md`](architecture_omega_lake.md) §6 —
   découverte initiale du risque de ré-identification (C18).
 - [`architecture_cible.md`](architecture_cible.md) §4.2/§4.3 — plan de
-  gouvernance initial (C3), dont le §2 documente l'écart assumé.
+  gouvernance initial (C3), revu au §2 après relecture externe.
 - [`registre_rgpd.md`](registre_rgpd.md) — `tournees.chauffeur`, la
   donnée personnelle réelle du programme.
 - [`registre_rgpd_entrepot.md`](registre_rgpd_entrepot.md) — même

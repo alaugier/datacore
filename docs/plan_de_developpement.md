@@ -103,17 +103,16 @@ milestone (livrables, compétences couvertes, décisions, points ouverts
 pour M4/M5). Release vers `main` à planifier, une fois la PR #73
 mergée.
 
-**Point ouvert non clos (23/09/2026)** : `registre_rgpd_lake.md` §2
-justifiait l'absence de pseudonymisation de `vehicule_id` par un
-argument technique incomplet (valable seulement pour la population
-ayant déjà accès à `tournees` en clair, pas pour `lake_reader`/Data
-Analysts). Correction en cours : pseudonymisation de `vehicule_id` dans
-les vues `curated/` exposées à `lake_reader`, clé de correspondance
-réservée aux Data Engineers. Confirmation demandée à Claude web avant
-implémentation (retour favorable reçu le 23/09 au soir, détail exact à
-relayer le 24/09) — ne pas implémenter avant cette confirmation
-détaillée. Concerne `registre_rgpd_lake.md` et `docs/comptes_rendus/M3.md`
-(§3/§4), qui répètent la même justification à corriger.
+**Point ouvert du 23/09/2026 résolu le 24/09/2026** : pseudonymisation
+HMAC de `vehicule_id` implémentée pour l'export `curated_bi/` exposé à
+`lake_reader` (`src/datacore/storage/lake/curated_bi.py`), suivant les
+4 exigences de la confirmation Claude web (clé secrète, mécanisme
+d'accès vérifié et corrigé, export dédié sans toucher `curated/`,
+limite de ré-identification par motif de mobilité documentée). Politique
+`lake_reader` restreinte à `curated_bi/` (elle portait sur le bucket
+entier jusque-là). Vérifié bout en bout avec les vraies clés
+`lake_reader` via DuckDB. `registre_rgpd_lake.md` §2/§4/§4bis et
+`docs/comptes_rendus/M3.md` §3/§4 mis à jour en conséquence.
 
 ## Règles pour Claude Code
 - Ne jamais committer `data/raw/*` (voir `.gitignore`).

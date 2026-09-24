@@ -3,11 +3,18 @@
   "Statement": [
     {
       "Effect": "Allow",
-      "Action": ["s3:GetObject", "s3:ListBucket"],
-      "Resource": [
-        "arn:aws:s3:::omega-lake",
-        "arn:aws:s3:::omega-lake/*"
-      ]
+      "Action": ["s3:ListBucket"],
+      "Resource": ["arn:aws:s3:::omega-lake"],
+      "Condition": {
+        "StringLike": {
+          "s3:prefix": ["curated_bi/*"]
+        }
+      }
+    },
+    {
+      "Effect": "Allow",
+      "Action": ["s3:GetObject"],
+      "Resource": ["arn:aws:s3:::omega-lake/curated_bi/*"]
     }
   ]
 }
