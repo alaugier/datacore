@@ -100,8 +100,7 @@ voir `docs/architecture/sequencement_bloc4.md` — C18 → C19 → C20 → C21.
 
 Voir `docs/comptes_rendus/M3.md` pour le compte rendu de fin de
 milestone (livrables, compétences couvertes, décisions, points ouverts
-pour M4/M5). Release vers `main` à planifier, une fois la PR #73
-mergée.
+pour M4/M5). Release vers `main` via la PR #74.
 
 **Point ouvert du 23/09/2026 résolu le 24/09/2026** : pseudonymisation
 HMAC de `vehicule_id` implémentée pour l'export `curated_bi/` exposé à
