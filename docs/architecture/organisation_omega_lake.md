@@ -45,6 +45,15 @@ flowchart TB
     F1S --> OBJ2["Objet : part-0.parquet<br/>(pas de partition date —<br/>régénérable, réécrit à chaque run)"]
 ```
 
+**Exception au tableau ci-dessus, volontaire** : un 4e préfixe,
+`curated_bi/`, existe depuis C21bis — ce n'est **pas** une 4e zone du
+pipeline (`raw/`→`staging/`→`curated/` reste la chaîne de
+transformation à 3 étapes), mais un **export dérivé** de `curated/`,
+réservé à l'utilisateur `lake_reader` (accès restreint à ce seul
+préfixe), avec `vehicule_id` pseudonymisé pour les 2 flux de
+géolocalisation. Voir
+[`registre_rgpd_lake.md` §4bis](registre_rgpd_lake.md#4bis-export-pseudonymisé-curated_bi).
+
 ---
 
 ## 2. Anatomie d'un chemin réel

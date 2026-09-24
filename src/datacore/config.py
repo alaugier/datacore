@@ -56,6 +56,14 @@ OMEGA_LAKE_S3_ENDPOINT = os.environ.get(
 )
 OMEGA_LAKE_BUCKET = os.environ.get("OMEGA_LAKE_BUCKET", "omega-lake")
 
+# Pseudonymisation de vehicule_id pour l'export curated_bi/ exposé à
+# lake_reader (C21bis) -- clé HMAC secrète, jamais distribuée avec le
+# lake ni accessible depuis la couche lake_reader (voir
+# storage/lake/curated_bi.py et registre_rgpd_lake.md §2). Le défaut
+# ci-dessous ne sert qu'en dernier recours (cohérent avec le reste de ce
+# module) ; .env porte la vraie valeur, non versionnée.
+LAKE_PSEUDONYM_KEY = os.environ.get("LAKE_PSEUDONYM_KEY", "datacore_pseudonym_key_dev_only")
+
 RAW_DIR = Path(os.environ.get("DATACORE_RAW_DIR", REPO_ROOT / "data" / "raw"))
 CLIENTS_FILES_DIR = RAW_DIR / "clients_fichiers"
 HISTORIQUE_PATH = RAW_DIR / "historique" / "omega_historique_expeditions.csv"

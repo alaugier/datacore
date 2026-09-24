@@ -186,3 +186,56 @@ CSV/JSON via DuckDB reformatterait potentiellement le contenu (quotage,
 ordre des clés) sans changer l'information — la zone `raw/` du data
 lake exige une copie octet pour octet (voir `boto3.upload_file`
 ci-dessus, utilisé précisément pour cette raison).
+
+---
+
+## hmac / hashlib (introduit en C21bis)
+
+Modules de la bibliothèque standard — pas de dépendance externe. Utilisés
+pour pseudonymiser `vehicule_id` (`curated_bi.py`) sans jamais stocker de
+table de correspondance persistante (voir §2 ci-dessous).
+
+### `hmac.new(cle, message, hachage)`
+Calcule un **HMAC** (*Hash-based Message Authentication Code*) — pas un
+hash simple. Les trois arguments sont positionnels : `cle` et `message`
+en `bytes` (`.encode()` depuis une `str`), `hachage` une fonction de la
+famille `hashlib` (ici `hashlib.sha256`, passée telle quelle, pas
+appelée). `.hexdigest()` sur le résultat donne une chaîne hexadécimale
+lisible.
+
+**Le piège que ce projet a failli manquer** : `hashlib.sha256(message)`
+seul (sans clé) est un hash, pas un HMAC — déterministe et **public**,
+n'importe qui connaissant les valeurs possibles peut le recalculer et
+retrouver la correspondance (ce jeu de données ne compte que 15
+véhicules : `sha256("VH-001")` à `sha256("VH-015")` suffiraient à tout
+retrouver, clé ou pas). `hmac.new(cle, ...)` intègre la clé secrète dans
+le calcul selon une construction spécifique (RFC 2104, avec un
+remplissage interne/externe) — sans la clé, impossible de recalculer la
+même valeur, même en connaissant tous les messages possibles.
+
+Utilisé dans : `src/datacore/storage/lake/curated_bi.py::pseudonyme()`
+
+```python
+hmac.new(cle.encode(), vehicule_id.encode(), hashlib.sha256).hexdigest()[:16]
+```
+
+**Pourquoi tronquer à 16 caractères** (`[:16]`) : un pseudonyme n'a pas
+besoin de la résistance aux collisions complète d'un SHA-256 (64
+caractères hex) — 16 caractères hexadécimaux (64 bits) suffisent
+largement à distinguer 15 véhicules sans collision, et restent plus
+lisibles dans un aperçu de données.
+
+### Pourquoi aucune table de correspondance n'est stockée nulle part
+
+`pseudonyme()` est une fonction **pure** : même entrée + même clé →
+toujours la même sortie (propriété de HMAC), donc pas besoin de
+mémoriser "VH-001 → d1ddafb..." dans une table persistante pour
+retrouver la correspondance plus tard — elle se recalcule à la demande.
+`curated_bi.py` crée bien une table temporaire DuckDB
+(`CREATE TEMP TABLE`) pendant la construction de l'export, mais elle ne
+sert qu'à faire la jointure SQL efficacement ; elle est explicitement
+détruite (`DROP TABLE`) à la fin de la fonction, et n'existe jamais en
+dehors de cette exécution — rejouée en entier à chaque appel, jamais mise
+en cache. Rien à protéger côté stockage : la seule chose qui permettrait
+de reconstituer la correspondance est la clé (`LAKE_PSEUDONYM_KEY`),
+jamais écrite dans un objet lisible par `lake_reader`.

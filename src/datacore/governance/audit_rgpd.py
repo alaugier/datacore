@@ -1,13 +1,24 @@
 #!/usr/bin/env python3
-"""Audit RGPD de l'entrepôt OMEGA BI (C16).
+"""Audit RGPD de l'entrepôt OMEGA BI (C16) et du data lake OMEGA LAKE (C21).
 
-Vérifie par introspection du schéma réel de la base qu'aucune colonne
-évoquant une donnée personnelle n'a été introduite — un contrôle
-répétable à chaque revue, pas une conclusion figée une fois pour toutes
-dans la documentation. Voir
-`docs/architecture/registre_rgpd_entrepot.md` pour l'analyse complète
-et le résultat de référence (aucune donnée personnelle trouvée à ce
-jour).
+Vérifie par introspection du schéma réel qu'aucune colonne évoquant une
+donnée personnelle n'a été introduite — un contrôle répétable à chaque
+revue, pas une conclusion figée une fois pour toutes dans la
+documentation. `colonnes_suspectes()` est réutilisée telle quelle pour
+les deux cibles (mêmes motifs, même détection lexicale) ; seule la
+source du schéma change : `information_schema.columns` pour l'entrepôt
+(SQL), le catalogue généré par `datacore.storage.lake.catalogue` pour le
+lake (pas de schéma SQL central pour du Parquet dans un stockage objet).
+Voir `docs/architecture/registre_rgpd_entrepot.md` (C16) et
+`docs/architecture/registre_rgpd_lake.md` (C21) pour l'analyse complète.
+
+**Limite connue de la détection lexicale, pour le lake** : le risque de
+ré-identification par jointure (`vehicule_id` → `tournees.chauffeur`,
+voir `architecture_omega_lake.md` §6) n'est pas un nom de colonne
+suspect en lui-même — traité par une décision de conception (pas de
+jointure automatisée), pas par ce contrôle. Ce script détecte les
+colonnes personnelles *directement nommées*, pas les risques structurels
+de recoupement entre jeux de données.
 
 Lancement :
     python3 -m datacore.governance.audit_rgpd
@@ -16,7 +27,7 @@ import re
 
 import psycopg2
 
-from datacore.config import OMEGA_BI_DB_DSN
+from datacore.config import OMEGA_BI_DB_DSN, OMEGA_LAKE_BUCKET
 
 # Motifs de noms de colonnes évoquant une donnée personnelle -- mêmes
 # catégories que celles réellement trouvées dans la base de travail
@@ -86,11 +97,52 @@ def auditer(dsn: str = OMEGA_BI_DB_DSN) -> dict[str, list[str]]:
     return resultat
 
 
+def auditer_lake(con, s3, bucket: str = OMEGA_LAKE_BUCKET) -> dict[str, list[str]]:
+    """Audite le schéma réel du data lake (catalogue C20) à la recherche de données personnelles.
+
+    Args:
+        con: connexion DuckDB ouverte (voir `storage.lake.transform.connexion()`).
+        s3: client S3 (voir `storage.lake.ingestion_batch.client()`).
+        bucket: bucket cible.
+
+    Returns:
+        Un dict `{"zone/flux": [colonnes suspectes]}` — vide si aucune
+        colonne suspecte n'est trouvée dans aucun flux/zone du lake.
+    """
+    from datacore.storage.lake.catalogue import construire_catalogue
+
+    resultat = {}
+    for entree in construire_catalogue(con, s3, bucket):
+        noms = [colonne["colonne"] for colonne in entree["schema"]]
+        suspectes = colonnes_suspectes(noms)
+        if suspectes:
+            resultat[f"{entree['zone']}/{entree['flux']}"] = suspectes
+    return resultat
+
+
 if __name__ == "__main__":
-    trouvees = auditer()
-    if trouvees:
-        print("ALERTE -- colonnes évoquant une donnée personnelle détectées :")
-        for table, colonnes in trouvees.items():
+    from datacore.storage.lake.ingestion_batch import client as client_s3
+    from datacore.storage.lake.transform import connexion as connexion_lake
+
+    en_alerte = False
+
+    trouvees_entrepot = auditer()
+    if trouvees_entrepot:
+        en_alerte = True
+        print("ALERTE -- colonnes évoquant une donnée personnelle détectées (entrepôt) :")
+        for table, colonnes in trouvees_entrepot.items():
             print(f"  {table}: {', '.join(colonnes)}")
+    else:
+        print("Entrepôt OMEGA BI : aucune colonne évoquant une donnée personnelle détectée.")
+
+    trouvees_lake = auditer_lake(connexion_lake(), client_s3())
+    if trouvees_lake:
+        en_alerte = True
+        print("ALERTE -- colonnes évoquant une donnée personnelle détectées (data lake) :")
+        for cle, colonnes in trouvees_lake.items():
+            print(f"  {cle}: {', '.join(colonnes)}")
+    else:
+        print("Data lake OMEGA LAKE : aucune colonne évoquant une donnée personnelle détectée.")
+
+    if en_alerte:
         raise SystemExit(1)
-    print("Aucune colonne évoquant une donnée personnelle détectée dans l'entrepôt.")

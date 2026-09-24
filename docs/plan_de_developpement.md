@@ -89,14 +89,30 @@ Voir `docs/comptes_rendus/M2.md` pour le compte rendu de fin de
 milestone (livrables, compétences couvertes, décisions, points ouverts
 pour M3). Release vers `main` via la PR #60.
 
-### M3 — Data Lake OMEGA LAKE (en cours)
+### M3 — Data Lake OMEGA LAKE (clos le 23/09/2026)
 - [x] Architecture du data lake C18 (#63)
 - [x] Intégration infrastructure C19 (#64)
 - [x] Catalogue de données C20 (#65)
-- [ ] Gouvernance des données C21 (#66)
+- [x] Gouvernance des données C21 (#66)
 
 Ordre de traitement retenu pour C18-C21 et justification :
 voir `docs/architecture/sequencement_bloc4.md` — C18 → C19 → C20 → C21.
+
+Voir `docs/comptes_rendus/M3.md` pour le compte rendu de fin de
+milestone (livrables, compétences couvertes, décisions, points ouverts
+pour M4/M5). Release vers `main` à planifier, une fois la PR #73
+mergée.
+
+**Point ouvert du 23/09/2026 résolu le 24/09/2026** : pseudonymisation
+HMAC de `vehicule_id` implémentée pour l'export `curated_bi/` exposé à
+`lake_reader` (`src/datacore/storage/lake/curated_bi.py`), suivant les
+4 exigences de la confirmation Claude web (clé secrète, mécanisme
+d'accès vérifié et corrigé, export dédié sans toucher `curated/`,
+limite de ré-identification par motif de mobilité documentée). Politique
+`lake_reader` restreinte à `curated_bi/` (elle portait sur le bucket
+entier jusque-là). Vérifié bout en bout avec les vraies clés
+`lake_reader` via DuckDB. `registre_rgpd_lake.md` §2/§4/§4bis et
+`docs/comptes_rendus/M3.md` §3/§4 mis à jour en conséquence.
 
 ## Règles pour Claude Code
 - Ne jamais committer `data/raw/*` (voir `.gitignore`).
