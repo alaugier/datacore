@@ -212,6 +212,19 @@ vérifie explicitement que `jsonData.database` est renseigné via l'API
 correctif, contrairement aux tests déjà en place qui, eux, passaient
 sans le détecter.
 
+**Second bug trouvé au même moment, purement visuel** : le panel « Taux
+de service par client » n'affichait qu'un seul client (la dernière
+valeur du tri) au lieu des 3 — `reduceOptions.values` manquant sur le
+panel `bargauge`, qui réduisait silencieusement les 3 lignes en une
+seule valeur agrégée. Corrigé (`values: true` ajouté), avec son propre
+test de non-régression.
+
+**Vérifié visuellement par l'utilisateur (25/09/2026)**, dans un vrai
+navigateur — les 3 panels affichent les 3 vues SQL avec leurs données
+réelles :
+
+![Dashboard OMEGA BI dans Grafana](images/gestion_operationnelle_omega_bi_dashboard_grafana.png)
+
 Accès : voir `README.md` §"Entrepôt OMEGA BI (C13-C17)".
 
 ---
