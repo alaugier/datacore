@@ -117,6 +117,43 @@ suivante : ouverture du Bloc 4 (data lake OMEGA LAKE).
   de vigilance sur la mobilisation de SupervIT (§3), prévue à l'entrée
   en Phase 4 et toujours non démarrée à ce jour.
 
+**Exemple — CoSu du 25/09/2026 (clôture de M3, ajout du jalon M4).**
+
+- **Avancement** : Bloc 4 (M3, C18-C21) clos le 23/09/2026 — les 4
+  blocs techniques du cahier des charges (C1-C21) sont désormais
+  intégralement couverts. Restitution OMEGA BI dans Grafana (C16bis,
+  issue #79) livrée le 25/09/2026, vérifiée en conditions réelles.
+- **Décision actée depuis le dernier point — nouveau jalon M4** : un
+  retour de formateur a établi que les vues SQL + notebook (C16)
+  n'étaient pas une preuve de restitution suffisante ; un outil de BI
+  dédié est désormais attendu. Décision : ajouter un jalon transverse
+  **M4 — Restitution BI (Grafana)**, couvrant C16bis et C20bis
+  (monitoring du lake, à venir). Les jalons transverses prévus sous les
+  noms M4 (Rapport LaTeX) et M5 (Présentation orale) sont renumérotés
+  M5/M6 en conséquence — voir
+  [`feuille_de_route.md` §1](feuille_de_route.md#1-feuille-de-route-en-4-phases).
+- **Point d'attention à faire remonter à Éléonore RAKOTO** : ce nouveau
+  jalon **n'entraîne pas de dépassement budgétaire** — Grafana est
+  auto-hébergé, open source, sans coût de licence, cohérent avec la
+  stratégie retenue dès l'étude technique
+  ([architecture cible §2.3](architecture_cible.md#23-choix-technologiques-proposés)).
+  Il n'était toutefois pas identifié dans la feuille de route initiale
+  (comme M5/M6, les jalons transverses n'ont jamais eu de ligne
+  budgétaire dédiée dans le tableau prévisionnel — voir
+  [feuille de route §3](feuille_de_route.md#3-budget-prévisionnel)) : signalé
+  par transparence, pas parce qu'un risque financier est identifié.
+- **Budget** : voir §2.2 ci-dessous — les 4 phases techniques sont
+  closes intégralement dans l'enveloppe prévisionnelle (180 000 €, 0 €
+  d'écart). M4/M5/M6 restent hors de ce périmètre budgété, staffing
+  interne uniquement.
+- **Risques** : aucun risque bloquant. Deux défauts de configuration
+  réels trouvés et corrigés le jour même sur le dashboard Grafana
+  (base de données manquante au provisioning de la source de données,
+  agrégation erronée d'un panel masquant 2 clients sur 3) — remontés
+  par l'utilisateur en testant depuis un vrai navigateur, corrigés et
+  revérifiés le jour même, sans impact sur le calendrier — voir
+  [`gestion_operationnelle_omega_bi.md` §3.5](gestion_operationnelle_omega_bi.md#35-outil-de-restitution-de-production--grafana).
+
 ---
 
 ## 2. Tableau de suivi budgétaire
@@ -149,24 +186,31 @@ Le budget prévisionnel par phase (cf.
 [feuille de route §3](feuille_de_route.md#3-budget-prévisionnel)) n'est
 détaillé par poste de livrable que pour la Phase 1 (§2.1 ci-dessus) — les
 phases suivantes sont suivies au niveau de la phase, cohérent avec la
-granularité du budget prévisionnel initial. Situation au 21/09/2026, mise
-à jour à la clôture de M2.
+granularité du budget prévisionnel initial. Situation au 25/09/2026, mise
+à jour à la clôture de M3.
 
 | Phase | Budget prévisionnel | Réalisé à date | Écart | Statut |
 |---|---|---|---|---|
 | Phase 1 — Cadrage (M0) | 25 000 € | 25 000 € | 0 € | Terminé |
 | Phase 2 — Collecte & Stockage (M1) | 45 000 € | 45 000 € | 0 € | Terminé |
 | Phase 3 — Entrepôt de données (M2) | 55 000 € | 55 000 € | 0 € | Terminé |
-| Phase 4 — Data lake et infrastructure IoT (M3) | 55 000 € | 0 € | 55 000 € | En cours |
-| **Total programme** | **180 000 €** | **125 000 €** | **55 000 €** | **69 % consommé** |
+| Phase 4 — Data lake et infrastructure IoT (M3) | 55 000 € | 55 000 € | 0 € | Terminé |
+| **Total programme (périmètre initial)** | **180 000 €** | **180 000 €** | **0 €** | **100 % consommé** |
 
-**Analyse** : aucun dépassement constaté sur les 3 phases closes (M0,
-M1, M2) — chacune consommée intégralement, sans écart, cohérent avec
+**Analyse** : aucun dépassement constaté sur les 4 phases du périmètre
+initial — chacune consommée intégralement, sans écart, cohérent avec
 les comptes rendus de milestone déjà validés
 ([M0](../comptes_rendus/M0.md), [M1](../comptes_rendus/M1.md),
-[M2](../comptes_rendus/M2.md)). L'écart restant (55 000 €, 31 %) est
-le budget de la Phase 4 (M3), qui démarre — voir
-[sequencement_bloc4.md](sequencement_bloc4.md).
+[M2](../comptes_rendus/M2.md), [M3](../comptes_rendus/M3.md)).
+
+**M4 — Restitution BI (Grafana), hors périmètre budgété initial** :
+comme les jalons transverses M5 (Rapport LaTeX) et M6 (Présentation
+orale), M4 n'a jamais eu de ligne dans le tableau prévisionnel §3 de la
+feuille de route — ce n'est pas un dépassement du périmètre initial,
+mais un jalon qui n'y était simplement pas budgété par nature (staffing
+interne, pas d'outillage sous licence, cf. §3 de la feuille de route).
+Point de transparence porté en CoSu du 25/09/2026 (§1.2), pas un risque
+financier identifié.
 
 ---
 

@@ -17,7 +17,7 @@ grossit peut être scindée dans son propre fichier plus tard (ex.
 |---|---|
 | [`python.md`](python.md) | Bibliothèques Python utilisées dans le code applicatif (`src/datacore/`) |
 | `sql.md` | *(à créer)* Patterns SQL/PostgreSQL spécifiques au projet |
-| `shell.md` | *(à créer)* Conventions bash des scripts (`scripts/*.sh`), Docker Compose, `mc` |
+| [`shell.md`](shell.md) | Docker Compose (`.env`), provisioning Grafana (C16bis) |
 
 ## Comment ça s'enrichit
 
