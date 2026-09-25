@@ -141,10 +141,91 @@ SQL/Lakeview, Grafana) :
   écarté : nécessite un workspace Databricks dédié, sans lien avec le
   reste de l'infra (Postgres + MinIO en local).
 
-**À implémenter** : service `grafana` dans `docker-compose.yml`,
-source de données Postgres pointant sur `datacore_omega_bi` avec les
-identifiants `bi_reader`, dashboard(s) reprenant les 3 indicateurs de
-§3.1-3.3.
+**Implémenté (issue #79, C16bis)** :
+- Service `grafana` (`grafana/grafana-oss`) dans `docker-compose.yml`,
+  auto-hébergé, volume dédié pour la persistance (`datacore-grafana-data`).
+- Source de données provisionnée automatiquement
+  (`infra/grafana/provisioning/datasources/omega_bi.yaml`) : Postgres,
+  base `datacore_omega_bi`, utilisateur `bi_reader` — mot de passe lu
+  depuis `BI_READER_PASSWORD` (`.env`), jamais codé en dur (même
+  principe que `LAKE_PSEUDONYM_KEY`, voir `registre_rgpd_lake.md`).
+- Dashboard provisionné automatiquement
+  (`infra/grafana/dashboards/sla_omega_bi.json`) : les 3 indicateurs de
+  §3.1-3.3 (taux de service par client, délai moyen par transporteur,
+  stock disponible par site).
+
+**Vérifié en conditions réelles** (24/09/2026) :
+- Les 3 panels interrogés via l'API Grafana (`/api/ds/query`) renvoient
+  des données réelles de l'entrepôt (ex. FreshMarket 90.6 % de taux de
+  service, entrepôt de Lyon 11 190 unités en stock).
+- Connexion confirmée avec les identifiants `bi_reader` réels (pas un
+  compte admin) : `/api/datasources/uid/omega_bi_reader/health` renvoie
+  `Database Connection OK`.
+- Portée du rôle `bi_reader` reconfirmée côté Grafana : une lecture de
+  `gouvernance.v_dernieres_operations` échoue en
+  `permission denied for schema gouvernance` — cohérent avec le choix
+  délibéré d'exclure `gouvernance` de `bi_reader` (§4, "préoccupation
+  d'exploitation technique, pas un objet d'analyse métier"). Écriture
+  non testée en direct (bloqué par la sandbox d'exécution), mais exclue
+  par construction : seul `GRANT SELECT` est accordé à `bi_reader`
+  (`sql/schema_entrepot_omega_bi.sql`), aucun `INSERT`/`UPDATE`/`DELETE`.
+- **Faille d'infrastructure trouvée et corrigée en vérifiant** : les
+  identifiants `.env` (`GRAFANA_ADMIN_PASSWORD` notamment) n'étaient pas
+  réellement appliqués par `docker compose -f infra/docker/docker-compose.yml
+  up -d` sans l'option `--env-file .env` — Docker Compose résout le
+  fichier `.env` depuis le répertoire du fichier compose
+  (`infra/docker/`), pas depuis le répertoire courant, donc silencieux
+  retour aux valeurs par défaut codées dans `docker-compose.yml`.
+  `README.md` et `api_omega_data.md` avaient déjà cette option ;
+  `creation_entrepot_omega_bi.md` et `test_lake_pipeline.py` ne
+  l'avaient pas — corrigés en conséquence. Sans ce correctif, le mot de
+  passe admin Grafana serait resté silencieusement la valeur par défaut
+  du fichier compose plutôt que celle, réelle, de `.env`.
+
+**Bug réel trouvé le 25/09/2026, signalé par l'utilisateur** : les
+panels affichaient "No data" dans le navigateur alors que mes propres
+vérifications (`/api/ds/query` en HTTP direct) renvoyaient de vraies
+données. Message d'erreur exact obtenu via le triangle d'avertissement
+du panel et la console du navigateur : *"You do not currently have a
+default database configured for this data source. Postgres requires a
+default database with which to connect."* (levée par `SqlDatasource.ts`
+côté React, pas par le backend).
+
+**Cause réelle** : le provisioning ne renseignait le nom de la base
+(`datacore_omega_bi`) qu'au niveau `database` (premier niveau du YAML),
+pas dans `jsonData.database`. Le backend (santé de la source, `/api/ds/query`
+appelé directement) se contente du premier niveau et fonctionne très
+bien sans `jsonData.database` — mais l'éditeur de requête du navigateur
+(React) vérifie `jsonData.database` *avant même d'envoyer la requête*
+et refuse tout net si absent. **Mes vérifications de la veille (HTTP
+direct, `curl`) ne passent jamais par ce chemin de code côté client et
+ne pouvaient donc pas détecter ce bug** — angle mort méthodologique réel
+de la vérification par API seule, distinct des limites déjà notées
+("pas d'accès navigateur ici"). Corrigé : `jsonData.database:
+$GF_OMEGA_BI_DB` ajouté dans
+`infra/grafana/provisioning/datasources/omega_bi.yaml`, en plus du
+champ de premier niveau (conservé, utilisé par le backend).
+
+**Test de non-régression ajouté** (`test_grafana_omega_bi.py`) :
+vérifie explicitement que `jsonData.database` est renseigné via l'API
+`/api/datasources/uid/omega_bi_reader` — ce test aurait échoué avant le
+correctif, contrairement aux tests déjà en place qui, eux, passaient
+sans le détecter.
+
+**Second bug trouvé au même moment, purement visuel** : le panel « Taux
+de service par client » n'affichait qu'un seul client (la dernière
+valeur du tri) au lieu des 3 — `reduceOptions.values` manquant sur le
+panel `bargauge`, qui réduisait silencieusement les 3 lignes en une
+seule valeur agrégée. Corrigé (`values: true` ajouté), avec son propre
+test de non-régression.
+
+**Vérifié visuellement par l'utilisateur (25/09/2026)**, dans un vrai
+navigateur — les 3 panels affichent les 3 vues SQL avec leurs données
+réelles :
+
+![Dashboard OMEGA BI dans Grafana](images/gestion_operationnelle_omega_bi_dashboard_grafana.png)
+
+Accès : voir `README.md` §"Entrepôt OMEGA BI (C13-C17)".
 
 ---
 

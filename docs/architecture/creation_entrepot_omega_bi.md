@@ -46,7 +46,7 @@ C13 §6.1.
 
 ## 2. Procédure d'installation
 
-Prérequis : `docker compose -f infra/docker/docker-compose.yml up -d db`
+Prérequis : `docker compose -f infra/docker/docker-compose.yml --env-file .env up -d db`
 (le service `db` héberge déjà la base de staging ; l'entrepôt y ajoute
 une seconde base sur la même instance).
 
@@ -131,7 +131,7 @@ ne provisionne pas de service Postgres).
 création de ce livrable :
 
 ```bash
-docker compose -f infra/docker/docker-compose.yml up -d db
+docker compose -f infra/docker/docker-compose.yml --env-file .env up -d db
 ./scripts/init_omega_bi_db.sh
 alembic -c alembic_omega_bi.ini upgrade head
 python3 -m datacore.storage.warehouse.load_dim_temps

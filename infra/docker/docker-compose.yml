@@ -104,6 +104,39 @@ services:
       mc admin policy attach local lake-reader --user ${LAKE_READER_USER:-lake_reader}
       "
 
+  # Restitution BI (C16bis) : outil de BI dedie plutot que le notebook
+  # seul (retour de formateur, voir gestion_operationnelle_omega_bi.md
+  # §3.5) -- auto-heberge, comme le reste de l'infra locale (sobriete
+  # RGESN), connecte en lecture seule via bi_reader (C14), jamais avec
+  # les identifiants admin Postgres.
+  grafana:
+    image: grafana/grafana-oss:latest
+    container_name: datacore-grafana
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-datacore_grafana}
+      # Repris par le provisioning de la source de donnees (voir
+      # infra/grafana/provisioning/datasources) -- Grafana substitue les
+      # variables d'environnement $VAR dans ses fichiers de provisioning.
+      GF_OMEGA_BI_DB: ${OMEGA_BI_DB:-datacore_omega_bi}
+      GF_BI_READER_PASSWORD: ${BI_READER_PASSWORD:-datacore_bi_reader}
+    ports:
+      - "${GRAFANA_PORT:-3000}:3000"
+    volumes:
+      - datacore-grafana-data:/var/lib/grafana
+      - ../grafana/provisioning:/etc/grafana/provisioning:ro
+      - ../grafana/dashboards:/etc/grafana/dashboards:ro
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3000/api/health | grep -q '\"database\": \"ok\"'"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
 volumes:
   datacore-staging-data:
   datacore-omega-lake-data:
+  datacore-grafana-data:
