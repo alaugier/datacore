@@ -19,6 +19,8 @@
           "datasource": { "type": "postgres", "uid": "omega_bi_reader" },
           "rawSql": "SELECT client, taux_service_pct FROM exploitation.v_taux_service_client ORDER BY taux_service_pct DESC",
           "format": "table",
+          "editorMode": "code",
+          "rawQuery": true,
           "refId": "A"
         }
       ],
@@ -56,6 +58,8 @@
           "datasource": { "type": "postgres", "uid": "omega_bi_reader" },
           "rawSql": "SELECT transporteur, delai_moyen_jours FROM exploitation.v_delai_moyen_transporteur ORDER BY delai_moyen_jours DESC",
           "format": "table",
+          "editorMode": "code",
+          "rawQuery": true,
           "refId": "A"
         }
       ],
@@ -80,6 +84,8 @@
           "datasource": { "type": "postgres", "uid": "omega_bi_reader" },
           "rawSql": "SELECT entrepot, quantite_totale, nb_references FROM exploitation.v_stock_disponible_site ORDER BY entrepot",
           "format": "table",
+          "editorMode": "code",
+          "rawQuery": true,
           "refId": "A"
         }
       ],
