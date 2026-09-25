@@ -57,6 +57,23 @@ def test_source_de_donnees_omega_bi_provisionnee_et_connectee():
     assert reponse.json()["status"] == "OK"
 
 
+def test_source_de_donnees_declare_une_base_par_defaut_dans_jsondata():
+    """`jsonData.database` doit être renseigné, pas seulement le champ
+    `database` de premier niveau -- sinon l'éditeur de requête du
+    navigateur refuse d'exécuter la moindre requête ("You do not
+    currently have a default database configured for this data
+    source."), alors que `/health` et `/api/ds/query` fonctionnent très
+    bien sans lui : cette vérification côté client (React) n'est pas
+    exercée par un appel HTTP direct à l'API, contrairement aux deux
+    tests précédents -- régression réelle trouvée le 25/09/2026 en
+    testant depuis un vrai navigateur, invisible depuis les tests ci-dessus."""
+    reponse = requests.get(
+        f"{GRAFANA_URL}/api/datasources/uid/omega_bi_reader", auth=AUTH, timeout=5
+    )
+    assert reponse.status_code == 200
+    assert reponse.json()["jsonData"].get("database")
+
+
 def test_dashboard_sla_provisionne_avec_les_3_panels():
     """Le dashboard SLA est provisionné automatiquement (pas créé à la main)
     et reprend bien les 3 indicateurs (gestion_operationnelle_omega_bi.md §3.1-3.3)."""

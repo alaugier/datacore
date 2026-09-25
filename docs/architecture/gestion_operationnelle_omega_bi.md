@@ -182,6 +182,36 @@ SQL/Lakeview, Grafana) :
   passe admin Grafana serait resté silencieusement la valeur par défaut
   du fichier compose plutôt que celle, réelle, de `.env`.
 
+**Bug réel trouvé le 25/09/2026, signalé par l'utilisateur** : les
+panels affichaient "No data" dans le navigateur alors que mes propres
+vérifications (`/api/ds/query` en HTTP direct) renvoyaient de vraies
+données. Message d'erreur exact obtenu via le triangle d'avertissement
+du panel et la console du navigateur : *"You do not currently have a
+default database configured for this data source. Postgres requires a
+default database with which to connect."* (levée par `SqlDatasource.ts`
+côté React, pas par le backend).
+
+**Cause réelle** : le provisioning ne renseignait le nom de la base
+(`datacore_omega_bi`) qu'au niveau `database` (premier niveau du YAML),
+pas dans `jsonData.database`. Le backend (santé de la source, `/api/ds/query`
+appelé directement) se contente du premier niveau et fonctionne très
+bien sans `jsonData.database` — mais l'éditeur de requête du navigateur
+(React) vérifie `jsonData.database` *avant même d'envoyer la requête*
+et refuse tout net si absent. **Mes vérifications de la veille (HTTP
+direct, `curl`) ne passent jamais par ce chemin de code côté client et
+ne pouvaient donc pas détecter ce bug** — angle mort méthodologique réel
+de la vérification par API seule, distinct des limites déjà notées
+("pas d'accès navigateur ici"). Corrigé : `jsonData.database:
+$GF_OMEGA_BI_DB` ajouté dans
+`infra/grafana/provisioning/datasources/omega_bi.yaml`, en plus du
+champ de premier niveau (conservé, utilisé par le backend).
+
+**Test de non-régression ajouté** (`test_grafana_omega_bi.py`) :
+vérifie explicitement que `jsonData.database` est renseigné via l'API
+`/api/datasources/uid/omega_bi_reader` — ce test aurait échoué avant le
+correctif, contrairement aux tests déjà en place qui, eux, passaient
+sans le détecter.
+
 Accès : voir `README.md` §"Entrepôt OMEGA BI (C13-C17)".
 
 ---

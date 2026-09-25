@@ -20,6 +20,7 @@ datasources:
     secureJsonData:
       password: $GF_BI_READER_PASSWORD
     jsonData:
+      database: $GF_OMEGA_BI_DB
       sslmode: disable
       postgresVersion: 1600
       maxOpenConns: 5
