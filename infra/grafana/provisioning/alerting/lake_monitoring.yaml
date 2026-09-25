@@ -1,0 +1,64 @@
+# Alerte de monitoring du lake (C20bis) : "Le monitorage génère une
+# alerte lors d'une rupture de service" (référentiel de compétences,
+# C20). Point de contact = webhook vers alerting-webhook, qui relaie un
+# vrai e-mail (smtplib) vers MailHog -- voir
+# src/datacore/alerting/webhook.py et
+# docs/architecture/gestion_operationnelle_omega_bi.md.
+apiVersion: 1
+
+contactPoints:
+  - orgId: 1
+    name: alerting-webhook
+    receivers:
+      - uid: alerting_webhook_receiver
+        type: webhook
+        settings:
+          url: http://alerting-webhook:5060/webhook/alertes
+          httpMethod: POST
+
+policies:
+  - orgId: 1
+    receiver: alerting-webhook
+    group_by: ["alertname"]
+
+groups:
+  - orgId: 1
+    name: monitoring-lake
+    folder: Lake Monitoring
+    interval: 30s
+    rules:
+      - uid: minio_injoignable
+        title: MinIO injoignable
+        condition: C
+        data:
+          - refId: A
+            datasourceUid: omega_bi_reader
+            relativeTimeRange:
+              from: 600
+              to: 0
+            model:
+              rawSql: >-
+                SELECT minio_accessible::int AS value
+                FROM monitoring.sante_infrastructure
+                ORDER BY releve_le DESC LIMIT 1
+              format: table
+              editorMode: code
+              rawQuery: true
+              refId: A
+          - refId: C
+            datasourceUid: "__expr__"
+            model:
+              type: threshold
+              expression: A
+              conditions:
+                - evaluator:
+                    type: lt
+                    params: [1]
+              refId: C
+        noDataState: OK
+        execErrState: Error
+        for: 30s
+        annotations:
+          summary: "MinIO est injoignable -- rupture de service détectée sur le dernier relevé de monitoring.sante_infrastructure."
+        labels:
+          severity: critical

@@ -136,6 +136,48 @@ services:
       timeout: 5s
       retries: 5
 
+  # Capteur SMTP local (C20bis) : recoit les e-mails d'alerte envoyes
+  # par alerting-webhook (smtplib) sans jamais les faire sortir vers un
+  # vrai fournisseur externe -- interface web pour visualiser les
+  # e-mails recus, API REST pour les tests d'integration.
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: datacore-mailhog
+    restart: unless-stopped
+    ports:
+      - "${MAILHOG_SMTP_PORT:-1025}:1025"
+      - "${MAILHOG_API_PORT:-8025}:8025"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8025/api/v2/messages"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # Relais alerte Grafana -> e-mail reel (C20bis) : recoit le webhook
+  # d'une regle d'alerte Grafana (rupture de service detectee sur
+  # monitoring.sante_infrastructure/catalogue_lake) et envoie un e-mail
+  # via smtplib vers mailhog -- voir src/datacore/alerting/webhook.py
+  # pour la justification (pas de vrai compte email externe).
+  alerting-webhook:
+    build:
+      context: ../..
+      dockerfile: infra/docker/alerting-webhook.Dockerfile
+    container_name: datacore-alerting-webhook
+    restart: unless-stopped
+    depends_on:
+      mailhog:
+        condition: service_healthy
+    environment:
+      SMTP_HOST: mailhog
+      SMTP_PORT: 1025
+    ports:
+      - "${ALERTING_WEBHOOK_PORT:-5060}:5060"
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5060/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
 volumes:
   datacore-staging-data:
   datacore-omega-lake-data:

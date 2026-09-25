@@ -66,3 +66,38 @@ Utilisé dans : `infra/grafana/dashboards/sla_omega_bi.json`.
 ```json
 "reduceOptions": { "calcs": ["lastNotNull"], "values": true, "fields": "" }
 ```
+
+### Provisioning Grafana — alerting déclaratif (`contactPoints`/`policies`/`groups`)
+
+Un point de contact et une règle d'alerte se provisionnent comme les
+datasources/dashboards, dans `infra/grafana/provisioning/alerting/`
+(clé `apiVersion: 1`, puis `contactPoints`/`policies`/`groups`). Une
+règle a besoin d'au moins une requête (`data[].model`, avec
+`editorMode`/`rawQuery` comme pour un panel) et d'une expression de
+seuil (`datasourceUid: "__expr__"`, `type: threshold`) référencée par
+`condition`.
+
+**Délai réel entre "alerte active" et "e-mail reçu"** : Grafana
+regroupe les notifications (`group_wait`, ~30 s par défaut avant le
+premier envoi d'un nouveau groupe) — l'alerte peut passer à l'état
+`active` côté `/api/alertmanager/.../alerts` plusieurs secondes avant
+que le point de contact soit réellement notifié. Vérifié le 25/09/2026 :
+~20 s d'écart, pas un échec de livraison.
+
+Utilisé dans : `infra/grafana/provisioning/alerting/lake_monitoring.yaml`.
+
+### Panel `stat` sur un champ Postgres `boolean` : "No data" silencieux
+
+Un champ retourné avec `type: "boolean"` (vérifié via `/api/ds/query`)
+ne s'affiche pas dans un panel `stat`, même avec une vraie ligne en
+retour ("No data" alors que la requête renvoie bien une valeur) — un
+panel voisin sur un champ numérique de la même table fonctionnait,
+lui. Piège trouvé le 25/09/2026, signalé par l'utilisateur. Corrigé en
+convertissant en texte directement dans la requête SQL plutôt que de
+laisser Grafana interpréter un booléen brut :
+
+```sql
+SELECT CASE WHEN condition THEN 'Accessible' ELSE 'Injoignable' END AS etat FROM ...
+```
+
+Utilisé dans : `infra/grafana/dashboards/monitoring_lake.json`.
