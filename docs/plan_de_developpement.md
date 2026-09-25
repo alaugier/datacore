@@ -124,13 +124,18 @@ entier jusque-là). Vérifié bout en bout avec les vraies clés
 `docs/comptes_rendus/M3.md` §3/§4 mis à jour en conséquence.
 
 ### M4 — Restitution BI (Grafana) (ouvert le 24/09/2026)
-- [ ] Restitution OMEGA BI dans Grafana — vues SQL + KPI SLA, C16bis (#79)
+- [x] Restitution OMEGA BI dans Grafana — vues SQL + KPI SLA, C16bis (#79)
 - [ ] Monitoring du data lake dans Grafana — KPI, métriques, alertes, C20bis (#80)
 
 Décision et choix de l'outil documentés dans
 `docs/architecture/gestion_operationnelle_omega_bi.md` §3.5 (PR #78) —
 Grafana retenu plutôt que Power BI ou Databricks SQL/Lakeview pour rester
 auto-hébergé dans l'infra locale existante.
+
+#79 livrée et vérifiée en conditions réelles le 25/09/2026 (PR #82,
+correctifs Grafana réels trouvés en testant depuis un vrai navigateur ;
+PR #83 pour le glossaire/aide-mémoire/supervision associés) — issue
+fermée, statut Kanban Terminé.
 
 ## Règles pour Claude Code
 - Ne jamais committer `data/raw/*` (voir `.gitignore`).
