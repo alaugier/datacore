@@ -1,0 +1,104 @@
+{
+  "title": "OMEGA LAKE — Monitoring (C20bis)",
+  "uid": "monitoring-lake",
+  "editable": false,
+  "schemaVersion": 39,
+  "version": 1,
+  "timezone": "browser",
+  "tags": ["omega-lake", "c20bis"],
+  "panels": [
+    {
+      "id": 1,
+      "type": "stat",
+      "title": "Santé infrastructure — MinIO (monitoring.sante_infrastructure)",
+      "description": "Dernier relevé d'accessibilité de MinIO et de la capacité utilisée (volet matériel, C20).",
+      "gridPos": { "h": 6, "w": 8, "x": 0, "y": 0 },
+      "datasource": { "type": "postgres", "uid": "omega_bi_reader" },
+      "targets": [
+        {
+          "datasource": { "type": "postgres", "uid": "omega_bi_reader" },
+          "rawSql": "SELECT minio_accessible FROM monitoring.sante_infrastructure ORDER BY releve_le DESC LIMIT 1",
+          "format": "table",
+          "editorMode": "code",
+          "rawQuery": true,
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [
+            { "type": "value", "options": { "true": { "text": "Accessible", "color": "green" } } },
+            { "type": "value", "options": { "false": { "text": "Injoignable", "color": "red" } } }
+          ]
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"], "values": false },
+        "textMode": "value"
+      }
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "Capacité utilisée (monitoring.sante_infrastructure)",
+      "gridPos": { "h": 6, "w": 8, "x": 8, "y": 0 },
+      "datasource": { "type": "postgres", "uid": "omega_bi_reader" },
+      "targets": [
+        {
+          "datasource": { "type": "postgres", "uid": "omega_bi_reader" },
+          "rawSql": "SELECT capacite_utilisee_octets FROM monitoring.sante_infrastructure ORDER BY releve_le DESC LIMIT 1",
+          "format": "table",
+          "editorMode": "code",
+          "rawQuery": true,
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": { "defaults": { "unit": "bytes" }, "overrides": [] },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"], "values": false }
+      }
+    },
+    {
+      "id": 3,
+      "type": "table",
+      "title": "Volumétrie et fraîcheur par flux/zone (monitoring.catalogue_lake)",
+      "description": "Dernier relevé du catalogue par flux/zone (volet applicatif, C20).",
+      "gridPos": { "h": 9, "w": 24, "x": 0, "y": 6 },
+      "datasource": { "type": "postgres", "uid": "omega_bi_reader" },
+      "targets": [
+        {
+          "datasource": { "type": "postgres", "uid": "omega_bi_reader" },
+          "rawSql": "SELECT DISTINCT ON (flux, zone) flux, zone, nb_lignes, derniere_modification FROM monitoring.catalogue_lake ORDER BY flux, zone, releve_le DESC",
+          "format": "table",
+          "editorMode": "code",
+          "rawQuery": true,
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": { "defaults": {}, "overrides": [] },
+      "options": {}
+    },
+    {
+      "id": 4,
+      "type": "table",
+      "title": "Dernière purge RGPD par flux (monitoring.purges_lake)",
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 15 },
+      "datasource": { "type": "postgres", "uid": "omega_bi_reader" },
+      "targets": [
+        {
+          "datasource": { "type": "postgres", "uid": "omega_bi_reader" },
+          "rawSql": "SELECT DISTINCT ON (flux) flux, nb_partitions_purgees, execute_le FROM monitoring.purges_lake ORDER BY flux, execute_le DESC",
+          "format": "table",
+          "editorMode": "code",
+          "rawQuery": true,
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": { "defaults": {}, "overrides": [] },
+      "options": {}
+    }
+  ],
+  "time": { "from": "now-24h", "to": "now" },
+  "refresh": "1m"
+}

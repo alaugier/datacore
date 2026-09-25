@@ -100,11 +100,14 @@ def purger_geolocalisation(
 def main() -> None:
     """Point d'entrée CLI : purge les 2 flux de géolocalisation avec la rétention par défaut."""
     from datacore.storage.lake.ingestion_batch import client
+    from datacore.storage.lake.monitoring import enregistrer_purge
     from datacore.storage.lake.transform import connexion
 
     resultat = purger_geolocalisation(client(), connexion())
     for flux, cles in resultat.items():
         print(f"{flux} : {len(cles)} partition(s) purgée(s)")
+
+    enregistrer_purge(resultat)
 
 
 if __name__ == "__main__":
