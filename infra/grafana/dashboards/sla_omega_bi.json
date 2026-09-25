@@ -43,7 +43,7 @@
       "options": {
         "displayMode": "gradient",
         "orientation": "horizontal",
-        "reduceOptions": { "calcs": ["lastNotNull"] }
+        "reduceOptions": { "calcs": ["lastNotNull"], "values": true, "fields": "" }
       }
     },
     {

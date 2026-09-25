@@ -74,6 +74,22 @@ def test_source_de_donnees_declare_une_base_par_defaut_dans_jsondata():
     assert reponse.json()["jsonData"].get("database")
 
 
+def test_panel_taux_de_service_affiche_une_barre_par_client_pas_une_seule_valeur_reduite():
+    """`reduceOptions.values` doit être `true` sur le panel bargauge --
+    sans lui, Grafana réduit les 3 lignes (une par client) à une seule
+    valeur agrégée ("Last *", ici la dernière du tri) au lieu d'une
+    barre par client, silencieusement (aucune erreur, juste un panel
+    qui affiche moins de données que prévu). Régression réelle trouvée
+    le 25/09/2026, remontée par l'utilisateur après le correctif
+    précédent ("No data" résolu, mais un seul client visible sur 3)."""
+    reponse = requests.get(f"{GRAFANA_URL}/api/dashboards/uid/sla-omega-bi", auth=AUTH, timeout=5)
+    assert reponse.status_code == 200
+    panel_bargauge = next(
+        p for p in reponse.json()["dashboard"]["panels"] if p["type"] == "bargauge"
+    )
+    assert panel_bargauge["options"]["reduceOptions"]["values"] is True
+
+
 def test_dashboard_sla_provisionne_avec_les_3_panels():
     """Le dashboard SLA est provisionné automatiquement (pas créé à la main)
     et reprend bien les 3 indicateurs (gestion_operationnelle_omega_bi.md §3.1-3.3)."""
