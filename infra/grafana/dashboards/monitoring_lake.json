@@ -17,7 +17,7 @@
       "targets": [
         {
           "datasource": { "type": "postgres", "uid": "omega_bi_reader" },
-          "rawSql": "SELECT minio_accessible FROM monitoring.sante_infrastructure ORDER BY releve_le DESC LIMIT 1",
+          "rawSql": "SELECT CASE WHEN minio_accessible THEN 'Accessible' ELSE 'Injoignable' END AS etat FROM monitoring.sante_infrastructure ORDER BY releve_le DESC LIMIT 1",
           "format": "table",
           "editorMode": "code",
           "rawQuery": true,
@@ -27,8 +27,8 @@
       "fieldConfig": {
         "defaults": {
           "mappings": [
-            { "type": "value", "options": { "true": { "text": "Accessible", "color": "green" } } },
-            { "type": "value", "options": { "false": { "text": "Injoignable", "color": "red" } } }
+            { "type": "value", "options": { "Accessible": { "color": "green" } } },
+            { "type": "value", "options": { "Injoignable": { "color": "red" } } }
           ]
         },
         "overrides": []

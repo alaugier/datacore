@@ -85,3 +85,19 @@ que le point de contact soit réellement notifié. Vérifié le 25/09/2026 :
 ~20 s d'écart, pas un échec de livraison.
 
 Utilisé dans : `infra/grafana/provisioning/alerting/lake_monitoring.yaml`.
+
+### Panel `stat` sur un champ Postgres `boolean` : "No data" silencieux
+
+Un champ retourné avec `type: "boolean"` (vérifié via `/api/ds/query`)
+ne s'affiche pas dans un panel `stat`, même avec une vraie ligne en
+retour ("No data" alors que la requête renvoie bien une valeur) — un
+panel voisin sur un champ numérique de la même table fonctionnait,
+lui. Piège trouvé le 25/09/2026, signalé par l'utilisateur. Corrigé en
+convertissant en texte directement dans la requête SQL plutôt que de
+laisser Grafana interpréter un booléen brut :
+
+```sql
+SELECT CASE WHEN condition THEN 'Accessible' ELSE 'Injoignable' END AS etat FROM ...
+```
+
+Utilisé dans : `infra/grafana/dashboards/monitoring_lake.json`.

@@ -44,6 +44,19 @@ principe de sobriété.
 
 ---
 
+## 1bis. Bug trouvé par l'utilisateur : panel "Santé infrastructure" en "No data"
+
+Signalé le 25/09/2026 : le panel affichait "No data" alors que le panel
+voisin (même table, colonne `capacite_utilisee_octets`) affichait bien
+une valeur réelle. Vérifié via l'API `/api/ds/query` : la requête
+`SELECT minio_accessible FROM ...` renvoyait bien une ligne réelle
+(`true`), mais avec un champ de type `boolean` -- le panel `stat` de
+Grafana ne l'affiche pas correctement dans cette version. Corrigé en
+convertissant le booléen en texte directement dans la requête SQL
+(`CASE WHEN minio_accessible THEN 'Accessible' ELSE 'Injoignable' END`)
+plutôt que de compter sur Grafana pour gérer un champ booléen -- même
+type de champ (texte) que les autres panels déjà fonctionnels.
+
 ## 2. Vérifié en conditions réelles (25/09/2026)
 
 ```
