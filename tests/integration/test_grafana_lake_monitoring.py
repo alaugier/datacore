@@ -23,9 +23,17 @@ import socket
 import pytest
 import requests
 
-from datacore.config import GRAFANA_ADMIN_PASSWORD, GRAFANA_ADMIN_USER, GRAFANA_PORT
+from datacore.config import (
+    ALERTING_WEBHOOK_PORT,
+    ALERTING_WEBHOOK_SECRET,
+    GRAFANA_ADMIN_PASSWORD,
+    GRAFANA_ADMIN_USER,
+    GRAFANA_PORT,
+    MAILHOG_API_PORT,
+)
 
 GRAFANA_URL = f"http://localhost:{GRAFANA_PORT}"
+ALERTING_WEBHOOK_URL = f"http://localhost:{ALERTING_WEBHOOK_PORT}"
 AUTH = (GRAFANA_ADMIN_USER, GRAFANA_ADMIN_PASSWORD)
 
 
@@ -39,11 +47,13 @@ def _infra_disponible(hote: str, port: int, delai: float = 1.0) -> bool:
 
 _grafana_ok = _infra_disponible("localhost", int(GRAFANA_PORT))
 _minio_ok = _infra_disponible("localhost", 9000)
+_alerting_ok = _infra_disponible("localhost", int(ALERTING_WEBHOOK_PORT))
+_mailhog_ok = _infra_disponible("localhost", int(MAILHOG_API_PORT))
 
 pytestmark = pytest.mark.skipif(
-    not (_grafana_ok and _minio_ok),
+    not (_grafana_ok and _minio_ok and _alerting_ok and _mailhog_ok),
     reason=(
-        "Grafana/MinIO non accessibles -- lancer "
+        "Grafana/MinIO/alerting-webhook/MailHog non accessibles -- lancer "
         "`docker compose -f infra/docker/docker-compose.yml --env-file .env "
         "up -d db minio minio-init grafana alerting-webhook mailhog` avant ce test"
     ),
@@ -85,7 +95,25 @@ def test_point_de_contact_webhook_alerting_provisionne():
     webhook = next(p for p in points if p["uid"] == "alerting_webhook_receiver")
     assert webhook["type"] == "webhook"
     assert webhook["settings"]["url"] == "http://alerting-webhook:5060/webhook/alertes"
+    assert webhook["settings"]["headers"]["X-Webhook-Secret"] == ALERTING_WEBHOOK_SECRET
     assert webhook["provenance"] == "file"
+
+
+def test_alerting_webhook_reel_refuse_sans_le_bon_secret():
+    """Le conteneur alerting-webhook réel (pas un test client Flask en mémoire) applique
+    bien l'authentification -- le port est exposé sur l'hôte (docker-compose.yml)."""
+    payload = {"status": "firing", "alerts": []}
+
+    sans_secret = requests.post(f"{ALERTING_WEBHOOK_URL}/webhook/alertes", json=payload, timeout=5)
+    assert sans_secret.status_code == 401
+
+    bon_secret = requests.post(
+        f"{ALERTING_WEBHOOK_URL}/webhook/alertes",
+        json=payload,
+        headers={"X-Webhook-Secret": ALERTING_WEBHOOK_SECRET},
+        timeout=5,
+    )
+    assert bon_secret.status_code == 200
 
 
 def test_regle_dalerte_minio_injoignable_provisionnee():

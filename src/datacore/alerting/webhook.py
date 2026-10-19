@@ -20,14 +20,34 @@ sources métier.
 import smtplib
 from email.message import EmailMessage
 
-from flask import Flask, jsonify, request
+from flask import Flask, abort, jsonify, request
 
-from datacore.config import SMTP_HOST, SMTP_PORT
+from datacore.config import ALERTING_WEBHOOK_SECRET, SMTP_HOST, SMTP_PORT
 
 app = Flask(__name__)
 
 EXPEDITEUR = "alerting@datacore.local"
 DESTINATAIRE = "data-engineer@datacore.local"
+
+
+def require_webhook_secret() -> None:
+    """Interrompt la requête avec un 401 si l'en-tête `X-Webhook-Secret` est absent ou invalide.
+
+    Le port du service est exposé sur l'hôte (`docker-compose.yml`) --
+    sans ce contrôle, n'importe quel process local pourrait déclencher
+    un envoi d'e-mail. Grafana envoie ce secret via l'en-tête
+    personnalisé configuré sur le point de contact (voir
+    `infra/grafana/provisioning/alerting/lake_monitoring.yaml`).
+    """
+    secret = request.headers.get("X-Webhook-Secret")
+    if secret != ALERTING_WEBHOOK_SECRET:
+        abort(401, description="Secret manquant ou invalide. En-tête attendu : X-Webhook-Secret")
+
+
+@app.errorhandler(401)
+def unauthorized(e):
+    """Sérialise les erreurs 401 (secret manquant/invalide) en JSON."""
+    return jsonify({"erreur": "unauthorized", "message": str(e.description)}), 401
 
 
 def envoyer_alerte(
@@ -85,10 +105,29 @@ def health():
 
 @app.post("/webhook/alertes")
 def recevoir_alerte():
-    """Reçoit le webhook d'alerte de Grafana et relaie un e-mail réel via SMTP."""
-    payload = request.get_json(force=True, silent=True) or {}
+    """Reçoit le webhook d'alerte de Grafana et relaie un e-mail réel via SMTP.
+
+    Returns:
+        200 si l'e-mail a été relayé. 400 si le payload reçu n'est pas
+        un objet JSON (ex. une liste ou une chaîne -- un payload JSON
+        valide mais de la mauvaise forme n'est pas intercepté par
+        `silent=True`, qui ne couvre que le JSON invalide). 502 si
+        l'envoi SMTP échoue (ex. MailHog injoignable) -- pour que
+        Grafana voie un échec de notification explicite plutôt qu'un
+        500 générique.
+    """
+    require_webhook_secret()
+
+    payload = request.get_json(force=True, silent=True)
+    if not isinstance(payload, dict):
+        return jsonify({"erreur": "payload JSON invalide (un objet est attendu)"}), 400
+
     sujet, corps = _resumer_payload(payload)
-    envoyer_alerte(sujet, corps)
+    try:
+        envoyer_alerte(sujet, corps)
+    except (OSError, smtplib.SMTPException) as erreur:
+        return jsonify({"erreur": f"échec de l'envoi SMTP : {erreur}"}), 502
+
     return jsonify({"statut": "relayé"}), 200
 
 

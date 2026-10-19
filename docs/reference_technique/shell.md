@@ -101,3 +101,22 @@ SELECT CASE WHEN condition THEN 'Accessible' ELSE 'Injoignable' END AS etat FROM
 ```
 
 Utilisé dans : `infra/grafana/dashboards/monitoring_lake.json`.
+
+### Point de contact `webhook` provisionné — en-têtes personnalisés via `settings.headers`
+
+Un objet simple `{"Nom-Entete": "valeur"}` sous `settings.headers`
+(pas une liste de `{key, value}`, pas de champs `httpHeaderName1`/
+`httpHeaderValue1`) suffit pour qu'un point de contact `webhook`
+envoie un en-tête personnalisé (ex. un secret d'authentification) à
+chaque notification — accepté sans erreur au provisioning et confirmé
+transmis lors d'un vrai déclenchement d'alerte. Comme pour les
+datasources, `$VAR` dans la valeur est substitué depuis l'environnement
+du conteneur Grafana.
+
+Utilisé dans : `infra/grafana/provisioning/alerting/lake_monitoring.yaml`.
+
+```yaml
+settings:
+  headers:
+    X-Webhook-Secret: $GF_ALERTING_WEBHOOK_SECRET
+```

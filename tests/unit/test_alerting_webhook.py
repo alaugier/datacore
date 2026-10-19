@@ -4,9 +4,20 @@
 l'envoi réel vers MailHog est vérifié dans
 `tests/integration/test_grafana_lake_monitoring.py`.
 """
+import smtplib
+
 import pytest
 
-from datacore.alerting.webhook import _resumer_payload, app, envoyer_alerte
+from datacore.alerting.webhook import (
+    DESTINATAIRE,
+    EXPEDITEUR,
+    _resumer_payload,
+    app,
+    envoyer_alerte,
+)
+from datacore.config import ALERTING_WEBHOOK_SECRET
+
+EN_TETES_VALIDES = {"X-Webhook-Secret": ALERTING_WEBHOOK_SECRET}
 
 
 class FakeSMTP:
@@ -26,6 +37,13 @@ class FakeSMTP:
 
     def send_message(self, message):
         FakeSMTP.messages_envoyes.append(message)
+
+
+class FakeSMTPEnPanne:
+    """Remplace `smtplib.SMTP` par une connexion qui échoue toujours (serveur injoignable)."""
+
+    def __init__(self, hote, port):
+        raise smtplib.SMTPConnectError(421, "connexion refusée")
 
 
 @pytest.fixture(autouse=True)
@@ -64,7 +82,9 @@ def test_resumer_payload_sans_alerte_ne_leve_pas_derreur():
     assert corps
 
 
-def test_envoyer_alerte_envoie_un_message_smtp(monkeypatch):
+def test_envoyer_alerte_envoie_un_message_smtp_complet(monkeypatch):
+    """Vérifie le message dans son ensemble, pas seulement le sujet -- From/To comptent
+    aussi : une inversion ou une faute de frappe sur ces constantes passerait inaperçue sinon."""
     monkeypatch.setattr("datacore.alerting.webhook.smtplib.SMTP", FakeSMTP)
 
     envoyer_alerte("sujet de test", "corps de test", hote_smtp="fake-host", port_smtp=1025)
@@ -72,7 +92,36 @@ def test_envoyer_alerte_envoie_un_message_smtp(monkeypatch):
     assert len(FakeSMTP.messages_envoyes) == 1
     message = FakeSMTP.messages_envoyes[0]
     assert message["Subject"] == "sujet de test"
+    assert message["From"] == EXPEDITEUR
+    assert message["To"] == DESTINATAIRE
     assert message.get_content().strip() == "corps de test"
+
+
+def test_envoyer_alerte_echec_smtp_leve_une_exception_smtp(monkeypatch):
+    """`envoyer_alerte()` elle-même ne rattrape rien -- c'est la route qui décide quoi
+    faire d'un échec SMTP (voir test_route_webhook_alertes_echec_smtp_renvoie_502)."""
+    monkeypatch.setattr("datacore.alerting.webhook.smtplib.SMTP", FakeSMTPEnPanne)
+
+    with pytest.raises(smtplib.SMTPException):
+        envoyer_alerte("sujet", "corps", hote_smtp="fake-host", port_smtp=1025)
+
+
+def test_route_webhook_alertes_sans_secret_refuse_401(client):
+    reponse = client.post(
+        "/webhook/alertes",
+        json={"status": "firing", "alerts": []},
+    )
+    assert reponse.status_code == 401
+    assert FakeSMTP.messages_envoyes == []
+
+
+def test_route_webhook_alertes_mauvais_secret_refuse_401(client):
+    reponse = client.post(
+        "/webhook/alertes",
+        json={"status": "firing", "alerts": []},
+        headers={"X-Webhook-Secret": "mauvaise-valeur"},
+    )
+    assert reponse.status_code == 401
 
 
 def test_route_webhook_alertes_relaie_un_email(client, monkeypatch):
@@ -86,11 +135,51 @@ def test_route_webhook_alertes_relaie_un_email(client, monkeypatch):
                 {"labels": {"alertname": "TestAlerte"}, "annotations": {"summary": "résumé"}}
             ],
         },
+        headers=EN_TETES_VALIDES,
     )
 
     assert reponse.status_code == 200
     assert len(FakeSMTP.messages_envoyes) == 1
     assert "TestAlerte" in FakeSMTP.messages_envoyes[0]["Subject"]
+
+
+def test_route_webhook_alertes_payload_liste_refuse_400(client):
+    """Un payload JSON valide mais de la mauvaise forme (une liste, pas un objet) --
+    `silent=True` ne rattrape que le JSON invalide, pas le JSON valide-mais-mauvaise-forme :
+    sans contrôle explicite, `[1, 2, 3].get(...)` lèverait une AttributeError non gérée."""
+    reponse = client.post(
+        "/webhook/alertes",
+        data="[1, 2, 3]",
+        content_type="application/json",
+        headers=EN_TETES_VALIDES,
+    )
+    assert reponse.status_code == 400
+    assert FakeSMTP.messages_envoyes == []
+
+
+def test_route_webhook_alertes_json_malforme_refuse_400(client):
+    reponse = client.post(
+        "/webhook/alertes",
+        data="ceci nest pas du json",
+        content_type="application/json",
+        headers=EN_TETES_VALIDES,
+    )
+    assert reponse.status_code == 400
+
+
+def test_route_webhook_alertes_echec_smtp_renvoie_502(client, monkeypatch):
+    """Un échec SMTP (ex. MailHog injoignable) doit renvoyer une erreur explicite (502),
+    pas un 500 générique -- pour que Grafana voie un échec de notification exploitable."""
+    monkeypatch.setattr("datacore.alerting.webhook.smtplib.SMTP", FakeSMTPEnPanne)
+
+    reponse = client.post(
+        "/webhook/alertes",
+        json={"status": "firing", "alerts": []},
+        headers=EN_TETES_VALIDES,
+    )
+
+    assert reponse.status_code == 502
+    assert "erreur" in reponse.get_json()
 
 
 def test_route_health_sans_authentification(client):

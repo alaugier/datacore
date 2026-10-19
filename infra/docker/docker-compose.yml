@@ -124,6 +124,10 @@ services:
       # variables d'environnement $VAR dans ses fichiers de provisioning.
       GF_OMEGA_BI_DB: ${OMEGA_BI_DB:-datacore_omega_bi}
       GF_BI_READER_PASSWORD: ${BI_READER_PASSWORD:-datacore_bi_reader}
+      # Repris par le provisioning de l'alerte (voir
+      # infra/grafana/provisioning/alerting) pour authentifier le
+      # webhook envoye a alerting-webhook.
+      GF_ALERTING_WEBHOOK_SECRET: ${ALERTING_WEBHOOK_SECRET:-datacore-alerting-2026}
     ports:
       - "${GRAFANA_PORT:-3000}:3000"
     volumes:
@@ -170,6 +174,7 @@ services:
     environment:
       SMTP_HOST: mailhog
       SMTP_PORT: 1025
+      ALERTING_WEBHOOK_SECRET: ${ALERTING_WEBHOOK_SECRET:-datacore-alerting-2026}
     ports:
       - "${ALERTING_WEBHOOK_PORT:-5060}:5060"
     healthcheck:

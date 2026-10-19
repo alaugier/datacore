@@ -15,6 +15,11 @@ contactPoints:
         settings:
           url: http://alerting-webhook:5060/webhook/alertes
           httpMethod: POST
+          # Authentifie le webhook (le port est exposé sur l'hôte, voir
+          # docker-compose.yml) -- doit correspondre à
+          # ALERTING_WEBHOOK_SECRET lu par alerting-webhook.
+          headers:
+            X-Webhook-Secret: $GF_ALERTING_WEBHOOK_SECRET
 
 policies:
   - orgId: 1

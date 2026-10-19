@@ -133,6 +133,52 @@ jamais déclenchée.
 seconde pourrait être ajoutée si le besoin s'en fait sentir (ex. aucune
 nouvelle partition `raw/` déposée au-delà de la cadence attendue).
 
+### Relecture utilisateur du 19/10/2026 : 4 vrais trous de robustesse trouvés
+
+Après relecture des fichiers de tests, l'utilisateur a relevé 4 points
+sur `webhook.py`, tous vérifiés et confirmés réels avant correction —
+dont 2 bugs effectifs (pas seulement des trous de test) :
+
+- **Payload JSON valide mais pas un objet** (ex. une liste `[1, 2, 3]`) :
+  `silent=True` sur `request.get_json()` ne rattrape que le JSON
+  *invalide*, pas le JSON valide d'une autre forme — `payload.get(...)`
+  sur une liste levait une `AttributeError` non gérée (500 brut).
+  Corrigé : contrôle explicite `isinstance(payload, dict)`, renvoie 400
+  sinon.
+- **Échec SMTP non géré** : si MailHog (ou un vrai serveur SMTP en
+  production) est injoignable, `envoyer_alerte()` n'était entourée
+  d'aucun `try/except` dans la route — 500 générique, rien
+  d'exploitable pour Grafana. Corrigé : capture `OSError`/
+  `smtplib.SMTPException`, renvoie 502 avec le détail de l'erreur.
+- **Aucune authentification sur `/webhook/alertes`**, alors que le port
+  est exposé sur l'hôte (`5060:5060` dans `docker-compose.yml`) —
+  n'importe quel process local pouvait déclencher un envoi d'e-mail.
+  Corrigé : secret partagé (`ALERTING_WEBHOOK_SECRET`, en-tête
+  `X-Webhook-Secret`), même principe que `X-API-Key` sur `api-mock`
+  (C8). Transmis par Grafana via `settings.headers` sur le point de
+  contact (substitué depuis l'environnement du conteneur comme
+  `GF_OMEGA_BI_DB`/`GF_BI_READER_PASSWORD`).
+- **Tests insuffisants côté `test_monitoring.py`** (bucket non vérifié
+  dans le fake paginateur, un seul enregistrement du catalogue
+  contrôlé partiellement, assertion tautologique sur l'horodatage,
+  panne Postgres non couverte) — tous renforcés : bucket réellement
+  transmis tracé et vérifié, les deux enregistrements contrôlés dans
+  leur intégralité, horodatage vérifié comme une vraie instance
+  `datetime`, et deux tests dédiés confirment qu'une panne de connexion
+  Postgres remonte bien telle quelle (comportement intentionnel, même
+  principe que `journal.py::journaliser()`), pas avalée silencieusement.
+
+**Revérifié en conditions réelles, avec l'authentification activée**
+(19/10/2026) : même protocole que le 25/09 (`docker stop
+datacore-omega-lake` → relevé → alerte Grafana `active` → e-mail réel
+dans MailHog), rejoué de bout en bout après l'ajout du secret partagé
+— confirmé dans les logs d'`alerting-webhook` que c'est bien Grafana
+qui a appelé le webhook (pas un test manuel) et qu'il a été authentifié
+(`200`, pas `401`). Le format exact du champ `settings.headers` pour un
+point de contact webhook Grafana n'était pas garanti à l'avance —
+vérifié par le provisioning réel (aucune erreur dans les logs) puis par
+ce test de bout en bout, pas supposé.
+
 ---
 
 ## 4. Références
