@@ -124,13 +124,37 @@ entier jusque-là). Vérifié bout en bout avec les vraies clés
 `docs/comptes_rendus/M3.md` §3/§4 mis à jour en conséquence.
 
 ### M4 — Restitution BI (Grafana) (ouvert le 24/09/2026)
-- [ ] Restitution OMEGA BI dans Grafana — vues SQL + KPI SLA, C16bis (#79)
+- [x] Restitution OMEGA BI dans Grafana — vues SQL + KPI SLA, C16bis (#79)
 - [ ] Monitoring du data lake dans Grafana — KPI, métriques, alertes, C20bis (#80)
 
 Décision et choix de l'outil documentés dans
 `docs/architecture/gestion_operationnelle_omega_bi.md` §3.5 (PR #78) —
 Grafana retenu plutôt que Power BI ou Databricks SQL/Lakeview pour rester
 auto-hébergé dans l'infra locale existante.
+
+#79 livrée et vérifiée en conditions réelles le 25/09/2026 (PR #82,
+correctifs Grafana réels trouvés en testant depuis un vrai navigateur ;
+PR #83 pour le glossaire/aide-mémoire/supervision associés) — issue
+fermée, statut Kanban Terminé.
+
+**#80 (PR #85) — état au 25/09/2026, en pause pour 3 semaines** :
+implémentation terminée et vérifiée en conditions réelles (coupure
+réelle de MinIO, alerte Grafana déclenchée, e-mail réel reçu dans
+MailHog, confirmé par capture d'écran de l'utilisateur), mais **PR #85
+pas encore mergée** — reste en revue. Le design a été révisé en cours
+de route après lecture du référentiel de compétences complet (copié
+dans `docs/reference/`) : le premier jet ne couvrait que le volet
+applicatif, le référentiel exige aussi le matériel et une alerte
+réellement déclenchée — voir `docs/architecture/monitoring_lake.md`
+pour le détail complet (schéma, alerte, preuves). Un bug d'affichage
+mineur (panel booléen) trouvé et corrigé le même jour après retour de
+l'utilisateur.
+
+**À la reprise (dans ~3 semaines)** : relire la PR #85, la merger si
+validée, fermer #80 et cocher la case ci-dessus, puis clore le
+milestone M4 (les 2 issues #79/#80 seraient alors les seules prévues
+pour ce jalon — voir si un 3e sujet doit encore s'y ajouter avant
+clôture, ou si M4 peut être clos directement après #80).
 
 ## Règles pour Claude Code
 - Ne jamais committer `data/raw/*` (voir `.gitignore`).
