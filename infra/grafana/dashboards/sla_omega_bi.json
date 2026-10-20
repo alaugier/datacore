@@ -1,0 +1,98 @@
+{
+  "title": "OMEGA BI — Indicateurs de service (SLA)",
+  "uid": "sla-omega-bi",
+  "editable": false,
+  "schemaVersion": 39,
+  "version": 1,
+  "timezone": "browser",
+  "tags": ["omega-bi", "c16bis"],
+  "panels": [
+    {
+      "id": 1,
+      "type": "bargauge",
+      "title": "Taux de service par client (exploitation.v_taux_service_client)",
+      "description": "Restreint aux expéditions FluxPro/TransFlow (l'historique n'a pas de date de livraison prévue à comparer, voir modelisation_omega_bi.md §5.1).",
+      "gridPos": { "h": 9, "w": 12, "x": 0, "y": 0 },
+      "datasource": { "type": "postgres", "uid": "omega_bi_reader" },
+      "targets": [
+        {
+          "datasource": { "type": "postgres", "uid": "omega_bi_reader" },
+          "rawSql": "SELECT client, taux_service_pct FROM exploitation.v_taux_service_client ORDER BY taux_service_pct DESC",
+          "format": "table",
+          "editorMode": "code",
+          "rawQuery": true,
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "max": 100,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "orange", "value": 70 },
+              { "color": "green", "value": 90 }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "displayMode": "gradient",
+        "orientation": "horizontal",
+        "reduceOptions": { "calcs": ["lastNotNull"], "values": true, "fields": "" }
+      }
+    },
+    {
+      "id": 2,
+      "type": "barchart",
+      "title": "Délai moyen de livraison par transporteur (exploitation.v_delai_moyen_transporteur)",
+      "description": "Toutes sources confondues — le transporteur « Inconnu » regroupe les lignes issues de l'historique (sans transporteur identifié, attendu et documenté).",
+      "gridPos": { "h": 9, "w": 12, "x": 12, "y": 0 },
+      "datasource": { "type": "postgres", "uid": "omega_bi_reader" },
+      "targets": [
+        {
+          "datasource": { "type": "postgres", "uid": "omega_bi_reader" },
+          "rawSql": "SELECT transporteur, delai_moyen_jours FROM exploitation.v_delai_moyen_transporteur ORDER BY delai_moyen_jours DESC",
+          "format": "table",
+          "editorMode": "code",
+          "rawQuery": true,
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "d" },
+        "overrides": []
+      },
+      "options": {
+        "orientation": "horizontal",
+        "xTickLabelRotation": 0
+      }
+    },
+    {
+      "id": 3,
+      "type": "table",
+      "title": "Stock disponible par entrepôt (exploitation.v_stock_disponible_site)",
+      "description": "Quantité totale en stock et nombre de références par entrepôt.",
+      "gridPos": { "h": 9, "w": 24, "x": 0, "y": 9 },
+      "datasource": { "type": "postgres", "uid": "omega_bi_reader" },
+      "targets": [
+        {
+          "datasource": { "type": "postgres", "uid": "omega_bi_reader" },
+          "rawSql": "SELECT entrepot, quantite_totale, nb_references FROM exploitation.v_stock_disponible_site ORDER BY entrepot",
+          "format": "table",
+          "editorMode": "code",
+          "rawQuery": true,
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": { "defaults": {}, "overrides": [] },
+      "options": {}
+    }
+  ],
+  "time": { "from": "now-24h", "to": "now" },
+  "refresh": "5m"
+}

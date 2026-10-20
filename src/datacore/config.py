@@ -74,6 +74,32 @@ OMEGA_LAKE_BUCKET = os.environ.get("OMEGA_LAKE_BUCKET", "omega-lake")
 # .env.example, au point d'usage plutôt qu'à l'import.
 LAKE_PSEUDONYM_KEY = os.environ.get("LAKE_PSEUDONYM_KEY")
 
+# Restitution BI (C16bis) : Grafana, auto-hébergé, connecté en lecture
+# seule à l'entrepôt via bi_reader (voir
+# gestion_operationnelle_omega_bi.md §3.5). Identifiants admin utilisés
+# uniquement par les tests d'intégration pour interroger l'API Grafana
+# (santé de la source de données, contenu du dashboard) -- jamais par le
+# code applicatif.
+GRAFANA_ADMIN_USER = os.environ.get("GRAFANA_ADMIN_USER", "admin")
+GRAFANA_ADMIN_PASSWORD = os.environ.get("GRAFANA_ADMIN_PASSWORD", "datacore_grafana")
+GRAFANA_PORT = os.environ.get("GRAFANA_PORT", "3000")
+
+# Alerte de monitoring du lake (C20bis) : rupture de service détectée
+# par une règle d'alerte Grafana, relayée par un petit service Flask
+# (`datacore.alerting.webhook`) qui envoie un vrai e-mail (smtplib) à
+# un capteur SMTP local (MailHog) -- jamais un vrai fournisseur externe,
+# voir gestion_operationnelle_omega_bi.md pour la justification.
+SMTP_HOST = os.environ.get("SMTP_HOST", "localhost")
+SMTP_PORT = int(os.environ.get("SMTP_PORT", "1025"))
+ALERTING_WEBHOOK_PORT = os.environ.get("ALERTING_WEBHOOK_PORT", "5060")
+MAILHOG_API_PORT = os.environ.get("MAILHOG_API_PORT", "8025")
+
+# Secret partagé (en-tête X-Webhook-Secret) -- le port d'alerting-webhook
+# est exposé sur l'hôte (docker-compose.yml), ce secret évite que
+# n'importe quel process local puisse déclencher un envoi d'e-mail.
+# Même principe que X-API-Key sur api-mock (C8).
+ALERTING_WEBHOOK_SECRET = os.environ.get("ALERTING_WEBHOOK_SECRET", "datacore-alerting-2026")
+
 RAW_DIR = Path(os.environ.get("DATACORE_RAW_DIR", REPO_ROOT / "data" / "raw"))
 CLIENTS_FILES_DIR = RAW_DIR / "clients_fichiers"
 HISTORIQUE_PATH = RAW_DIR / "historique" / "omega_historique_expeditions.csv"

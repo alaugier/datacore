@@ -160,3 +160,30 @@ python3 -m datacore.storage.warehouse.load_warehouse
 ./scripts/backup_omega_bi.sh --partiel
 python3 -m datacore.governance.audit_rgpd
 ```
+
+**Restitution BI (C16bis)** : le tableau de bord SLA est aussi disponible
+dans Grafana (outil de BI dédié, voir
+`docs/architecture/gestion_operationnelle_omega_bi.md` §3.5) —
+`docker compose -f infra/docker/docker-compose.yml --env-file .env up -d grafana`,
+puis http://localhost:3000 (identifiants `GRAFANA_ADMIN_USER`/
+`GRAFANA_ADMIN_PASSWORD` de `.env`). Connecté en lecture seule via
+`bi_reader`, jamais avec les identifiants admin Postgres. Le notebook
+(`notebooks/tableau_de_bord_sla_omega_bi.ipynb`) reste la preuve
+exploratoire complémentaire (voir `docs/comptes_rendus/M2.md` §5).
+
+## Monitoring du data lake OMEGA LAKE (C20bis)
+Suivi applicatif (fraîcheur/volumétrie par flux, dernière purge RGPD) et
+matériel (MinIO accessible, capacité utilisée), avec une alerte e-mail
+réelle en cas de rupture de service — voir
+`docs/architecture/monitoring_lake.md` :
+
+```bash
+alembic -c alembic_omega_bi.ini upgrade head
+python3 -m datacore.storage.lake.monitoring
+docker compose -f infra/docker/docker-compose.yml --env-file .env \
+    up -d grafana alerting-webhook mailhog
+```
+
+Dashboard : http://localhost:3000/d/monitoring-lake — e-mails d'alerte
+capturés localement (jamais un vrai fournisseur externe) dans MailHog :
+http://localhost:8025.

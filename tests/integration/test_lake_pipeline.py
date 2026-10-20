@@ -13,7 +13,8 @@ pour ne pas casser `pytest` par défaut (la suite unitaire tourne sans
 dépendance externe). À lancer explicitement avant de merger une PR qui
 touche aux modules `storage/lake/` :
 
-    docker compose -f infra/docker/docker-compose.yml up -d db minio minio-init api-mock
+    docker compose -f infra/docker/docker-compose.yml --env-file .env \
+        up -d db minio minio-init api-mock
     pytest tests/integration/test_lake_pipeline.py -v
 """
 import socket
@@ -34,8 +35,8 @@ pytestmark = pytest.mark.skipif(
     not (_infra_disponible("localhost", 9000) and _infra_disponible("localhost", 5432)),
     reason=(
         "MinIO/Postgres non accessibles -- lancer "
-        "`docker compose -f infra/docker/docker-compose.yml up -d db minio minio-init api-mock` "
-        "avant ce test"
+        "`docker compose -f infra/docker/docker-compose.yml --env-file .env "
+        "up -d db minio minio-init api-mock` avant ce test"
     ),
 )
 
