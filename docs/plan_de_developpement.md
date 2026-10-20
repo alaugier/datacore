@@ -115,8 +115,8 @@ via la PR #74.
 **Point ouvert du 23/09/2026 résolu le 24/09/2026** : pseudonymisation
 HMAC de `vehicule_id` implémentée pour l'export `curated_bi/` exposé à
 `lake_reader` (`src/datacore/storage/lake/curated_bi.py`), suivant les
-4 exigences de la confirmation Claude web (clé secrète, mécanisme
-d'accès vérifié et corrigé, export dédié sans toucher `curated/`,
+4 exigences validées avec l'assistance d'un outil IA (clé secrète,
+mécanisme d'accès vérifié et corrigé, export dédié sans toucher `curated/`,
 limite de ré-identification par motif de mobilité documentée). Politique
 `lake_reader` restreinte à `curated_bi/` (elle portait sur le bucket
 entier jusque-là). Vérifié bout en bout avec les vraies clés
@@ -154,7 +154,23 @@ authentification ajoutée sur le webhook, avant merge (PR #85) — voir
 fermée, statut Kanban Terminé.
 
 Voir `docs/comptes_rendus/M4.md` pour le compte rendu de fin de
-milestone. Release vers `main` via la PR à venir.
+milestone. Release vers `main` via la PR #87, validée en revue
+technique avant merge (un piège `docker compose --env-file` résiduel
+trouvé en revue et corrigé par la PR #88, mergée dans `dev` avant la
+release).
+
+### M5 — Rapport LaTeX (ouvert le 20/10/2026)
+- [ ] Chapitres 01-05 — synthèse Blocs 1-4 + M4 (#90)
+- [ ] Chapitre 06 — synthèse transverse (#91)
+- [ ] Chapitres 00/07 + annexe (#92)
+
+Structure du rapport (document maître + chapitres + annexes) élaborée
+avec l'assistance d'un outil IA, arbitrée et validée par le Data
+Engineer / chef de projet. Découpage en 3 issues par niveau de risque
+(pas une par chapitre, pas une seule monolithique) et ordre de
+rédaction tranchés avant toute rédaction — voir
+`docs/architecture/sequencement_m5.md` pour le détail et la
+justification complète.
 
 ## Règles pour Claude Code
 - Ne jamais committer `data/raw/*` (voir `.gitignore`).
