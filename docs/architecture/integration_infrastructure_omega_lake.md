@@ -101,7 +101,8 @@ supposé équivalent — §1.3bis ci-dessous.
 
 ### 1.3bis Même preuve, cette fois avec le Parquet réellement dans MinIO
 
-MinIO déployé (`docker compose up -d minio minio-init` — voir §4),
+MinIO déployé (`docker compose -f infra/docker/docker-compose.yml
+--env-file .env up -d minio minio-init` — voir §4),
 bucket `omega-lake` créé automatiquement au démarrage. Même script que
 §1.3, avec deux différences : le Parquet est écrit et lu via `s3://`
 plutôt qu'en local, et l'extension `httpfs` est configurée pour pointer
