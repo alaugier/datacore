@@ -115,8 +115,8 @@ via la PR #74.
 **Point ouvert du 23/09/2026 résolu le 24/09/2026** : pseudonymisation
 HMAC de `vehicule_id` implémentée pour l'export `curated_bi/` exposé à
 `lake_reader` (`src/datacore/storage/lake/curated_bi.py`), suivant les
-4 exigences de la confirmation Claude web (clé secrète, mécanisme
-d'accès vérifié et corrigé, export dédié sans toucher `curated/`,
+4 exigences de la confirmation de la référente technique (clé secrète,
+mécanisme d'accès vérifié et corrigé, export dédié sans toucher `curated/`,
 limite de ré-identification par motif de mobilité documentée). Politique
 `lake_reader` restreinte à `curated_bi/` (elle portait sur le bucket
 entier jusque-là). Vérifié bout en bout avec les vraies clés
