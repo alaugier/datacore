@@ -40,6 +40,12 @@ noms M4 (Rapport LaTeX) et M5 (Présentation orale) sont renumérotés
 M5/M6 en conséquence (voir `docs/plan_de_developpement.md` et les
 issues GitHub #79/#80 pour le détail).
 
+**Note du 19/10/2026** : M4 clos (voir
+[`docs/comptes_rendus/M4.md`](../comptes_rendus/M4.md)). Span calendaire
+24/09 → 19/10/2026 incluant une pause de formation de 3 semaines entre
+la livraison de #79 (25/09) et la reprise/clôture de #80 (19/10) — pas
+26 jours d'effort continu, voir le compte rendu pour le détail réel.
+
 Ce séquencement respecte la priorisation établie par l'
 [analyse RICE](etude_faisabilite.md#6-analyse-rice) : la centralisation de
 la collecte et la conformité RGPD (Phase 2) priment sur l'entrepôt
@@ -123,7 +129,7 @@ gantt
     Catalogue de donnees (C20)         :        p4c, after p4b, 7d
     Gouvernance des donnees (C21)      :        p4d, after p4c, 7d
     section Transverse
-    Restitution BI Grafana (M4)        :        m4bi, 2026-09-24, 12d
+    Restitution BI Grafana (M4)        :done, m4bi, 2026-09-24, 2026-10-19
     Rapport LaTeX (M5, continu)        :        m5, 2026-08-10, 165d
     Preparation soutenance (M6)        :        m6, 2027-01-25, 10d
 ```
