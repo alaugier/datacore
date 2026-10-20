@@ -280,10 +280,11 @@ ressource explicite pour la lecture).
 
 Mise en place idempotente : `mc admin policy create`/`mc admin user
 add`/`mc admin policy attach` dans le service `minio-init` de
-`docker-compose.yml`, revérifiés en relançant `docker compose up`
-plusieurs fois sans erreur (y compris après la mise à jour de la
-politique — `mc admin policy create` sur un nom existant remplace son
-contenu) — même discipline que la création du bucket (C19).
+`docker-compose.yml`, revérifiés en relançant `docker compose -f
+infra/docker/docker-compose.yml --env-file .env up` plusieurs fois
+sans erreur (y compris après la mise à jour de la politique — `mc
+admin policy create` sur un nom existant remplace son contenu) — même
+discipline que la création du bucket (C19).
 
 ## 4bis. Export pseudonymisé `curated_bi/`
 
