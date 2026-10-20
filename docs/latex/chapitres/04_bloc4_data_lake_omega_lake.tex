@@ -4,7 +4,7 @@
 Le Bloc 4 conçoit et opère le data lake OMEGA LAKE pour absorber la
 donnée massive IoT de la flotte et des entrepôts. Clos le 23/09/2026
 (milestone M3), les 4 compétences ont chacune un livrable vérifié --
-détail exhaustif dans \texttt{docs/comptes\_rendus/M3.md}.
+détail exhaustif dans \filepath{docs/comptes_rendus/M3.md}.
 
 \section{C18 --- Concevoir l'architecture du \textit{data lake}}
 
@@ -12,22 +12,28 @@ La différence entre base de staging, entrepôt et data lake n'est pas le
 volume ni le degré de nettoyage des données, mais le moment où le
 schéma est décidé : \textit{schema-on-write} pour les deux premiers,
 \textit{schema-on-read} pour le lake
-(\texttt{docs/architecture/architecture\_omega\_lake.md}). Les flux IoT
+(\filepath{docs/architecture/architecture_omega_lake.md}). Les flux IoT
 transitent en flux séparé (jamais par la base de staging relationnelle),
-mais la zone \texttt{curated/} est conçue pour être jointe à la volée
+mais la zone \filepath{curated/} est conçue pour être jointe à la volée
 aux dimensions conformées de l'entrepôt via des clés naturelles réelles,
 vérifiées dans les données plutôt que supposées.
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=\textwidth]{architecture_omega_lake_zones}
+  \caption{Zones \texttt{raw}/\texttt{staging}/\texttt{curated} du data lake OMEGA LAKE (\filepath{docs/architecture/architecture_omega_lake.md})}
+\end{figure}
 
 \section{C19 --- Intégrer une infrastructure de données à partir de composants}
 
 MinIO est déployé comme stockage objet compatible S3
-(\texttt{docs/architecture/integration\_infrastructure\_omega\_lake.md}).
+(\filepath{docs/architecture/integration_infrastructure_omega_lake.md}).
 Le mécanisme de jointure --- DuckDB, choisi après vérification que le
 projet n'utilise \texttt{pandas} nulle part --- est tranché explicitement
 avant tout code de pipeline, et vérifié contre MinIO/PostgreSQL réels,
 pas supposé équivalent à un test local :
 
-\begin{lstlisting}[language=SQL,caption={Configuration DuckDB/\texttt{httpfs} pour MinIO (\texttt{src/datacore/storage/lake/transform.py})}]
+\begin{lstlisting}[language=SQL,caption={Configuration DuckDB/\texttt{httpfs} pour MinIO (\filepath{src/datacore/storage/lake/transform.py})}]
 SET s3_endpoint='{OMEGA_LAKE_S3_ENDPOINT}';
 SET s3_access_key_id='{MINIO_ROOT_USER}';
 SET s3_secret_access_key='{MINIO_ROOT_PASSWORD}';
@@ -35,7 +41,7 @@ SET s3_use_ssl=false;
 SET s3_url_style='path';
 \end{lstlisting}
 
-L'ingestion de \texttt{raw/} passe par \texttt{boto3} (copie fidèle,
+L'ingestion de \filepath{raw/} passe par \texttt{boto3} (copie fidèle,
 octet pour octet, vérifiée par somme de contrôle SHA-256) et non par
 DuckDB, qui réinterpréterait le contenu. Le consommateur du flux SSE,
 fenêtré par intervalle de 5~minutes plutôt que par jour, a été vérifié
@@ -46,7 +52,7 @@ puis redémarrage) : aucune collision ni donnée corrompue.
 
 Le périmètre de cette compétence a été explicitement élargi avant tout
 code : le texte initial de l'issue ne parlait que de cataloguer « après
-C19 », mais à ce stade les zones \texttt{staging/}/\texttt{curated/}
+C19 », mais à ce stade les zones \filepath{staging/}/\filepath{curated/}
 restaient vides -- construire un contenu réel y a été ajouté. Le
 catalogue lui-même est généré par introspection réelle (\texttt{boto3}
 + \texttt{DESCRIBE} DuckDB), pas maintenu à la main, même principe que
@@ -55,7 +61,7 @@ devenir silencieusement obsolète.
 
 \section{C21 --- Garantir la gouvernance des données}
 
-Le registre RGPD du lake (\texttt{docs/architecture/registre\_rgpd\_lake.md})
+Le registre RGPD du lake (\filepath{docs/architecture/registre_rgpd_lake.md})
 identifie un risque réel de ré-identification, trouvé en concevant et
 non en auditant après coup : \texttt{vehicule\_id} (géolocalisation) se
 recoupe, dans le temps, avec \texttt{tournees.chauffeur} de la base de
@@ -69,21 +75,22 @@ des deux côtés), fausse pour le rôle \texttt{lake\_reader} (accès au
 lake seul). Un pseudonyme HMAC à clé secrète --- un hash simple sans
 clé aurait été recalculable par force brute sur les 15 véhicules du jeu
 de données --- a été implémenté comme export dédié
-(\texttt{curated\_bi/}), sans jamais modifier \texttt{curated/} ni
-distribuer la clé au rôle de lecture :
+(\filepath{curated_bi/}), sans jamais modifier \filepath{curated/} ni
+distribuer la clé au rôle de lecture. Le mécanisme lui-même est une
+fonction pure, stable pour un même identifiant mais impossible à
+recalculer sans la clé :
 
-\begin{lstlisting}[language=Python,caption={Garde-fou sur la clé de pseudonymisation (\texttt{src/datacore/storage/lake/curated\_bi.py})}]
-def verifier_cle_configuree(cle: str | None) -> str:
-    if not cle:
-        raise RuntimeError("LAKE_PSEUDONYM_KEY n'est pas definie. ...")
-    if cle in (VALEUR_EXEMPLE_ENV, ANCIENNE_VALEUR_REPLI_SUPPRIMEE):
-        raise RuntimeError("LAKE_PSEUDONYM_KEY vaut une valeur publique connue. ...")
-    if len(cle) < LONGUEUR_MINIMALE:
-        raise RuntimeError(f"LAKE_PSEUDONYM_KEY est trop courte ({len(cle)} caracteres). ...")
-    return cle
+\begin{lstlisting}[language=Python,caption={Pseudonymisation HMAC-SHA256 de \texttt{vehicule\_id} (\filepath{src/datacore/storage/lake/curated_bi.py})}]
+def pseudonyme(vehicule_id: str, cle: str | None = LAKE_PSEUDONYM_KEY) -> str:
+    cle = verifier_cle_configuree(cle)
+    return hmac.new(cle.encode(), vehicule_id.encode(), hashlib.sha256).hexdigest()[:16]
 \end{lstlisting}
 
-Ce garde-fou a lui-même été renforcé après qu'une faille a été trouvée
+\texttt{verifier\_cle\_configuree()} est le garde-fou qui refuse
+explicitement de continuer (erreur levée, pas un avertissement
+silencieux) si la clé est absente, vaut une valeur publique connue, ou
+est manifestement trop courte pour un usage HMAC sérieux. Ce garde-fou
+a lui-même été renforcé après qu'une faille a été trouvée
 en seconde relecture externe --- un repli codé en dur pour cette clé
 dans \texttt{config.py}, visible dans le dépôt public, aurait rendu la
 pseudonymisation silencieusement inopérante --- puis à nouveau après
@@ -91,11 +98,11 @@ une question sur sa couverture au-delà du seul cas de la valeur
 d'exemple. Les droits d'accès par groupe ont également été corrigés en
 cours de route : la politique \texttt{lake\_reader} portait initialement
 sur le bucket entier, permettant de contourner la pseudonymisation en
-lisant \texttt{curated/} directement -- restreinte au seul préfixe
-\texttt{curated\_bi/}, revérifiée bout en bout avec les vraies clés
-\texttt{lake\_reader} (lecture de \texttt{curated\_bi/} réussit et
+lisant \filepath{curated/} directement -- restreinte au seul préfixe
+\filepath{curated_bi/}, revérifiée bout en bout avec les vraies clés
+\texttt{lake\_reader} (lecture de \filepath{curated_bi/} réussit et
 renvoie des données pseudonymisées ; la même requête contre
-\texttt{curated/} échoue en HTTP~403). La procédure de purge RGPD est
+\filepath{curated/} échoue en HTTP~403). La procédure de purge RGPD est
 vérifiée par un test réel : une partition synthétique délibérément
 datée, injectée dans le lake réel, purgée avec succès et le résultat
 confirmé indépendamment.

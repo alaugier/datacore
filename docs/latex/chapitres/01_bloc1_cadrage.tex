@@ -6,11 +6,11 @@ Logistics : analyse du besoin, cartographie des données existantes,
 architecture cible, veille, planification, supervision et
 communication. Clos le 25/08/2026 (milestone M0), les 7 compétences
 ont chacune un livrable produit et vérifié -- détail exhaustif dans
-\texttt{docs/comptes\_rendus/M0.md} et les documents cités ci-dessous.
+\filepath{docs/comptes_rendus/M0.md} et les documents cités ci-dessous.
 
 \section{C1 --- Analyser l'expression d'un besoin}
 
-L'étude de faisabilité (\texttt{docs/architecture/etude\_faisabilite.md})
+L'étude de faisabilité (\filepath{docs/architecture/etude_faisabilite.md})
 s'appuie sur des entretiens avec les parties prenantes du programme
 (commanditaire opérationnel, sponsor, responsables d'entrepôt), une
 analyse d'opportunité et de faisabilité, une priorisation RICE des
@@ -20,16 +20,16 @@ suite du programme (collecte avant entrepôt, entrepôt avant data lake).
 
 \section{C2 --- Cartographier les données disponibles}
 
-La topographie des données (\texttt{docs/architecture/topographie\_donnees.md})
+La topographie des données (\filepath{docs/architecture/topographie_donnees.md})
 couvre le glossaire métier et les modèles réels des trois sources
 identifiées -- FluxPro (WMS), TransFlow (TMS) et les fichiers clients
-hétérogènes -- en les explorant directement dans \texttt{data/raw/} et
-\texttt{api-mock/}, plutôt qu'en se fiant à une description théorique
+hétérogènes -- en les explorant directement dans \filepath{data/raw/} et
+\filepath{api-mock/}, plutôt qu'en se fiant à une description théorique
 des sources.
 
 \section{C3 --- Concevoir un cadre technique d'exploitation}
 
-L'étude technique d'architecture (\texttt{docs/architecture/architecture\_cible.md})
+L'étude technique d'architecture (\filepath{docs/architecture/architecture_cible.md})
 établit la cible AS IS/TO BE, une matrice des flux, un registre RGPD
 préliminaire par brique technique, et la stratégie d'éco-conception
 (RGESN) et d'accessibilité (RGAA) du programme. C'est à ce stade
@@ -42,14 +42,14 @@ du même jour.
 \section{C4 --- Réaliser une veille technique et réglementaire}
 
 Un journal de veille hebdomadaire sur trois semaines
-(\texttt{docs/architecture/veille\_technique\_reglementaire.md}) couvre
+(\filepath{docs/architecture/veille_technique_reglementaire.md}) couvre
 deux axes, technique (DataOps/ETL) et réglementaire (RGPD/RGAA) --
 chaque entrée est reliée à une décision réelle du programme, pas tenue
 comme un exercice isolé.
 
 \section{C5 --- Planifier la réalisation d'un projet data}
 
-La feuille de route (\texttt{docs/architecture/feuille\_de\_route.md})
+La feuille de route (\filepath{docs/architecture/feuille_de_route.md})
 découpe le programme en 4 phases correspondant aux 4 blocs de
 compétences, avec composition d'équipe, budget prévisionnel
 (180~000~€) et diagrammes de Gantt/PERT -- maintenus en Mermaid,
@@ -57,9 +57,15 @@ c'est-à-dire en texte versionné dans le dépôt, plutôt que dans un
 outil graphique externe. GitHub Projects est retenu comme outil de
 suivi, directement intégré à la convention de branches du projet.
 
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=\textwidth]{feuille_de_route_gantt}
+  \caption{Diagramme de Gantt du programme (export du Mermaid source, \filepath{docs/architecture/feuille_de_route.md})}
+\end{figure}
+
 \section{C6 --- Superviser la réalisation d'un projet data}
 
-La supervision du programme (\texttt{docs/architecture/supervision\_projet.md})
+La supervision du programme (\filepath{docs/architecture/supervision_projet.md})
 définit les rituels d'équipe (point hebdomadaire, comité de suivi
 mensuel) et le tableau de suivi budgétaire, actualisé à chaque jalon.
 Sur l'ensemble du programme (M0 à M4), le budget du périmètre initial
@@ -69,7 +75,7 @@ chapitre~\ref{chap:synthese-transverse} pour la vue consolidée.
 \section{C7 --- Communiquer tout au long du projet}
 
 Le plan de communication et les supports de lancement
-(\texttt{docs/architecture/communication\_lancement.md}) couvrent la
+(\filepath{docs/architecture/communication_lancement.md}) couvrent la
 communication aux parties prenantes à chaque étape clé du programme,
 avec une attention portée à l'accessibilité des documents partagés
 (RGAA).

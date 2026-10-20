@@ -20,6 +20,12 @@
 \usepackage{fancyhdr}
 \usepackage{titlesec}
 
+% Figures réutilisées telles quelles depuis docs/architecture/images/
+% (déjà produites et vérifiées lors des jalons correspondants, pas
+% régénérées pour le rapport) -- copiées dans figures/ pour que le
+% projet LaTeX reste autonome.
+\graphicspath{{figures/}}
+
 \hypersetup{
   colorlinks=true,
   linkcolor=blue!50!black,
@@ -32,11 +38,15 @@
 % Extraits de code : style sobre, numéros de ligne, pas de coloration
 % agressive -- le code cite sa source réelle dans le dépôt, il n'a pas
 % vocation à remplacer la lecture du fichier.
+% showstringspaces=false : sans ça, listings affiche un symbole visible
+% pour chaque espace a l'interieur d'une chaine Python (ex. un message
+% d'erreur) -- rendu a tort comme des "caracteres bizarres" en relecture.
 \lstset{
   basicstyle=\ttfamily\small,
   numbers=left,
   numberstyle=\tiny\color{gray},
   breaklines=true,
+  showstringspaces=false,
   frame=single,
   backgroundcolor=\color{gray!5},
   keywordstyle=\color{blue!60!black},
@@ -44,14 +54,29 @@
   stringstyle=\color{green!40!black},
 }
 
+% Chemins de fichiers : \filepath (alias de \path, cassable aux "/")
+% plutot que \texttt (qui ne casse jamais une ligne) -- sans ca, un
+% chemin long deborde silencieusement dans la marge de droite.
+% \DeclareRobustCommand (pas \newcommand) : \path casse sinon dans un
+% argument mobile (ex. \caption{}) -- erreur fatale trouvée a la
+% compilation apres l'avoir utilise dans une legende de figure.
+\DeclareRobustCommand{\filepath}[1]{\path{#1}}
+
 \pagestyle{fancy}
 \setlength{\headheight}{14pt}
 \fancyhf{}
 \rhead{DATA CORE -- Omega Logistics}
+% En-tete courant limite a "Chapitre N" (pas le titre complet, souvent
+% long) -- un titre de chapitre long entrait en collision avec le \rhead.
+\renewcommand{\chaptermark}[1]{\markboth{Chapitre \thechapter}{}}
 \lhead{\leftmark}
 \rfoot{\thepage}
 
-\titleformat{\chapter}[hang]{\normalfont\huge\bfseries}{\thechapter.}{20pt}{\Huge}
+% \LARGE (pas \Huge ni \huge) : le titre le plus long du rapport
+% ("Bloc 4 --- Data Lake OMEGA LAKE (C18-C21)") passait encore sur 2
+% lignes a \huge -- verifie par compilation + inspection visuelle du
+% PDF rendu, pas seulement du texte extrait.
+\titleformat{\chapter}[hang]{\normalfont\Large\bfseries}{\thechapter.}{15pt}{\LARGE}
 
 \begin{document}
 

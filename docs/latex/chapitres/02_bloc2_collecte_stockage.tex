@@ -5,12 +5,12 @@ Le Bloc 2 industrialise la collecte multi-source, nettoie et consolide
 les données dans une base de travail, puis les expose via une API.
 Clos le 27/08/2026 (milestone M1), les 5 compétences ont chacune un
 livrable vérifié -- détail exhaustif dans
-\texttt{docs/comptes\_rendus/M1.md}.
+\filepath{docs/comptes_rendus/M1.md}.
 
 \section{Séquencement retenu}
 
 L'ordre C8~$\rightarrow$~C10~$\rightarrow$~C9~$\rightarrow$~C11~$\rightarrow$~C12
-(\texttt{docs/architecture/sequencement\_bloc2.md}), documenté et
+(\filepath{docs/architecture/sequencement_bloc2.md}), documenté et
 justifié avant tout développement plutôt que décidé au fil de l'eau,
 diffère de l'ordre naturel de lecture du cahier des charges (qui aurait
 suggéré de modéliser avant d'agréger). L'expérience a validé ce choix :
@@ -24,10 +24,16 @@ API REST (TransFlow), scraping du portail transporteur, requêtes SQL
 directes (FluxPro), fichiers clients hétérogènes, et l'historique
 volumineux -- testés de bout en bout (31 tests).
 
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.85\textwidth]{diagrammes_techniques_ingestion_c8}
+  \caption{Diagramme de séquence de l'extraction multi-source (\filepath{docs/architecture/diagrammes_techniques.md})}
+\end{figure}
+
 \section{C9 --- Développer des requêtes SQL d'extraction}
 
 Cinq requêtes documentées avec leurs résultats réels
-(\texttt{docs/architecture/requetes\_sql\_extraction.md}). L'historique
+(\filepath{docs/architecture/requetes_sql_extraction.md}). L'historique
 est chargé dans la base de staging PostgreSQL existante plutôt que dans
 un outil « big data » séparé : au volume réel du jeu de données
 (25~000 lignes), un outil dédié aurait été disproportionné --- choix
@@ -42,7 +48,7 @@ jeu de données, pas un chiffre théorique.
 \section{C11 --- Créer une base de données}
 
 La base de travail est modélisée selon la méthode MERISE
-(\texttt{docs/architecture/modelisation\_merise.md}), versionnée via
+(\filepath{docs/architecture/modelisation_merise.md}), versionnée via
 Alembic. L'analyse des formes normales a été menée empiriquement --- en
 interrogeant réellement les données --- plutôt que théoriquement, et a
 révélé deux violations réelles, corrigées après vérification chiffrée :
@@ -54,7 +60,7 @@ est \texttt{tracking\_number}, portée sans contrainte de clé étrangère
 formelle (les deux tables appartiennent à des systèmes sources
 distincts) :
 
-\begin{lstlisting}[language=Python,caption={Clé de rapprochement \texttt{tracking\_number} (\texttt{src/datacore/storage/staging/models.py})}]
+\begin{lstlisting}[language=Python,caption={Clé de rapprochement \texttt{tracking\_number} (\filepath{src/datacore/storage/staging/models.py})}]
 # tracking_number : cle metier de rapprochement avec
 # expeditions.tracking_number (FluxPro) -- pas de contrainte FK
 # (systemes sources distincts), rapprochement fait a la lecture.

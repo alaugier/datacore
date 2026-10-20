@@ -5,12 +5,12 @@ Le Bloc 3 construit et maintient l'entrepôt décisionnel OMEGA BI, qui
 répond au besoin d'analyse de la performance logistique exprimé par la
 direction. Clos le 21/09/2026 (milestone M2), les 5 compétences ont
 chacune un livrable vérifié -- détail exhaustif dans
-\texttt{docs/comptes\_rendus/M2.md}.
+\filepath{docs/comptes_rendus/M2.md}.
 
 \section{Séquencement retenu}
 
 L'ordre C13~$\rightarrow$~C14~$\rightarrow$~C15~$\rightarrow$~C17~$\rightarrow$~C16
-(\texttt{docs/architecture/sequencement\_bloc3.md}) inverse volontairement
+(\filepath{docs/architecture/sequencement_bloc3.md}) inverse volontairement
 C16/C17 par rapport au Gantt initial : la procédure de purge RGPD de
 C16 dépend du schéma historisé que C17 doit d'abord créer.
 
@@ -18,10 +18,16 @@ C16 dépend du schéma historisé que C17 doit d'abord créer.
 
 Approche bottom-up par datamarts (Kimball) : 2 datamarts, 3 faits, 6
 dimensions conformées, matrice de bus
-(\texttt{docs/architecture/modelisation\_omega\_bi.md}). Le seul schéma
+(\filepath{docs/architecture/modelisation_omega_bi.md}). Le seul schéma
 en flocon retenu (\texttt{Dim\_Produit}~$\rightarrow$~\texttt{Dim\_Categorie})
 est justifié par une contrainte réelle des sources, pas par principe de
 modélisation.
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=\textwidth]{modelisation_omega_bi_mcd}
+  \caption{Modèle conceptuel de données de l'entrepôt OMEGA BI (\filepath{docs/architecture/modelisation_omega_bi.md})}
+\end{figure}
 
 \section{C14 --- Créer un entrepôt de données}
 
@@ -45,7 +51,7 @@ produisant le même résultat.
 
 \section{C16 --- Assurer la gestion opérationnelle d'un environnement de données}
 
-La gestion opérationnelle (\texttt{docs/architecture/gestion\_operationnelle\_omega\_bi.md})
+La gestion opérationnelle (\filepath{docs/architecture/gestion_operationnelle_omega_bi.md})
 couvre des sauvegardes planifiées (partielle/complète, justifiées par
 la reconstructibilité de 7 des 8 tables depuis le staging), une
 journalisation réelle des opérations (succès et échec, sur une
@@ -65,7 +71,7 @@ changement de \texttt{nom} ou \texttt{secteur} ferme la version
 courante et en ouvre une nouvelle, plutôt que d'écraser la valeur
 précédente.
 
-\begin{lstlisting}[language=Python,caption={Détection du changement et historisation SCD2 (\texttt{src/datacore/storage/warehouse/load\_warehouse.py})}]
+\begin{lstlisting}[language=Python,caption={Détection du changement et historisation SCD2 (\filepath{src/datacore/storage/warehouse/load_warehouse.py})}]
 if current is not None and current[1] == r["nom"] and current[2] == r["secteur"]:
     mapping[r["id"]] = current[0]
     continue

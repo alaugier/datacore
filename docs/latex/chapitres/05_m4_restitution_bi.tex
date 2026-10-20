@@ -2,13 +2,13 @@
 \label{chap:m4}
 
 M4 n'est pas un bloc de compétences RNCP mais un jalon transverse,
-ajouté en cours de programme (24/09/2026) après un retour de formateur :
-les livrables produits pour C16 (vues SQL + notebook) et C20 (catalogue
-par introspection) suffisaient aux critères déjà évalués, mais pas
-comme démonstration de restitution/monitoring dans un outil de BI
-dédié. Clos le 19/10/2026, les 2 issues du jalon sont vérifiées en
-conditions réelles -- détail exhaustif dans
-\texttt{docs/comptes\_rendus/M4.md}.
+ajouté en cours de programme (24/09/2026) après un réexamen du
+périmètre de restitution livré pour C16 et C20 : les vues SQL et
+notebook (C16) et le catalogue par introspection (C20) suffisaient aux
+critères déjà évalués, mais pas comme démonstration de
+restitution/monitoring dans un outil de BI dédié. Clos le 19/10/2026,
+les 2 issues du jalon sont vérifiées en conditions réelles -- détail
+exhaustif dans \filepath{docs/comptes_rendus/M4.md}.
 
 \section{Choix de l'outil}
 
@@ -33,12 +33,18 @@ l'API de Grafana, qui passaient toutes. Généralisé en leçon
 méthodologique : une vérification par API seule ne prouve jamais
 qu'un rendu côté client fonctionne pour l'utilisateur final.
 
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=\textwidth]{gestion_operationnelle_omega_bi_dashboard_grafana}
+  \caption{Dashboard Grafana \og OMEGA BI --- Indicateurs de service (SLA) \fg{}, confirmé fonctionnel en conditions réelles}
+\end{figure}
+
 \section{C20bis --- Monitorage du \textit{data lake}}
 
 Une première conception du monitorage du lake, limitée au suivi de la
 fraîcheur des données, s'est révélée incomplète après lecture du
 référentiel de compétences complet (copié dans le dépôt,
-\texttt{docs/reference/}) : celui-ci exige explicitement le suivi des
+\filepath{docs/reference/}) : celui-ci exige explicitement le suivi des
 « conditions matérielles et applicatives », et qu'une alerte soit
 « générée lors d'une rupture de service ». Corrigé par l'ajout d'un
 relevé de santé de l'infrastructure (MinIO accessible, capacité
