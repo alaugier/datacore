@@ -5,8 +5,10 @@ Même principe que [`sequencement_bloc2.md`](sequencement_bloc2.md)/
 [`sequencement_bloc4.md`](sequencement_bloc4.md) : décider l'ordre et le
 découpage avant de rédiger, pas en cours de route. M5 n'est pas un bloc
 de compétences RNCP (contrairement aux Blocs 1-4) — c'est le jalon
-transverse de rédaction du rapport, structure proposée par Claude web
-(instance de supervision) et validée le 20/10/2026.
+transverse de rédaction du rapport. Structure proposée par la
+référente technique (Sophie MARTIN, revue technique et arbitrages
+d'architecture — voir [`feuille_de_route.md` §2](feuille_de_route.md#2-composition-de-léquipe-projet))
+et validée le 20/10/2026.
 
 ---
 

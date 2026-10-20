@@ -154,9 +154,10 @@ authentification ajoutée sur le webhook, avant merge (PR #85) — voir
 fermée, statut Kanban Terminé.
 
 Voir `docs/comptes_rendus/M4.md` pour le compte rendu de fin de
-milestone. Release vers `main` via la PR #87, validée par Claude web
-avant merge (un piège `docker compose --env-file` résiduel trouvé en
-revue et corrigé par la PR #88, mergée dans `dev` avant la release).
+milestone. Release vers `main` via la PR #87, validée en revue
+technique avant merge (un piège `docker compose --env-file` résiduel
+trouvé en revue et corrigé par la PR #88, mergée dans `dev` avant la
+release).
 
 ### M5 — Rapport LaTeX (ouvert le 20/10/2026)
 - [ ] Chapitres 01-05 — synthèse Blocs 1-4 + M4 (#90)
@@ -164,10 +165,10 @@ revue et corrigé par la PR #88, mergée dans `dev` avant la release).
 - [ ] Chapitres 00/07 + annexe (#92)
 
 Structure du rapport (document maître + chapitres + annexes) proposée
-par Claude web, validée par l'utilisateur. Découpage en 3 issues par
-niveau de risque (pas une par chapitre, pas une seule monolithique) et
-ordre de rédaction tranchés avant toute rédaction — voir
-`docs/architecture/sequencement_m5.md` pour le détail et la
+par la référente technique, validée par le chef de projet. Découpage
+en 3 issues par niveau de risque (pas une par chapitre, pas une seule
+monolithique) et ordre de rédaction tranchés avant toute rédaction —
+voir `docs/architecture/sequencement_m5.md` pour le détail et la
 justification complète.
 
 ## Règles pour Claude Code
