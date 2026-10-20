@@ -1,0 +1,87 @@
+% Rapport professionnel — DATA CORE (Omega Logistics)
+% Certification Data Engineer, Blocs 1-4 (C1-C21) + jalon transverse M4 (C16bis/C20bis).
+%
+% Document maître : inclut un fichier par chapitre (docs/latex/chapitres/).
+% Rapport synthétique + renvois au dépôt GitHub pour le détail technique
+% exhaustif -- voir docs/architecture/sequencement_m5.md pour la structure
+% retenue et sa justification.
+\documentclass[a4paper,11pt]{report}
+
+\usepackage[french]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{longtable}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue!50!black,
+  urlcolor=blue!50!black,
+  citecolor=blue!50!black,
+  pdftitle={DATA CORE -- Rapport professionnel},
+  pdfauthor={Alexandre Laugier},
+}
+
+% Extraits de code : style sobre, numéros de ligne, pas de coloration
+% agressive -- le code cite sa source réelle dans le dépôt, il n'a pas
+% vocation à remplacer la lecture du fichier.
+\lstset{
+  basicstyle=\ttfamily\small,
+  numbers=left,
+  numberstyle=\tiny\color{gray},
+  breaklines=true,
+  frame=single,
+  backgroundcolor=\color{gray!5},
+  keywordstyle=\color{blue!60!black},
+  commentstyle=\color{gray!60!black}\itshape,
+  stringstyle=\color{green!40!black},
+}
+
+\pagestyle{fancy}
+\setlength{\headheight}{14pt}
+\fancyhf{}
+\rhead{DATA CORE -- Omega Logistics}
+\lhead{\leftmark}
+\rfoot{\thepage}
+
+\titleformat{\chapter}[hang]{\normalfont\huge\bfseries}{\thechapter.}{20pt}{\Huge}
+
+\begin{document}
+
+\begin{titlepage}
+  \centering
+  \vspace*{2cm}
+  {\Huge\bfseries DATA CORE\par}
+  \vspace{0.5cm}
+  {\Large Programme Omega Logistics -- Rapport professionnel\par}
+  \vspace{2cm}
+  {\large Certification Data Engineer -- Blocs 1 à 4 (C1-C21)\par}
+  \vspace{0.3cm}
+  {\large Jalon transverse M4 -- Restitution BI (C16bis, C20bis)\par}
+  \vfill
+  {\large Alexandre Laugier\par}
+  {\large \today\par}
+\end{titlepage}
+
+\tableofcontents
+
+\include{chapitres/00_introduction}
+\include{chapitres/01_bloc1_cadrage}
+\include{chapitres/02_bloc2_collecte_stockage}
+\include{chapitres/03_bloc3_entrepot_omega_bi}
+\include{chapitres/04_bloc4_data_lake_omega_lake}
+\include{chapitres/05_m4_restitution_bi}
+\include{chapitres/06_synthese_transverse}
+\include{chapitres/07_conclusion}
+
+\appendix
+\include{annexes/matrice_competences}
+
+\end{document}

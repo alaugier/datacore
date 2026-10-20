@@ -1,0 +1,86 @@
+\chapter{Bloc 1 --- Cadrage (C1-C7)}
+\label{chap:bloc1}
+
+Le Bloc 1 pose le cadrage complet du programme DATA CORE pour Omega
+Logistics : analyse du besoin, cartographie des données existantes,
+architecture cible, veille, planification, supervision et
+communication. Clos le 25/08/2026 (milestone M0), les 7 compétences
+ont chacune un livrable produit et vérifié -- détail exhaustif dans
+\texttt{docs/comptes\_rendus/M0.md} et les documents cités ci-dessous.
+
+\section{C1 --- Analyser l'expression d'un besoin}
+
+L'étude de faisabilité (\texttt{docs/architecture/etude\_faisabilite.md})
+s'appuie sur des entretiens avec les parties prenantes du programme
+(commanditaire opérationnel, sponsor, responsables d'entrepôt), une
+analyse d'opportunité et de faisabilité, une priorisation RICE des
+blocs de compétences, et des objectifs formulés selon la méthode SMART.
+Cette analyse RICE a directement arbitré le séquencement retenu pour la
+suite du programme (collecte avant entrepôt, entrepôt avant data lake).
+
+\section{C2 --- Cartographier les données disponibles}
+
+La topographie des données (\texttt{docs/architecture/topographie\_donnees.md})
+couvre le glossaire métier et les modèles réels des trois sources
+identifiées -- FluxPro (WMS), TransFlow (TMS) et les fichiers clients
+hétérogènes -- en les explorant directement dans \texttt{data/raw/} et
+\texttt{api-mock/}, plutôt qu'en se fiant à une description théorique
+des sources.
+
+\section{C3 --- Concevoir un cadre technique d'exploitation}
+
+L'étude technique d'architecture (\texttt{docs/architecture/architecture\_cible.md})
+établit la cible AS IS/TO BE, une matrice des flux, un registre RGPD
+préliminaire par brique technique, et la stratégie d'éco-conception
+(RGESN) et d'accessibilité (RGAA) du programme. C'est à ce stade
+qu'est actée la décision structurante de retenir MinIO plutôt que
+Microsoft Fabric pour le futur data lake : contrainte de fonctionnement
+local sans compte cloud, coût, reproductibilité pour un évaluateur
+tiers -- une décision confirmée et revérifiée par la veille technique
+du même jour.
+
+\section{C4 --- Réaliser une veille technique et réglementaire}
+
+Un journal de veille hebdomadaire sur trois semaines
+(\texttt{docs/architecture/veille\_technique\_reglementaire.md}) couvre
+deux axes, technique (DataOps/ETL) et réglementaire (RGPD/RGAA) --
+chaque entrée est reliée à une décision réelle du programme, pas tenue
+comme un exercice isolé.
+
+\section{C5 --- Planifier la réalisation d'un projet data}
+
+La feuille de route (\texttt{docs/architecture/feuille\_de\_route.md})
+découpe le programme en 4 phases correspondant aux 4 blocs de
+compétences, avec composition d'équipe, budget prévisionnel
+(180~000~€) et diagrammes de Gantt/PERT -- maintenus en Mermaid,
+c'est-à-dire en texte versionné dans le dépôt, plutôt que dans un
+outil graphique externe. GitHub Projects est retenu comme outil de
+suivi, directement intégré à la convention de branches du projet.
+
+\section{C6 --- Superviser la réalisation d'un projet data}
+
+La supervision du programme (\texttt{docs/architecture/supervision\_projet.md})
+définit les rituels d'équipe (point hebdomadaire, comité de suivi
+mensuel) et le tableau de suivi budgétaire, actualisé à chaque jalon.
+Sur l'ensemble du programme (M0 à M4), le budget du périmètre initial
+(180~000~€) a été consommé intégralement, sans dépassement -- voir le
+chapitre~\ref{chap:synthese-transverse} pour la vue consolidée.
+
+\section{C7 --- Communiquer tout au long du projet}
+
+Le plan de communication et les supports de lancement
+(\texttt{docs/architecture/communication\_lancement.md}) couvrent la
+communication aux parties prenantes à chaque étape clé du programme,
+avec une attention portée à l'accessibilité des documents partagés
+(RGAA).
+
+\section{Écart constaté et traité avant clôture}
+
+Le suivi GitHub initial du Bloc 1 (issues \#1 à \#8) ne couvrait que 4
+des 7 compétences attendues -- gap identifié à la première rédaction
+du compte rendu de milestone, comblé par l'ouverture de 3 issues
+supplémentaires (C4, C6, C7) avant de considérer M0 clos. Ce réflexe de
+vérification --- confronter le suivi du dépôt au périmètre réellement
+exigé, plutôt que de supposer la couverture complète --- est resté une
+pratique constante sur l'ensemble du programme (voir notamment le
+réexamen du périmètre de C20 au chapitre~\ref{chap:bloc4}).

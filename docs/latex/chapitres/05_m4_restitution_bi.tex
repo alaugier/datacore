@@ -1,0 +1,68 @@
+\chapter{Jalon M4 --- Restitution BI (Grafana)}
+\label{chap:m4}
+
+M4 n'est pas un bloc de compétences RNCP mais un jalon transverse,
+ajouté en cours de programme (24/09/2026) après un retour de formateur :
+les livrables produits pour C16 (vues SQL + notebook) et C20 (catalogue
+par introspection) suffisaient aux critères déjà évalués, mais pas
+comme démonstration de restitution/monitoring dans un outil de BI
+dédié. Clos le 19/10/2026, les 2 issues du jalon sont vérifiées en
+conditions réelles -- détail exhaustif dans
+\texttt{docs/comptes\_rendus/M4.md}.
+
+\section{Choix de l'outil}
+
+Grafana est retenu, auto-hébergé, plutôt que Power~BI (nécessite le
+Power~BI Service, cloud) ou Databricks~SQL/Lakeview (nécessite un
+\textit{workspace} Databricks) -- cohérent avec l'infrastructure 100~\%
+locale du reste du programme, décidé avant tout codage. Le notebook SLA
+existant n'est ni retiré ni réécrit : il reste la preuve exploratoire
+telle que livrée à la clôture du Bloc~3, Grafana devenant l'outil de
+restitution \textit{de production} en complément.
+
+\section{C16bis --- Restitution de l'entrepôt OMEGA BI}
+
+Les vues SQL déjà exposées pour C16 sont restituées dans un dashboard
+Grafana dédié, connecté en lecture seule via le rôle \texttt{bi\_reader}
+déjà scopé en C14. Trois bugs réels ont été trouvés uniquement en
+testant depuis un vrai navigateur (champ requis manquant au provisioning
+de la source de données, mode d'édition de requête non forcé sur les
+panels, agrégation silencieuse masquant deux clients sur trois sur un
+panel) -- tous invisibles depuis les vérifications par appel direct à
+l'API de Grafana, qui passaient toutes. Généralisé en leçon
+méthodologique : une vérification par API seule ne prouve jamais
+qu'un rendu côté client fonctionne pour l'utilisateur final.
+
+\section{C20bis --- Monitorage du \textit{data lake}}
+
+Une première conception du monitorage du lake, limitée au suivi de la
+fraîcheur des données, s'est révélée incomplète après lecture du
+référentiel de compétences complet (copié dans le dépôt,
+\texttt{docs/reference/}) : celui-ci exige explicitement le suivi des
+« conditions matérielles et applicatives », et qu'une alerte soit
+« générée lors d'une rupture de service ». Corrigé par l'ajout d'un
+relevé de santé de l'infrastructure (MinIO accessible, capacité
+utilisée) et d'une règle d'alerte Grafana réelle.
+
+La chaîne d'alerte relie une règle Grafana, un service interne
+authentifié, et un relais d'e-mail réel via la bibliothèque
+\texttt{smtplib} vers un capteur SMTP local (MailHog) -- jamais un
+vrai fournisseur externe, pour rester démonstrable sans identifiant
+réel à gérer ni envoi parasite à chaque exécution automatisée des
+tests. Testée de bout en bout, deux fois : une coupure réelle de MinIO
+déclenche un relevé en échec, l'alerte Grafana passe à l'état actif en
+une trentaine de secondes, et un e-mail réel est reçu dans MailHog ;
+la remise en service résout l'alerte. Une relecture de code a ensuite
+mis au jour deux trous de robustesse (un corps de requête mal formé
+faisait échouer le service sans réponse exploitable, un échec
+d'envoi d'e-mail n'était pas distingué d'une autre erreur) et l'absence
+d'authentification sur ce service, exposé sur l'hôte -- les trois
+corrigés et revérifiés avant la clôture du jalon.
+
+\section{Portée budgétaire}
+
+Comme les jalons transverses de rédaction du rapport et de préparation
+de la soutenance, M4 n'a jamais eu de ligne dédiée dans le budget
+prévisionnel initial (180~000~€, voir chapitre~\ref{chap:bloc1}) --
+staffing interne uniquement, les outils retenus (Grafana, MailHog)
+étant open source et auto-hébergés. Aucun dépassement constaté.
