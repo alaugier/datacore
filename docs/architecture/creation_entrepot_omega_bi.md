@@ -34,6 +34,57 @@ inter-schéma (ex. `exploitation.fait_expedition.client_key` →
 `dimensions.dim_client.client_key`) — Postgres l'autorise nativement,
 pas de contrainte technique à contourner.
 
+**Deux schémas supplémentaires rejoignent la même base par la suite**,
+sans remettre en cause les 3 schémas ci-dessus : `gouvernance`
+(C16, journalisation des opérations — voir
+[`gestion_operationnelle_omega_bi.md`](gestion_operationnelle_omega_bi.md))
+et `monitoring` (jalon M4/C20bis, métriques du data lake destinées à
+Grafana — voir [`monitoring_lake.md`](monitoring_lake.md)). Vue
+d'ensemble des 5 schémas tels qu'ils existent aujourd'hui dans
+`datacore_omega_bi` :
+
+```mermaid
+flowchart TB
+    subgraph DIM["dimensions (C14)"]
+        direction LR
+        dc["dim_client"]
+        ds["dim_site"]
+        dp["dim_produit"]
+        dcat["dim_categorie"]
+        dt["dim_temps"]
+        dtr["dim_transporteur"]
+    end
+    subgraph EXP["exploitation (C14)"]
+        direction LR
+        fe["fait_expedition"]
+        fs["fait_stock"]
+    end
+    subgraph COM["commercial (C14)"]
+        direction LR
+        fc["fait_commande"]
+    end
+    subgraph GOV["gouvernance (C16)"]
+        direction LR
+        jo["journal_operations"]
+    end
+    subgraph MON["monitoring (M4 / C20bis)"]
+        direction LR
+        cl["catalogue_lake"]
+        pl["purges_lake"]
+        si["sante_infrastructure"]
+    end
+
+    EXP -->|"FK (client_key, site_key, ...)"| DIM
+    COM -->|"FK (client_key, site_key, ...)"| DIM
+```
+
+`bi_reader` (lecture seule) a accès à `dimensions`, `exploitation`,
+`commercial` et `monitoring` ; `gouvernance` en est délibérément exclu
+(préoccupation d'exploitation technique interne, pas de restitution
+BI — voir `gestion_operationnelle_omega_bi.md` §4). Aucune table de
+`gouvernance` ni `monitoring` ne référence les dimensions par clé
+étrangère : ce sont des journaux techniques, pas des datamarts.
+
 Schéma SQLAlchemy : [`src/datacore/storage/warehouse/models.py`](../../src/datacore/storage/warehouse/models.py).
 Migration Alembic : [`src/datacore/storage/warehouse/migrations/versions/`](../../src/datacore/storage/warehouse/migrations/versions/).
 

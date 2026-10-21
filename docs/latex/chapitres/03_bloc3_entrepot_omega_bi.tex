@@ -33,13 +33,30 @@ modélisation.
 \section{C14 --- Créer un entrepôt de données}
 
 L'entrepôt est créé dans une base PostgreSQL distincte de la base de
-staging, mais sur la même instance (sobriété \hyperref[gloss:rgesn]{RGESN}) -- 4 schémas
-physiques (\texttt{dimensions}, \texttt{exploitation}, \texttt{commercial},
-\texttt{gouvernance}), versionnés via un second environnement Alembic
+staging, mais sur la même instance (sobriété \hyperref[gloss:rgesn]{RGESN}) -- 3 schémas
+physiques créés à ce stade (\texttt{dimensions}, \texttt{exploitation},
+\texttt{commercial}), versionnés via un second environnement Alembic
 dédié. Le cycle \texttt{upgrade}/\texttt{downgrade} est vérifié contre une
 base réelle, pas seulement contre une base vide (un bug latent
 d'Alembic, \texttt{include\_schemas=True} manquant, n'a d'ailleurs été
-révélé qu'à la seconde migration).
+révélé qu'à la seconde migration). Deux schémas supplémentaires
+rejoignent la même base par la suite, sans modifier les trois premiers
+: \texttt{gouvernance} (journalisation des opérations, C16) et
+\texttt{monitoring} (métriques du data lake, jalon M4/C20bis,
+chapitre~\ref{chap:m4}).
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=\textwidth]{creation_entrepot_omega_bi_schemas}
+  \caption{Les 5 schémas PostgreSQL de \texttt{datacore\_omega\_bi} et leurs liens (\filepath{docs/architecture/creation_entrepot_omega_bi.md})}
+\end{figure}
+
+Seules les tables de faits référencent les dimensions par clé
+étrangère inter-schéma ; \texttt{gouvernance} et \texttt{monitoring}
+sont des journaux techniques autonomes, jamais joints aux dimensions.
+\texttt{bi\_reader} (lecture seule) a accès à tous les schémas sauf
+\texttt{gouvernance}, délibérément exclu (préoccupation d'exploitation
+interne, pas de restitution BI).
 
 \section{C15 --- Développer des pipelines de données}
 
@@ -55,10 +72,11 @@ produisant le même résultat.
 La gestion opérationnelle (\filepath{docs/architecture/gestion_operationnelle_omega_bi.md})
 couvre des sauvegardes planifiées (partielle/complète, justifiées par
 la reconstructibilité de 7 des 8 tables depuis le staging), une
-journalisation réelle des opérations (succès et échec, sur une
-connexion dédiée pour survivre à un \texttt{ROLLBACK}), et un registre
-RGPD appuyé sur un audit automatisé répétable ne trouvant aucune
-donnée personnelle dans l'entrepôt.
+journalisation réelle des opérations dans le nouveau schéma
+\texttt{gouvernance} (succès et échec, sur une connexion dédiée pour
+survivre à un \texttt{ROLLBACK}), et un registre RGPD appuyé sur un
+audit automatisé répétable ne trouvant aucune donnée personnelle dans
+l'entrepôt.
 
 Ce périmètre a été étendu après la clôture initiale du bloc : la
 restitution par vues SQL et notebook s'est révélée insuffisante comme

@@ -78,6 +78,59 @@ d'envoi d'e-mail n'était pas distingué d'une autre erreur) et l'absence
 d'authentification sur ce service, exposé sur l'hôte -- les trois
 corrigés et revérifiés avant la clôture du jalon.
 
+\section{Infrastructure : lancer et accéder aux services}
+
+L'ensemble du programme tient dans un seul \texttt{docker-compose.yml}
+(\filepath{infra/docker/docker-compose.yml}), auto-hébergé, sans
+dépendance à un service cloud -- cohérent avec la stratégie de
+sobriété numérique (\hyperref[gloss:rgesn]{RGESN}) retenue dès C3. Depuis un terminal WSL
+Ubuntu (ou tout shell Linux/macOS), à la racine du dépôt :
+
+\begin{lstlisting}[language=bash,caption={Lancement de l'ensemble des services (tous blocs confondus)}]
+docker compose -f infra/docker/docker-compose.yml --env-file .env up -d
+\end{lstlisting}
+
+\texttt{--env-file .env} est requis : les mots de passe (\texttt{BI\_READER\_PASSWORD},
+\texttt{GRAFANA\_ADMIN\_PASSWORD}, \texttt{ALERTING\_WEBHOOK\_SECRET},
+\texttt{LAKE\_PSEUDONYM\_KEY}) ne sont jamais codés en dur -- un oubli
+de ce paramètre a d'ailleurs été le seul écart trouvé en relecture de
+la PR de release de M4.
+
+\begin{longtable}{@{}p{3.6cm}p{2.4cm}p{8.6cm}@{}}
+\toprule
+Service & Port & Accès \\
+\midrule
+\endfirsthead
+\toprule
+Service & Port & Accès \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+Base PostgreSQL (staging~+~entrepôt) & 5432 & Pas d'interface web -- \texttt{psql} ou client SQL \\
+API Omega Data (C12) & 8000 & \url{http://localhost:8000/docs} (spécification OpenAPI interactive) \\
+MinIO (console web) & 9001 & \url{http://localhost:9001} \\
+Grafana & 3000 & \url{http://localhost:3000} \\
+MailHog (boîte de réception des alertes) & 8025 & \url{http://localhost:8025} \\
+\end{longtable}
+
+\textbf{État de l'observabilité} : le programme couvre exactement les
+deux volets exigés par le référentiel (cités en introduction de ce
+chapitre) -- un tableau de bord d'indicateurs de
+service (Grafana, \hyperref[gloss:bi]{BI}) et un monitorage avec
+alerte sur rupture de service (schéma \texttt{monitoring}, règle
+Grafana~$\rightarrow$~webhook~$\rightarrow$~e-mail) -- plus une
+journalisation des opérations (schéma \texttt{gouvernance}). Ce que le
+programme \textbf{n'a pas} : une agrégation centralisée des logs
+applicatifs entre conteneurs (pas de Loki/ELK, seul
+\texttt{docker compose logs} par service) ni de traçage distribué
+(\textit{tracing}) entre les appels API/ETL. Ni l'un ni l'autre n'est
+exigé par les critères du référentiel cités plus haut, et leur ajout
+serait disproportionné à l'échelle du jeu de données du programme --
+même principe de sobriété que le choix, déjà justifié ailleurs
+(chapitre~\ref{chap:bloc2} §C9), de ne pas déployer d'outil « big
+data » séparé pour 25~000 lignes.
+
 \section{Portée budgétaire}
 
 Comme les jalons transverses de rédaction du rapport et de préparation
