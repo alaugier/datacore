@@ -237,6 +237,21 @@ DAG Airflow) -- absent du référentiel de compétences et disproportionné
 pour des pipelines de quelques minutes exécutés à la demande, pas en
 continu.
 
+\textbf{Pourquoi pas un orchestrateur (Airflow, Dagster)} : question
+posée explicitement au formateur plutôt que tranchée seule -- réponse
+confirmée, un orchestrateur n'est pas exigé pour valider la
+compétence, mais constitue un plus. Le choix de ne pas en intégrer un
+à ce stade reste délibéré, pour trois raisons : le référentiel (C8,
+C15, C19) n'exige explicitement aucun outil d'orchestration précis, le
+coût d'intégration est concret et non négligeable (un orchestrateur
+ajoute au minimum trois services supplémentaires -- initialisation,
+ordonnanceur, interface web -- plus sa propre base de métadonnées, sur
+une infrastructure qui en compte déjà huit), et surtout aucun pipeline
+du programme ne s'exécute aujourd'hui selon une cadence récurrente
+réelle à orchestrer -- chacun est invoqué à la demande sur un jeu de
+données statique. Un orchestrateur ajouté maintenant répondrait à un
+besoin plus démonstratif qu'opérationnel.
+
 \section{Portée budgétaire}
 
 Comme les jalons transverses de rédaction du rapport et de préparation
