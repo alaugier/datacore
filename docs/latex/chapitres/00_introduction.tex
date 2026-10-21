@@ -1,8 +1,80 @@
 \chapter{Introduction}
 \label{chap:introduction}
 
-% À rédiger -- issue #92 (chapitres 00/07 + annexe), une fois les
-% chapitres 01-06 stabilisés. Voir docs/architecture/sequencement_m5.md
-% §2-3 pour le contenu attendu : contexte Omega Logistics, problématique,
-% objectifs, annonce du plan (etude_faisabilite.md §1), ainsi que la note
-% de méthodologie sur l'assistance IA (voir le corps de l'issue #92).
+\section{Contexte}
+
+Omega Logistics est un prestataire logistique (3PL) opérant sur trois
+sites (Lyon, Lille, Marseille) pour le compte de trois clients aux
+besoins très différents : NordDrive (pièces automobiles, flux tendus),
+FreshMarket (grande distribution alimentaire, contraintes de
+température et de traçabilité) et MedioTex (textile, forte
+saisonnalité). L'exploitation s'appuie sur deux systèmes historiques --
+\textbf{FluxPro} (WMS, pilotage des entrepôts : commandes, stocks,
+expéditions) et \textbf{TransFlow} (TMS, organisation des tournées de
+la flotte) -- dont les flux de collecte et de transformation ont été
+développés site par site, de façon artisanale, sans standardisation ni
+documentation commune.
+
+\section{Problématique}
+
+Cette dispersion génère des erreurs et des incidents récurrents, et
+empêche la Direction des Opérations d'obtenir une vision consolidée et
+fiable de l'activité (taux de service, délais, coûts, stocks). C'est
+dans ce contexte qu'Éléonore RAKOTO, Directrice des Opérations,
+confie au Pôle Data -- représenté par Karim BELAÏD, Responsable du
+Pôle Data -- le cadrage du programme \textbf{DATA CORE} : refonte de
+l'infrastructure data d'Omega Logistics
+(\filepath{docs/architecture/etude_faisabilite.md}).
+
+\section{Objectifs}
+
+Le programme répond à cinq objectifs formulés selon la méthode
+\hyperref[gloss:smart]{SMART} (\filepath{docs/architecture/etude_faisabilite.md}
+§7) : centraliser les données FluxPro, TransFlow et fichiers clients
+dans une base de travail unique ; exposer cette donnée consolidée via
+une API documentée ; mettre à disposition un tableau de bord du taux
+de service, des délais et des coûts ; réduire à zéro les traitements
+de données personnelles non répertoriés dans un registre RGPD ; et
+concevoir une architecture de data lake capable d'ingérer le flux IoT
+de la flotte et des entrepôts. Une analyse \hyperref[gloss:rice]{RICE}
+préalable (même document, §6) a arbitré leur séquencement en quatre
+blocs de compétences successifs.
+
+\section{Plan du rapport}
+
+Le rapport suit ce séquencement : chapitre~\ref{chap:bloc1} (Bloc 1 --
+Cadrage, C1-C7), chapitre~\ref{chap:bloc2} (Bloc 2 -- Collecte \&
+Stockage, C8-C12), chapitre~\ref{chap:bloc3} (Bloc 3 -- Entrepôt OMEGA
+BI, C13-C17), chapitre~\ref{chap:bloc4} (Bloc 4 -- Data Lake OMEGA
+LAKE, C18-C21), puis chapitre~\ref{chap:m4} pour le jalon transverse
+M4 (restitution BI dans Grafana, ajouté en cours de programme --
+justifié au chapitre lui-même). Chapitre~\ref{chap:synthese-transverse}
+consolide une vue d'ensemble que les chapitres précédents, pris un par
+un, ne donnent pas (budget, qualité, gouvernance des données).
+Chapitre~\ref{chap:conclusion} referme le rapport sur les objectifs
+SMART et les limites connues. Deux annexes complètent le corps du
+texte : un glossaire métier cliquable et une matrice de traçabilité
+compétence~$\rightarrow$~chapitre~$\rightarrow$~preuve.
+
+Chaque chapitre cite ses sources réelles dans le dépôt
+(\filepath{docs/architecture/}, code, tests) plutôt que de les
+reproduire : ce rapport est une synthèse, le dépôt GitHub public fait
+foi pour le détail technique exhaustif.
+
+\section{Méthodologie de travail}
+
+Le programme a été réalisé avec l'assistance d'outils d'intelligence
+artificielle (notamment Claude Code), sous supervision humaine
+constante à chaque étape -- architecture, revue de code, décisions
+techniques, rédaction de ce rapport lui-même. Chaque décision
+structurante a été arbitrée et validée par le Data Engineer~/
+chef·fe de projet, jamais déléguée : les choix technologiques
+(chapitre~\ref{chap:bloc1} §C3), les écarts de périmètre assumés
+(ex. chapitre~\ref{chap:bloc1} §« Écart constaté », ou le
+recadrage du chapitre~\ref{chap:m4}), et les corrections de sécurité
+(ex. chapitre~\ref{chap:bloc4} §C21) ont tous fait l'objet d'une
+relecture et d'une décision humaines avant d'être retenus. L'historique
+Git du dépôt public conserve la trace complète de ce processus --
+échanges, corrections, arbitrages -- disponible pour qui souhaite
+l'examiner ; cette divulgation est factuelle et assumée, pas une
+formule défensive.
