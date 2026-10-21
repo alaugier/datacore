@@ -61,12 +61,14 @@ donnée personnelle dans l'entrepôt.
 
 Ce périmètre a été étendu après la clôture initiale du bloc : la
 restitution par vues SQL et notebook s'est révélée insuffisante comme
-preuve de restitution, et renforcée dans un outil de BI dédié --
-traité comme son propre jalon transverse (chapitre~\ref{chap:m4}).
+preuve de restitution, et renforcée dans un outil de
+\hyperref[gloss:bi]{BI} dédié -- traité comme son propre jalon
+transverse (chapitre~\ref{chap:m4}).
 
 \section{C17 --- Mettre en œuvre une variation de dimension}
 
-\texttt{Dim\_Client} est historisée en SCD2 (type~2 de Kimball) : un
+\texttt{Dim\_Client} est historisée en \hyperref[gloss:scd2]{SCD2}
+(type~2 de Kimball, voir aussi \hyperref[gloss:scd1]{SCD1}) : un
 changement de \texttt{nom} ou \texttt{secteur} ferme la version
 courante et en ouvre une nouvelle, plutôt que d'écraser la valeur
 précédente.

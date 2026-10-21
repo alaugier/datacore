@@ -2,7 +2,8 @@
 \label{chap:bloc4}
 
 Le Bloc 4 conçoit et opère le data lake OMEGA LAKE pour absorber la
-donnée massive IoT de la flotte et des entrepôts. Clos le 23/09/2026
+donnée massive \hyperref[gloss:iot]{IoT} de la flotte et des
+entrepôts. Clos le 23/09/2026
 (milestone M3), les 4 compétences ont chacune un livrable vérifié --
 détail exhaustif dans \filepath{docs/comptes_rendus/M3.md}.
 
@@ -20,13 +21,27 @@ vérifiées dans les données plutôt que supposées.
 
 \begin{figure}[h]
   \centering
+  \includegraphics[width=\textwidth]{architecture_omega_lake_trois_couches}
+  \caption{Vue d'ensemble : base de staging, entrepôt OMEGA BI et data lake OMEGA LAKE (\filepath{docs/architecture/architecture_omega_lake.md})}
+\end{figure}
+
+La figure ci-dessus situe le data lake par rapport aux deux autres
+briques de stockage déjà couvertes (chapitres~\ref{chap:bloc2}
+et~\ref{chap:bloc3}) : les flux IoT y entrent en ingestion directe
+(flux séparé de la base de staging), et c'est la zone \filepath{curated/}
+qui se joint à la lecture aux dimensions conformées de l'entrepôt --
+jamais l'inverse, et jamais de duplication entre les trois briques.
+
+\begin{figure}[h]
+  \centering
   \includegraphics[width=\textwidth]{architecture_omega_lake_zones}
   \caption{Zones \texttt{raw}/\texttt{staging}/\texttt{curated} du data lake OMEGA LAKE (\filepath{docs/architecture/architecture_omega_lake.md})}
 \end{figure}
 
 \section{C19 --- Intégrer une infrastructure de données à partir de composants}
 
-MinIO est déployé comme stockage objet compatible S3
+MinIO est déployé comme stockage objet compatible
+\hyperref[gloss:s3]{S3}
 (\filepath{docs/architecture/integration_infrastructure_omega_lake.md}).
 Le mécanisme de jointure --- DuckDB, choisi après vérification que le
 projet n'utilise \texttt{pandas} nulle part --- est tranché explicitement
@@ -43,8 +58,9 @@ SET s3_url_style='path';
 
 L'ingestion de \filepath{raw/} passe par \texttt{boto3} (copie fidèle,
 octet pour octet, vérifiée par somme de contrôle SHA-256) et non par
-DuckDB, qui réinterpréterait le contenu. Le consommateur du flux SSE,
-fenêtré par intervalle de 5~minutes plutôt que par jour, a été vérifié
+DuckDB, qui réinterpréterait le contenu. Le consommateur du flux
+\hyperref[gloss:sse]{SSE}, fenêtré par intervalle de 5~minutes plutôt
+que par jour, a été vérifié
 par une coupure brutale réelle (\texttt{kill -9} en cours de réception
 puis redémarrage) : aucune collision ni donnée corrompue.
 

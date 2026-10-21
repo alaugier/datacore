@@ -49,7 +49,15 @@ jeu de données, pas un chiffre théorique.
 
 La base de travail est modélisée selon la méthode MERISE
 (\filepath{docs/architecture/modelisation_merise.md}), versionnée via
-Alembic. L'analyse des formes normales a été menée empiriquement --- en
+Alembic.
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=\textwidth]{modelisation_merise_mcd}
+  \caption{Modèle conceptuel de données de la base de travail (\filepath{docs/architecture/modelisation_merise.md})}
+\end{figure}
+
+L'analyse des formes normales a été menée empiriquement --- en
 interrogeant réellement les données --- plutôt que théoriquement, et a
 révélé deux violations réelles, corrigées après vérification chiffrée :
 \texttt{livraisons.statut} (3NF, remplacé par une vue SQL) et

@@ -63,7 +63,7 @@ def export_diagrams() -> None:
                     "-i", str(mmd_path),
                     "-o", str(png_path),
                     "-b", "white",
-                    "-w", "1600",
+                    "--size", "1600",
                     "-s", "2",
                 ],
                 check=True,
