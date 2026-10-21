@@ -1,0 +1,261 @@
+\chapter{Jalon M4 --- Restitution BI (Grafana)}
+\label{chap:m4}
+
+M4 n'est pas un bloc de compétences RNCP mais un jalon transverse,
+ajouté en cours de programme (24/09/2026) pour combler un écart réel
+identifié par rapport au référentiel, et non par choix éditorial.
+Le référentiel C16 exige explicitement, pour l'activité 6 (maintenance
+de l'entrepôt), un « \textit{suivi de l'activité de maintenance :
+indicateurs de service en fonction des SLA à l'aide d'un
+\textbf{tableau de bord}} », évalué sur le critère « \textit{le tableau
+de bord permet de rendre compte de l'ensemble des indicateurs de
+service} » (référentiel, p.~19-20) ; le référentiel C20 exige de même
+un monitorage qui « \textit{permet le suivi des conditions matérielles
+et applicatives} » et « \textit{génère une alerte lors d'une rupture de
+service} » (référentiel, p.~24). Les vues SQL et le notebook exploratoire
+(C16) ainsi que le catalogue par introspection (C20), bien que réels et
+vérifiés, ne constituaient pas un tableau de bord ni un monitorage
+actif au sens de ces critères -- un écart détecté après la clôture de
+M2/M3, pas un manque relevé puis jugé optionnel. M4 corrige cet écart
+par un outil de \hyperref[gloss:bi]{BI} dédié (Grafana), seule forme
+qui satisfait littéralement les deux critères. Clos le 19/10/2026, les 2 issues du
+jalon sont vérifiées en conditions réelles -- détail exhaustif dans
+\filepath{docs/comptes_rendus/M4.md}.
+
+\section{Choix de l'outil}
+
+Grafana est retenu, auto-hébergé, plutôt que Power~BI (nécessite le
+Power~BI Service, cloud) ou Databricks~SQL/Lakeview (nécessite un
+\textit{workspace} Databricks) -- cohérent avec l'infrastructure 100~\%
+locale du reste du programme, décidé avant tout codage. Le notebook
+\hyperref[gloss:sla]{SLA} existant n'est ni retiré ni réécrit : il
+reste la preuve exploratoire
+telle que livrée à la clôture du Bloc~3, Grafana devenant l'outil de
+restitution \textit{de production} en complément.
+
+\section{C16bis --- Restitution de l'entrepôt OMEGA BI}
+
+Les vues SQL déjà exposées pour C16 sont restituées dans un dashboard
+Grafana dédié, connecté en lecture seule via le rôle \texttt{bi\_reader}
+déjà scopé en C14. Trois bugs réels ont été trouvés uniquement en
+testant depuis un vrai navigateur (champ requis manquant au provisioning
+de la source de données, mode d'édition de requête non forcé sur les
+panels, agrégation silencieuse masquant deux clients sur trois sur un
+panel) -- tous invisibles depuis les vérifications par appel direct à
+l'API de Grafana, qui passaient toutes. Généralisé en leçon
+méthodologique : une vérification par API seule ne prouve jamais
+qu'un rendu côté client fonctionne pour l'utilisateur final.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=\textwidth]{gestion_operationnelle_omega_bi_dashboard_grafana}
+  \caption{Dashboard Grafana \og OMEGA BI --- Indicateurs de service (SLA) \fg{}, confirmé fonctionnel en conditions réelles}
+\end{figure}
+
+\section{C20bis --- Monitorage du \textit{data lake}}
+
+Une première conception du monitorage du lake, limitée au suivi de la
+fraîcheur des données, s'est révélée incomplète après lecture du
+référentiel de compétences complet (copié dans le dépôt,
+\filepath{docs/reference/}) : celui-ci exige explicitement le suivi des
+« conditions matérielles et applicatives », et qu'une alerte soit
+« générée lors d'une rupture de service ». Corrigé par l'ajout d'un
+relevé de santé de l'infrastructure (MinIO accessible, capacité
+utilisée) et d'une règle d'alerte Grafana réelle.
+
+La chaîne d'alerte relie une règle Grafana, un service interne
+authentifié, et un relais d'e-mail réel via la bibliothèque
+\texttt{smtplib} vers un capteur SMTP local (MailHog) -- jamais un
+vrai fournisseur externe, pour rester démonstrable sans identifiant
+réel à gérer ni envoi parasite à chaque exécution automatisée des
+tests. Testée de bout en bout, deux fois : une coupure réelle de MinIO
+déclenche un relevé en échec, l'alerte Grafana passe à l'état actif en
+une trentaine de secondes, et un e-mail réel est reçu dans MailHog ;
+la remise en service résout l'alerte. Une relecture de code a ensuite
+mis au jour deux trous de robustesse (un corps de requête mal formé
+faisait échouer le service sans réponse exploitable, un échec
+d'envoi d'e-mail n'était pas distingué d'une autre erreur) et l'absence
+d'authentification sur ce service, exposé sur l'hôte -- les trois
+corrigés et revérifiés avant la clôture du jalon.
+
+\section{Infrastructure : lancer et accéder aux services}
+
+L'ensemble du programme tient dans un seul \texttt{docker-compose.yml}
+(\filepath{infra/docker/docker-compose.yml}), auto-hébergé, sans
+dépendance à un service cloud -- cohérent avec la stratégie de
+sobriété numérique (\hyperref[gloss:rgesn]{RGESN}) retenue dès C3. Depuis un terminal WSL
+Ubuntu (ou tout shell Linux/macOS), à la racine du dépôt :
+
+\begin{lstlisting}[language=bash,caption={Lancement de l'ensemble des services (tous blocs confondus)}]
+docker compose -f infra/docker/docker-compose.yml --env-file .env up -d
+\end{lstlisting}
+
+\texttt{--env-file .env} est requis : les mots de passe (\texttt{BI\_READER\_PASSWORD},
+\texttt{GRAFANA\_ADMIN\_PASSWORD}, \texttt{ALERTING\_WEBHOOK\_SECRET},
+\texttt{LAKE\_PSEUDONYM\_KEY}) ne sont jamais codés en dur -- un oubli
+de ce paramètre a d'ailleurs été le seul écart trouvé en relecture de
+la PR de release de M4.
+
+\begin{longtable}{@{}p{3.6cm}p{2.4cm}p{8.6cm}@{}}
+\toprule
+Service & Port & Accès \\
+\midrule
+\endfirsthead
+\toprule
+Service & Port & Accès \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+Base PostgreSQL (staging~+~entrepôt) & 5432 & Pas d'interface web -- \texttt{psql} ou client SQL \\
+API Omega Data (C12) & 8000 & \url{http://localhost:8000/docs} (spécification OpenAPI interactive) \\
+MinIO (console web) & 9001 & \url{http://localhost:9001} \\
+Grafana & 3000 & \url{http://localhost:3000} \\
+MailHog (boîte de réception des alertes) & 8025 & \url{http://localhost:8025} \\
+\end{longtable}
+
+\textbf{État de l'observabilité} : le programme couvre exactement les
+deux volets exigés par le référentiel (cités en introduction de ce
+chapitre) -- un tableau de bord d'indicateurs de
+service (Grafana, \hyperref[gloss:bi]{BI}) et un monitorage avec
+alerte sur rupture de service (schéma \texttt{monitoring}, règle
+Grafana~$\rightarrow$~webhook~$\rightarrow$~e-mail) -- plus une
+journalisation des opérations (schéma \texttt{gouvernance}). Ce que le
+programme \textbf{n'a pas} : une agrégation centralisée des logs
+applicatifs entre conteneurs (pas de Loki/ELK, seul
+\texttt{docker compose logs} par service) ni de traçage distribué
+(\textit{tracing}) entre les appels API/ETL. Ni l'un ni l'autre n'est
+exigé par les critères du référentiel cités plus haut, et leur ajout
+serait disproportionné à l'échelle du jeu de données du programme --
+même principe de sobriété que le choix, déjà justifié ailleurs
+(chapitre~\ref{chap:bloc2} §C9), de ne pas déployer d'outil « big
+data » séparé pour 25~000 lignes.
+
+\section{Rejouer le remplissage des données et les pipelines}
+
+Une fois les services lancés (section précédente), les trois briques
+de stockage se peuplent par une séquence de commandes Python
+(\texttt{python3 -m datacore.<module>}), jamais par insertion manuelle
+-- rejouable à l'identique en démonstration, y compris à l'oral.
+
+\needspace{7\baselineskip}
+\textbf{Base de staging (C8-C11, chapitre~\ref{chap:bloc2})} :
+
+\begin{lstlisting}[language=bash,caption={Extraction, nettoyage puis chargement de la base de staging}]
+python3 -m datacore.ingestion.run_extraction   # C8 : 5 sources -> data/interim/
+python3 -m datacore.processing.run_cleaning    # C10 : dedoublonnage fichiers clients
+alembic upgrade head                           # C11 : schema MERISE
+python3 -m datacore.storage.staging.load_staging
+\end{lstlisting}
+
+\needspace{7\baselineskip}
+\textbf{Entrepôt OMEGA BI (C13-C17, chapitre~\ref{chap:bloc3})} :
+
+\begin{lstlisting}[language=bash,caption={Création puis chargement ETL de l'entrepôt}]
+./scripts/init_omega_bi_db.sh                       # C14 : base + role bi_reader
+alembic -c alembic_omega_bi.ini upgrade head         # C14 : 3 schemas + 9 tables
+python3 -m datacore.storage.warehouse.load_dim_temps # dimension calendaire generee
+python3 -m datacore.storage.warehouse.load_warehouse # C15 : ETL staging -> entrepot
+\end{lstlisting}
+
+\needspace{9\baselineskip}
+\textbf{Data lake OMEGA LAKE (C18-C21, chapitre~\ref{chap:bloc4})} :
+
+\begin{lstlisting}[language=bash,caption={Ingestion puis transformation du data lake}]
+python3 -m datacore.storage.lake.ingestion_batch  # C19 : 4 flux IoT batch -> raw/
+python3 -m datacore.storage.lake.sse_consumer     # C19 : flux temps reel -> raw/ (continu)
+python3 -m datacore.storage.lake.transform        # C18 : raw/ -> staging/ -> curated/
+python3 -m datacore.storage.lake.catalogue        # C20 : catalogue par introspection
+python3 -m datacore.storage.lake.curated_bi       # C21 : export pseudonymise
+\end{lstlisting}
+
+\subsection{Transactions et rollback}
+
+Les trois chargements (\texttt{load\_staging}, \texttt{load\_warehouse})
+s'exécutent dans une \textbf{transaction unique} : un \texttt{COMMIT}
+unique après la dernière étape réussie, un \texttt{ROLLBACK} complet
+sur toute exception -- jamais de base partiellement peuplée :
+
+\begin{lstlisting}[language=Python,caption={Transaction unique du pipeline ETL entrepôt (\filepath{src/datacore/storage/warehouse/load_warehouse.py})}]
+try:
+    truncate_warehouse(warehouse_conn)
+    # ... chargement des 6 dimensions puis des 3 faits ...
+    warehouse_conn.commit()
+except Exception:
+    warehouse_conn.rollback()
+    raise
+finally:
+    staging_conn.close()
+    warehouse_conn.close()
+\end{lstlisting}
+
+Point plus subtil : l'exécution est journalisée
+(\texttt{gouvernance.journal\_operations}, C16) sur une \textbf{connexion
+Postgres séparée} de celle du chargement, committée immédiatement à
+l'ouverture (statut \texttt{en\_cours}) puis mise à jour à la sortie du
+bloc. Si le chargement échoue et annule sa propre transaction, la ligne
+de journal indiquant l'échec, elle, survit -- un \texttt{ROLLBACK} ne
+peut pas invalider un \texttt{COMMIT} déjà passé sur une autre
+connexion. La contrainte d'unicité SCD2
+(\texttt{uq\_dim\_client\_courant}, chapitre~\ref{chap:bloc3} §C17) est
+elle aussi traduite en diagnostic explicite plutôt que laissée remonter
+telle quelle :
+
+\begin{lstlisting}[language=Python,caption={Traduction d'une violation de contrainte en diagnostic (\filepath{src/datacore/storage/warehouse/load_warehouse.py})}]
+except psycopg2.errors.UniqueViolation as exc:
+    raise RuntimeError(
+        f"Conflit SCD2 sur dim_client : une version courante existe "
+        f"deja pour client_id={r['id']} (contrainte "
+        f"uq_dim_client_courant) -- execution concurrente du "
+        f"pipeline ou ecriture directe en base ?"
+    ) from exc
+\end{lstlisting}
+
+\subsection{Visualiser les pipelines}
+
+Aucun orchestrateur à interface graphique (pas d'Airflow, pas de
+Dagster) : chaque pipeline est un script Python invoqué directement,
+choix de sobriété cohérent avec l'échelle du programme (même principe
+que pour C9 ci-dessus). Trois façons concrètes de « voir » un pipeline
+malgré tout :
+\begin{itemize}
+  \item \textbf{La topologie}, statique : la vue d'ensemble
+    staging/entrepôt/lake (figure~\ref{fig:vue-ensemble-trois-couches},
+    chapitre~\ref{chap:bloc4} §C18) montre l'enchaînement réel des
+    étapes, texte Mermaid versionné dans le dépôt.
+  \item \textbf{Le résultat d'une exécution}, après coup : chaque script
+    affiche un résumé en sortie (lignes chargées, doublons résolus),
+    et pour l'entrepôt, \texttt{gouvernance.journal\_operations} garde
+    un historique interrogeable (début, fin, statut, détail) -- visible
+    dans Grafana via \texttt{gouvernance.v\_dernieres\_operations}.
+  \item \textbf{La fraîcheur des données du lake}, en continu : le
+    dashboard « OMEGA LAKE --- Monitoring » (C20bis, section
+    précédente) trace la dernière ingestion par flux.
+\end{itemize}
+Aucun outil ne montre un graphe d'exécution animé en temps réel (type
+DAG Airflow) -- absent du référentiel de compétences et disproportionné
+pour des pipelines de quelques minutes exécutés à la demande, pas en
+continu.
+
+\textbf{Pourquoi pas un orchestrateur (Airflow, Dagster)} : question
+posée explicitement au formateur plutôt que tranchée seule -- réponse
+confirmée, un orchestrateur n'est pas exigé pour valider la
+compétence, mais constitue un plus. Le choix de ne pas en intégrer un
+à ce stade reste délibéré, pour trois raisons : le référentiel (C8,
+C15, C19) n'exige explicitement aucun outil d'orchestration précis, le
+coût d'intégration est concret et non négligeable (un orchestrateur
+ajoute au minimum trois services supplémentaires -- initialisation,
+ordonnanceur, interface web -- plus sa propre base de métadonnées, sur
+une infrastructure qui en compte déjà huit), et surtout aucun pipeline
+du programme ne s'exécute aujourd'hui selon une cadence récurrente
+réelle à orchestrer -- chacun est invoqué à la demande sur un jeu de
+données statique. Un orchestrateur ajouté maintenant répondrait à un
+besoin plus démonstratif qu'opérationnel.
+
+\section{Portée budgétaire}
+
+Comme les jalons transverses de rédaction du rapport et de préparation
+de la soutenance, M4 n'a jamais eu de ligne dédiée dans le budget
+prévisionnel initial (180~000~€, voir chapitre~\ref{chap:bloc1}) --
+staffing interne uniquement, les outils retenus (Grafana, MailHog)
+étant open source et auto-hébergés. Aucun dépassement constaté.

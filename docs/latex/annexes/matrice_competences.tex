@@ -1,0 +1,57 @@
+\chapter{Matrice compétences}
+\label{annexe:matrice-competences}
+
+Pour chaque compétence : l'épreuve RNCP associée, le chapitre du
+présent rapport qui la traite, et le document source du dépôt qui en
+porte la preuve exhaustive
+(\filepath{docs/reference/Referentiel_Activites_Competences_Evaluation_DE.pdf}
+pour le texte exact de chaque compétence et épreuve).
+
+\begin{longtable}{@{}>{\bfseries}p{2.3cm} p{1.8cm} p{1.5cm} p{10.2cm}@{}}
+\toprule
+Compétence & Épreuve(s) & Chapitre & Document(s) source \\
+\midrule
+\endfirsthead
+\toprule
+Compétence & Épreuve(s) & Chapitre & Document(s) source \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+
+C1 & E1, E2 & \ref{chap:bloc1} & \filepath{docs/architecture/etude_faisabilite.md} \\
+C2 & E2 & \ref{chap:bloc1} & \filepath{docs/architecture/topographie_donnees.md} \\
+C3 & E2 & \ref{chap:bloc1} & \filepath{docs/architecture/architecture_cible.md} \\
+C4 & E2 & \ref{chap:bloc1} & \filepath{docs/architecture/veille_technique_reglementaire.md} \\
+C5 & E3 & \ref{chap:bloc1} & \filepath{docs/architecture/feuille_de_route.md} \\
+C6 & E2, E3 & \ref{chap:bloc1} & \filepath{docs/architecture/supervision_projet.md} \\
+C7 & E3 & \ref{chap:bloc1} & \filepath{docs/architecture/communication_lancement.md} \\
+C8 & E4 & \ref{chap:bloc2} & \filepath{docs/architecture/diagrammes_techniques.md}, \filepath{src/datacore/ingestion/} \\
+C9 & E4 & \ref{chap:bloc2} & \filepath{docs/architecture/requetes_sql_extraction.md}, \filepath{sql/extraction/} \\
+C10 & E4 & \ref{chap:bloc2} & \filepath{docs/architecture/topographie_donnees.md}, \filepath{src/datacore/processing/} \\
+C11 & E4 & \ref{chap:bloc2} & \filepath{docs/architecture/modelisation_merise.md}, \filepath{src/datacore/storage/staging/} \\
+C12 & E4 & \ref{chap:bloc2} & \filepath{docs/architecture/api_omega_data.md}, \filepath{src/datacore/api/} \\
+C13 & E5 & \ref{chap:bloc3} & \filepath{docs/architecture/modelisation_omega_bi.md} \\
+C14 & E5 & \ref{chap:bloc3} & \filepath{docs/architecture/creation_entrepot_omega_bi.md} \\
+C15 & E5 & \ref{chap:bloc3} & \filepath{docs/architecture/pipelines_etl_omega_bi.md} \\
+C16 & E6 & \ref{chap:bloc3} & \filepath{docs/architecture/gestion_operationnelle_omega_bi.md}, \filepath{docs/architecture/registre_rgpd_entrepot.md} \\
+C17 & E6 & \ref{chap:bloc3} & \filepath{docs/architecture/historisation_dim_client_scd2.md} \\
+C18 & E7 & \ref{chap:bloc4} & \filepath{docs/architecture/architecture_omega_lake.md} \\
+C19 & E7 & \ref{chap:bloc4} & \filepath{docs/architecture/integration_infrastructure_omega_lake.md} \\
+C20 & E7 & \ref{chap:bloc4} & \filepath{docs/architecture/catalogue_omega_lake.md} \\
+C21 & E7 & \ref{chap:bloc4} & \filepath{docs/architecture/registre_rgpd_lake.md} \\
+C16bis & -- & \ref{chap:m4} & \filepath{docs/architecture/gestion_operationnelle_omega_bi.md} §3.5 \\
+C20bis & -- & \ref{chap:m4} & \filepath{docs/architecture/monitoring_lake.md} \\
+
+\end{longtable}
+
+C16bis et C20bis ne sont pas des compétences RNCP propres : elles
+renforcent C16 et C20 (déjà couvertes et closes respectivement en M2
+et M3) dans le cadre du jalon transverse M4 -- voir
+chapitre~\ref{chap:m4} pour la justification complète de cet ajout.
+
+Pour une navigation par fichier/fonction plutôt que par document,
+voir \filepath{docs/architecture/index_code_par_competence.md} (hors
+rapport, dépôt GitHub) : carte complète fichier~$\rightarrow$~fonction
+pour chaque compétence, pensée pour répondre en direct à une question
+du jury portant sur un extrait de code précis.

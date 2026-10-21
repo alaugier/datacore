@@ -288,3 +288,49 @@ planifiée à l'entrée de cette phase, conformément au
 Cette grille sera complétée au fil de la Phase 4 ; elle est publiée dès
 maintenant pour que les modalités d'encadrement soient actées avant la
 mobilisation effective du prestataire.
+
+---
+
+## 4. Cycle de vie d'une tâche
+
+Convention de branches complète dans
+[`plan_de_developpement.md`](../plan_de_developpement.md#convention-de-branches).
+Chaque tâche suit le même cycle, de l'issue GitHub jusqu'au merge sur
+`main` à la clôture du jalon :
+
+Étape 1 — développement, jusqu'à la CI :
+
+```mermaid
+flowchart LR
+    ISSUE["Issue GitHub<br/>(assignee alaugier)"] -->|"branche feat-N-slug"| BRANCH["Travail sur<br/>la branche"]
+    BRANCH -->|"ouverture"| PR1["Pull Request<br/>vers dev"]
+    PR1 --> CI{"CI : ruff + mypy<br/>+ pytest (176 tests)"}
+    CI -->|"échec"| BRANCH
+```
+
+Étape 2 — revue et intégration, jusqu'à la release :
+
+```mermaid
+flowchart LR
+    CI2{"CI : succès"} --> REVIEW["Revue humaine"]
+    REVIEW -->|"approuvée"| MERGE["Merge dans dev"]
+    MERGE -->|"dernier issue<br/>du milestone"| RELEASE["PR de release<br/>dev vers main"]
+    RELEASE --> MAINB["main (protégée)"]
+    MERGE -.->|"sinon"| NEXT["Issue suivante"]
+```
+
+Le statut Kanban du Project #3 (6 états : `Backlog` → `À faire
+(sprint)` → `En cours` → `En revue (PR)` → `Bloqué` → `Terminé`) suit
+ce même cycle en parallèle — mis à jour manuellement à chaque étape
+(voir [`plan_de_developpement.md` §« Mise à jour du
+Kanban »](../plan_de_developpement.md#mise-à-jour-du-kanban)), pas
+automatisé par un workflow « linked PR » (essayé puis abandonné le
+25/08/2026 : trop rigide pour les PR de release, qui ferment plusieurs
+issues à la fois).
+
+La CI (`.github/workflows/ci.yml`) s'exécute sur chaque push et chaque
+PR vers `dev`/`main` : `ruff check` (lint) puis `mypy` (typage
+statique) doivent passer avant que `pytest tests/unit
+tests/integration` (176 tests au 21/10/2026) ne s'exécute à son tour —
+un échec de lint ou de typage bloque l'exécution des tests plutôt que
+de produire un rapport bruité.

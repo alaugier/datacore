@@ -34,10 +34,17 @@ noms M4/M5 sont renumérotés M5/M6 en conséquence — voir
   - Exemples : `feat-2-etude-faisabilite`, `feat-7-docker-compose`
 
 Toute PR de `feat-*` cible `dev`, jamais `main` directement.
-`dev` → `main` uniquement lors d'une release/jalon validé.
+`dev` → `main` uniquement lors d'une release/jalon validé. Cycle de
+vie complet d'une tâche, schématisé dans
+[`supervision_projet.md` §4](architecture/supervision_projet.md#4-cycle-de-vie-dune-tâche).
+
+Chaque PR déclenche la CI (`.github/workflows/ci.yml`) : `ruff check`
+(lint), `mypy` (typage statique), puis `pytest tests/unit
+tests/integration` (176 tests au 21/10/2026) -- dans cet ordre, les
+tests ne s'exécutent que si lint et typage passent déjà.
 
 ## Arborescence de référence
-Voir architecture complète discutée avec Claude Web (conversation du 24/08/2026) :
+Architecture arrêtée le 24/08/2026 (voir `docs/architecture/architecture_cible.md`) :
 `src/datacore/{ingestion,processing,storage,api,governance,config}`,
 `docs/{architecture,latex,presentation}`, `tests/{unit,integration,playwright}`, `infra/`.
 

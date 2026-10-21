@@ -1,0 +1,87 @@
+\chapter{Conclusion}
+\label{chap:conclusion}
+
+\section{Retour sur les objectifs SMART}
+
+Les cinq objectifs formulés en C1
+(\filepath{docs/architecture/etude_faisabilite.md} §7,
+chapitre~\ref{chap:introduction}) sont atteints à la clôture du
+programme (M0 à M4) :
+
+\begin{enumerate}
+  \item \textbf{Centraliser les données FluxPro, TransFlow et fichiers
+    clients} -- base de travail unique, les 7 tables FluxPro et les
+    sources TransFlow/fichiers clients intégrées (chapitre~\ref{chap:bloc2}).
+  \item \textbf{Exposer une API REST documentée} -- Omega Data API,
+    spécification OpenAPI auto-générée, autorisation par rôle
+    (chapitre~\ref{chap:bloc2} §C12).
+  \item \textbf{Mettre à disposition un tableau de bord} -- livré en
+    deux temps, pas en une seule fois : vues SQL + notebook à la
+    clôture du Bloc 3, puis Grafana (chapitre~\ref{chap:m4}) après
+    qu'une relecture a établi que la première forme ne suffisait pas
+    au sens littéral du référentiel. L'objectif est atteint, mais pas
+    du premier coup -- à noter honnêtement plutôt que de présenter une
+    trajectoire linéaire qui n'a pas eu lieu.
+  \item \textbf{Réduire à zéro les traitements de données personnelles
+    non répertoriés} -- registres RGPD tenus à chaque brique (staging,
+    entrepôt, lake), audits automatisés plutôt que déclaratifs (voir
+    le fil transverse du chapitre~\ref{chap:synthese-transverse}).
+  \item \textbf{Concevoir une architecture de data lake} pour le flux
+    IoT -- zones \texttt{raw}/\texttt{staging}/\texttt{curated}
+    opérationnelles, ingestion batch et temps réel toutes deux vérifiées
+    en conditions réelles (chapitre~\ref{chap:bloc4}).
+\end{enumerate}
+
+\section{Limites connues}
+
+Consignées explicitement dans les comptes rendus de chaque jalon
+(\filepath{docs/comptes_rendus/}) plutôt que découvertes a posteriori
+pour les besoins de ce rapport :
+
+\begin{itemize}
+  \item \textbf{Rapprochement \texttt{clients.nom}~$\leftrightarrow$~\texttt{historique\_expeditions.client}}
+    jamais garanti par une contrainte formelle -- vérifié cohérent sur
+    le jeu de données actuel, pas structurellement sûr
+    (chapitre~\ref{chap:bloc2}, point ouvert transmis dès M1).
+  \item \textbf{Aucun ordonnanceur actif} pour les tâches planifiées
+    (sauvegardes de l'entrepôt, purge RGPD du lake) -- scripts et
+    procédures documentés, mais à exécuter manuellement ou via cron
+    en conditions réelles (\filepath{docs/comptes_rendus/M2.md},
+    \filepath{docs/comptes_rendus/M3.md}).
+  \item \textbf{Stabilité de la clé de pseudonymisation entre
+    exécutions} non garantie ni surveillée -- détaillé
+    chapitre~\ref{chap:synthese-transverse}.
+  \item \textbf{Prestataire SupervIT jamais mobilisé} -- le périmètre
+    pédagogique du Bloc 4 n'en a pas eu besoin, écart
+    budgétaire/organisationnel assumé plutôt qu'un manque non vu.
+  \item \textbf{Observabilité partielle par choix} (pas d'agrégation
+    centralisée des logs, pas de traçage distribué) et \textbf{pas
+    d'orchestrateur de pipelines} -- les deux déjà justifiés comme des
+    choix de sobriété délibérés plutôt que des manques non identifiés
+    (chapitre~\ref{chap:m4}).
+\end{itemize}
+
+\section{Apprentissages}
+
+Trois pratiques, imposées par l'expérience plutôt que décidées en
+théorie au départ, se sont révélées transférables sur l'ensemble du
+programme : \textbf{décider avant de coder} (un document de
+séquencement par bloc, \filepath{docs/architecture/sequencement_bloc\{2,3,4\}.md},
+écrit et daté avant la première ligne de code de chaque bloc) ;
+\textbf{vérifier empiriquement plutôt que supposer} (le grain réel des
+doublons mesuré plutôt qu'estimé, la cardinalité du rapprochement
+livraison/expédition vérifiée à 100~\% avant de trancher le modèle de
+données, les citations du référentiel de compétences relues au mot
+près plutôt que travaillées de mémoire) ; et \textbf{la relecture
+externe comme détecteur d'angles morts}, pas comme formalité -- la
+restitution BI du jalon M4 et la faille de repli codé en dur sur la
+clé de pseudonymisation (chapitre~\ref{chap:synthese-transverse}) ont
+toutes deux été trouvées par un regard extérieur après qu'une première
+analyse, faite seul, les avait jugées suffisantes ou écartées.
+
+Le programme a par ailleurs été mené avec l'assistance d'outils
+d'intelligence artificielle sous supervision humaine constante
+(chapitre~\ref{chap:introduction}) : un apprentissage à part entière a
+été de rester en mesure d'expliquer et de défendre chaque choix
+technique du dépôt -- pas seulement de l'avoir accepté -- condition
+nécessaire pour soutenir ce travail à l'oral.

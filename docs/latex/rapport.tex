@@ -1,0 +1,124 @@
+% Rapport professionnel — DATA CORE (Omega Logistics)
+% Certification Data Engineer, Blocs 1-4 (C1-C21) + jalon transverse M4 (C16bis/C20bis).
+%
+% Document maître : inclut un fichier par chapitre (docs/latex/chapitres/).
+% Rapport synthétique + renvois au dépôt GitHub pour le détail technique
+% exhaustif -- voir docs/architecture/sequencement_m5.md pour la structure
+% retenue et sa justification.
+\documentclass[a4paper,11pt]{report}
+
+\usepackage[french]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{array}
+\usepackage{longtable}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+% Empeche un figure/listing de "deriver" au-dela de la section ou il
+% est defini (bug trouve en relecture : une figure de la section C18
+% deferee par l'algorithme de floats de LaTeX a fini au milieu du
+% listing de la section C19 suivante, sur la page suivante).
+\usepackage[section]{placeins}
+% Empeche un intitule court (ex. "Base de staging :") d'etre isole en
+% bas de page, separe du listing qui le suit immediatement -- bug
+% trouve en relecture visuelle (capture d'ecran utilisateur).
+\usepackage{needspace}
+
+% Figures réutilisées telles quelles depuis docs/architecture/images/
+% (déjà produites et vérifiées lors des jalons correspondants, pas
+% régénérées pour le rapport) -- copiées dans figures/ pour que le
+% projet LaTeX reste autonome.
+\graphicspath{{figures/}}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue!50!black,
+  urlcolor=blue!50!black,
+  citecolor=blue!50!black,
+  pdftitle={DATA CORE -- Rapport professionnel},
+  pdfauthor={Alexandre Laugier},
+}
+
+% Extraits de code : style sobre, numéros de ligne, pas de coloration
+% agressive -- le code cite sa source réelle dans le dépôt, il n'a pas
+% vocation à remplacer la lecture du fichier.
+% showstringspaces=false : sans ça, listings affiche un symbole visible
+% pour chaque espace a l'interieur d'une chaine Python (ex. un message
+% d'erreur) -- rendu a tort comme des "caracteres bizarres" en relecture.
+\lstset{
+  basicstyle=\ttfamily\small,
+  numbers=left,
+  numberstyle=\tiny\color{gray},
+  breaklines=true,
+  showstringspaces=false,
+  frame=single,
+  backgroundcolor=\color{gray!5},
+  keywordstyle=\color{blue!60!black},
+  commentstyle=\color{gray!60!black}\itshape,
+  stringstyle=\color{green!40!black},
+}
+
+% Chemins de fichiers : \filepath (alias de \path, cassable aux "/")
+% plutot que \texttt (qui ne casse jamais une ligne) -- sans ca, un
+% chemin long deborde silencieusement dans la marge de droite.
+% \DeclareRobustCommand (pas \newcommand) : \path casse sinon dans un
+% argument mobile (ex. \caption{}) -- erreur fatale trouvée a la
+% compilation apres l'avoir utilise dans une legende de figure.
+\DeclareRobustCommand{\filepath}[1]{\path{#1}}
+
+\pagestyle{fancy}
+\setlength{\headheight}{14pt}
+\fancyhf{}
+\rhead{DATA CORE -- Omega Logistics}
+% En-tete courant limite a "Chapitre N" (pas le titre complet, souvent
+% long) -- un titre de chapitre long entrait en collision avec le \rhead.
+\renewcommand{\chaptermark}[1]{\markboth{Chapitre \thechapter}{}}
+\lhead{\leftmark}
+\rfoot{\thepage}
+
+% \LARGE (pas \Huge ni \huge) : le titre le plus long du rapport
+% ("Bloc 4 --- Data Lake OMEGA LAKE (C18-C21)") passait encore sur 2
+% lignes a \huge -- verifie par compilation + inspection visuelle du
+% PDF rendu, pas seulement du texte extrait.
+\titleformat{\chapter}[hang]{\normalfont\Large\bfseries}{\thechapter.}{15pt}{\LARGE}
+
+\begin{document}
+
+\begin{titlepage}
+  \centering
+  \vspace*{2cm}
+  {\Huge\bfseries DATA CORE\par}
+  \vspace{0.5cm}
+  {\Large Programme Omega Logistics -- Rapport professionnel\par}
+  \vspace{2cm}
+  {\large Certification Data Engineer -- Blocs 1 à 4 (C1-C21)\par}
+  \vspace{0.3cm}
+  {\large Jalon transverse M4 -- Restitution BI (C16bis, C20bis)\par}
+  \vfill
+  {\large Alexandre Laugier\par}
+  {\large \today\par}
+\end{titlepage}
+
+\tableofcontents
+
+\include{chapitres/00_introduction}
+\include{chapitres/01_bloc1_cadrage}
+\include{chapitres/02_bloc2_collecte_stockage}
+\include{chapitres/03_bloc3_entrepot_omega_bi}
+\include{chapitres/04_bloc4_data_lake_omega_lake}
+\include{chapitres/05_m4_restitution_bi}
+\include{chapitres/06_synthese_transverse}
+\include{chapitres/07_conclusion}
+\include{chapitres/08_bibliographie}
+
+\appendix
+\include{annexes/glossaire}
+\include{annexes/matrice_competences}
+
+\end{document}

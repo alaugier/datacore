@@ -1,0 +1,140 @@
+\chapter{Bloc 3 --- Entrepôt OMEGA BI (C13-C17)}
+\label{chap:bloc3}
+
+Le Bloc 3 construit et maintient l'entrepôt décisionnel OMEGA BI, qui
+répond au besoin d'analyse de la performance logistique exprimé par la
+direction. Clos le 21/09/2026 (milestone M2), les 5 compétences ont
+chacune un livrable vérifié -- détail exhaustif dans
+\filepath{docs/comptes_rendus/M2.md}.
+
+\section{Séquencement retenu}
+
+L'ordre C13~$\rightarrow$~C14~$\rightarrow$~C15~$\rightarrow$~C17~$\rightarrow$~C16
+(\filepath{docs/architecture/sequencement_bloc3.md}) inverse volontairement
+C16/C17 par rapport au Gantt initial : la procédure de purge
+\hyperref[gloss:rgpd]{RGPD} de C16 dépend du schéma historisé que C17
+doit d'abord créer.
+
+\section{C13 --- Modéliser un entrepôt de données}
+
+Approche bottom-up par \hyperref[gloss:datamart]{datamarts} (Kimball) :
+2 datamarts, 3 faits, 6 dimensions conformées, matrice de bus
+(\filepath{docs/architecture/modelisation_omega_bi.md}). Le seul schéma
+en flocon retenu (\texttt{Dim\_Produit}~$\rightarrow$~\texttt{Dim\_Categorie})
+est justifié par une contrainte réelle des sources, pas par principe de
+modélisation.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=\textwidth]{modelisation_omega_bi_mcd}
+  \caption{Modèle conceptuel de données de l'entrepôt OMEGA BI (\filepath{docs/architecture/modelisation_omega_bi.md})}
+\end{figure}
+
+\textbf{Pourquoi pas de \texttt{Fait\_Livraison} séparée} :
+\texttt{livraisons} (staging, TransFlow) et \texttt{expeditions}
+(FluxPro) décrivent le même événement métier vu par deux systèmes
+sources, rapprochés par \texttt{tracking\_number}
+(chapitre~\ref{chap:bloc2} §C11). La cardinalité réelle a été vérifiée
+avant de modéliser, pas supposée : 100~\% des 1100 expéditions FluxPro
+ont exactement une livraison TransFlow correspondante (relation 1:1
+confirmée empiriquement). Scinder deux sources en cardinalité 1:1
+vérifiée en deux tables de faits aurait imposé une jointure
+fait-à-fait à chaque requête -- anti-pattern Kimball qu'une dimension
+conformée évite normalement. Les mesures de \texttt{livraisons}
+(délai, statut) sont donc absorbées directement dans
+\texttt{Fait\_Expedition}, au même grain.
+
+\section{C14 --- Créer un entrepôt de données}
+
+L'entrepôt est créé dans une base PostgreSQL distincte de la base de
+staging, mais sur la même instance (sobriété \hyperref[gloss:rgesn]{RGESN}) -- 3 schémas
+physiques créés à ce stade (\texttt{dimensions}, \texttt{exploitation},
+\texttt{commercial}), versionnés via un second environnement Alembic
+dédié. Le cycle \texttt{upgrade}/\texttt{downgrade} est vérifié contre une
+base réelle, pas seulement contre une base vide (un bug latent
+d'Alembic, \texttt{include\_schemas=True} manquant, n'a d'ailleurs été
+révélé qu'à la seconde migration). Deux schémas supplémentaires
+rejoignent la même base par la suite, sans modifier les trois premiers
+: \texttt{gouvernance} (journalisation des opérations, C16) et
+\texttt{monitoring} (métriques du data lake, jalon M4/C20bis,
+chapitre~\ref{chap:m4}).
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=\textwidth]{creation_entrepot_omega_bi_schemas}
+  \caption{Les 5 schémas PostgreSQL de \texttt{datacore\_omega\_bi} et leurs liens (\filepath{docs/architecture/creation_entrepot_omega_bi.md})}
+\end{figure}
+
+Seules les tables de faits référencent les dimensions par clé
+étrangère inter-schéma ; \texttt{gouvernance} et \texttt{monitoring}
+sont des journaux techniques autonomes, jamais joints aux dimensions.
+\texttt{bi\_reader} (lecture seule) a accès à tous les schémas sauf
+\texttt{gouvernance}, délibérément exclu (préoccupation d'exploitation
+interne, pas de restitution BI).
+
+\section{C15 --- Développer des pipelines de données}
+
+Le pipeline \hyperref[gloss:etl]{ETL} staging~$\rightarrow$~entrepôt applique des contrôles
+qualité réels (mise en quarantaine des lignes non rapprochées de
+l'historique, pas un rejet silencieux), et sa cohérence est vérifiée
+en comparant les indicateurs calculés par l'ETL à ceux calculés
+indépendamment par l'API C12 -- deux chemins de calcul distincts
+produisant le même résultat.
+
+\section{C16 --- Assurer la gestion opérationnelle d'un environnement de données}
+
+La gestion opérationnelle (\filepath{docs/architecture/gestion_operationnelle_omega_bi.md})
+couvre des sauvegardes planifiées (partielle/complète, justifiées par
+la reconstructibilité de 7 des 8 tables depuis le staging), une
+journalisation réelle des opérations dans le nouveau schéma
+\texttt{gouvernance} (succès et échec, sur une connexion dédiée pour
+survivre à un \texttt{ROLLBACK}), et un registre RGPD appuyé sur un
+audit automatisé répétable ne trouvant aucune donnée personnelle dans
+l'entrepôt.
+
+Ce périmètre a été étendu après la clôture initiale du bloc : la
+restitution par vues SQL et notebook s'est révélée insuffisante comme
+preuve de restitution, et renforcée dans un outil de
+\hyperref[gloss:bi]{BI} dédié -- traité comme son propre jalon
+transverse (chapitre~\ref{chap:m4}).
+
+\section{C17 --- Mettre en œuvre une variation de dimension}
+
+\texttt{Dim\_Client} est historisée en \hyperref[gloss:scd2]{SCD2}
+(type~2 de Kimball, voir aussi \hyperref[gloss:scd1]{SCD1}) : un
+changement de \texttt{nom} ou \texttt{secteur} ferme la version
+courante et en ouvre une nouvelle, plutôt que d'écraser la valeur
+précédente.
+
+\begin{lstlisting}[language=Python,caption={Détection du changement et historisation SCD2 (\filepath{src/datacore/storage/warehouse/load_warehouse.py})}]
+if current is not None and current[1] == r["nom"] and current[2] == r["secteur"]:
+    mapping[r["id"]] = current[0]
+    continue
+
+if current is not None:
+    cur.execute(
+        """
+        UPDATE dimensions.dim_client
+        SET valid_to = %(today)s, is_current = false
+        WHERE client_key = %(client_key)s
+        """,
+        {"today": today, "client_key": current[0]},
+    )
+# ... puis INSERT d'une nouvelle ligne avec une nouvelle client_key.
+\end{lstlisting}
+
+\texttt{r} est la ligne source lue depuis le staging (dict avec
+\texttt{nom}/\texttt{secteur}/\texttt{id} FluxPro) ; \texttt{current}
+est la version actuellement courante de ce client dans l'entrepôt si
+elle existe déjà (\texttt{None} sinon), sous forme de tuple
+\texttt{(client\_key, nom, secteur)} ; \texttt{mapping} associe
+l'identifiant FluxPro à la \texttt{client\_key} à utiliser pour charger
+les faits qui le référencent, qu'une nouvelle version ait été créée ou
+non. Le mécanisme est vérifié par un changement réel simulé : l'ancienne
+version reste close et interrogeable, la nouvelle est créée, et les
+faits déjà chargés continuent de référencer la version qui était
+courante au moment de leur chargement. Écart assumé avec la
+description initiale de l'issue (qui demandait l'historisation
+d'attributs absents du jeu de données pédagogique, adresse et
+contrat) : \texttt{nom} et \texttt{secteur} ont été retenus à la
+place, après décision prise avant implémentation plutôt que devinée.

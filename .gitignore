@@ -7,3 +7,12 @@ data/raw/*
 data/interim/
 *.egg-info/
 backups/
+
+# Rapport LaTeX (M5) -- fichiers de compilation intermédiaires, pas le
+# document source ni le PDF final (rapport.pdf est committé).
+docs/latex/*.aux
+docs/latex/*.log
+docs/latex/*.out
+docs/latex/*.toc
+docs/latex/chapitres/*.aux
+docs/latex/annexes/*.aux

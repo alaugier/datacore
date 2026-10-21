@@ -49,6 +49,13 @@ mock TransFlow (`api-mock/app.py`).
 | **CoSu** (Comité de suivi) | Réunion mensuelle de pilotage entre le chef·fe de projet, le commanditaire opérationnel (Karim BELAÏD) et la sponsor (Éléonore RAKOTO) — voir [`supervision_projet.md` §1.2](supervision_projet.md#12-comité-de-suivi-mensuel--cosu-). |
 | **Diagramme de Gantt** | Représentation graphique d'un planning : une barre horizontale par tâche, positionnée dans le temps, montrant enchaînements et chevauchements entre phases. Utilisé pour la planification du programme — voir [`feuille_de_route.md` §4.1](feuille_de_route.md#41-diagramme-de-gantt), maintenu en Mermaid (texte versionné dans le dépôt) plutôt que dans un outil graphique externe. |
 | **BI** (Business Intelligence) | Ensemble des pratiques et outils visant l'**aide à la prise de décision** à partir de données consolidées (tableaux de bord, indicateurs, restitution visuelle) — par opposition à la donnée brute ou à son seul stockage. Chez Omega Logistics : l'entrepôt **OMEGA BI** (bloc 3) et sa restitution dans **Grafana** (C16bis) — voir [`gestion_operationnelle_omega_bi.md` §3](gestion_operationnelle_omega_bi.md#3-tableau-de-bord-des-indicateurs-de-service). |
+| **RGPD** (Règlement Général sur la Protection des Données) | Règlement européen encadrant le traitement des données personnelles. Mis en œuvre dans DATA CORE via un registre des traitements tenu à chaque brique (staging, entrepôt, lake) et la pseudonymisation des identifiants sensibles — voir [`architecture_cible.md` §4](architecture_cible.md#4-mise-en-conformité-rgpd). |
+| **RGAA** (Référentiel Général d'Amélioration de l'Accessibilité) | Référentiel français d'accessibilité numérique (contrastes, navigation clavier, alternatives textuelles). Appliqué à l'ensemble des livrables du programme — voir [`architecture_cible.md` §6](architecture_cible.md#6-stratégie-daccessibilité-numérique-rgaa). |
+| **RGESN** (Référentiel Général d'Écoconception de Services Numériques) | Référentiel français de sobriété numérique. Mobilisé dans les choix d'architecture (open source, auto-hébergé, dimensionnement au volume réel plutôt que par principe) — voir [`architecture_cible.md` §5](architecture_cible.md#5-stratégie-déco-responsabilité-rgesn). |
+| **RICE** (Reach, Impact, Confidence, Effort) | Méthode de priorisation de chantiers : score = (Reach × Impact × Confidence) / Effort. Utilisée pour arbitrer le séquencement du programme en C1 — voir [`etude_faisabilite.md` §6](etude_faisabilite.md#6-analyse-rice). |
+| **SMART** (Spécifique, Mesurable, Acceptable/Ambitieux, Réaliste, Temporellement défini) | Grille de formulation d'objectifs de projet. Les 5 objectifs du programme DATA CORE sont formulés selon cette grille — voir [`etude_faisabilite.md` §7](etude_faisabilite.md#7-objectifs-smart). |
+| **ETL** (Extract, Transform, Load) | Chaîne de traitement qui extrait les données d'une source, les transforme (nettoyage, conformité au schéma cible) puis les charge dans leur destination. Chez Omega Logistics : les pipelines qui peuplent l'entrepôt OMEGA BI depuis la base de staging (C15) — voir [`pipelines_etl_omega_bi.md`](pipelines_etl_omega_bi.md). |
+| **Datamart** | Sous-ensemble de l'entrepôt de données construit autour d'un processus métier précis, plutôt qu'un modèle unique monolithique. OMEGA BI est construit **par datamart** (« Exploitation » et « Commercial »), partageant des dimensions conformées — voir [`modelisation_omega_bi.md` §1](modelisation_omega_bi.md#1-approche-retenue--bottom-up-par-datamarts-dimensions-conformées). |
 
 ---
 
@@ -73,6 +80,32 @@ Toutes les routes `/api/*` de TransFlow exigent l'en-tête
 suffisante pour un usage pédagogique mais à proscrire en environnement de
 production réel — point à traiter dans l'étude technique d'architecture,
 C3).
+
+```mermaid
+flowchart TB
+    subgraph BLOC2["Sources du bloc 2 (collecte C8)"]
+        direction LR
+        S1["FluxPro (WMS)<br/>SGBD relationnel<br/>7 tables"]
+        S2["TransFlow (TMS)<br/>API REST (mock)"]
+        S3["Portail transporteur<br/>page web à scraper"]
+        S4["Fichiers clients<br/>3 fichiers hétérogènes"]
+        S5["Historique expéditions<br/>25 000 lignes"]
+    end
+    BLOC2 -->|"C8-C10<br/>extraction, nettoyage"| STG[("Base de staging (C11)")]
+
+    subgraph BLOC4["Sources anticipées bloc 4 (hors périmètre C8)"]
+        direction LR
+        S6["Capteurs IoT batch"]
+        S7["Flux capteurs temps réel (SSE)"]
+    end
+    BLOC4 -.->|"ingestion directe (C18-C19)"| LAKE[("Data lake OMEGA LAKE")]
+```
+
+Carte des 7 sources et de leur destination : cinq alimentent la base de
+staging du bloc 2 via la collecte C8, les deux flux IoT sont hors
+périmètre du bloc 2 et rejoignent directement le data lake au bloc 4
+(voir [`architecture_omega_lake.md`](architecture_omega_lake.md) pour la
+vue complète staging/entrepôt/lake).
 
 ---
 

@@ -18,6 +18,12 @@ OUT = DOCS / "images"
 
 # (fichier source, slugs de sortie dans l'ordre d'apparition des blocs).
 TARGETS: dict[str, list[str]] = {
+    "topographie_donnees.md": ["topographie_donnees_cartographie_sources"],
+    "supervision_projet.md": [
+        "supervision_projet_cycle_de_vie_1_developpement",
+        "supervision_projet_cycle_de_vie_2_integration",
+    ],
+    "creation_entrepot_omega_bi.md": ["creation_entrepot_omega_bi_schemas"],
     "modelisation_omega_bi.md": ["modelisation_omega_bi_mcd"],
     "feuille_de_route.md": ["feuille_de_route_gantt", "feuille_de_route_pert"],
     "diagrammes_techniques.md": [
@@ -63,7 +69,7 @@ def export_diagrams() -> None:
                     "-i", str(mmd_path),
                     "-o", str(png_path),
                     "-b", "white",
-                    "-w", "1600",
+                    "--size", "1600",
                     "-s", "2",
                 ],
                 check=True,

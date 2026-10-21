@@ -138,10 +138,12 @@ curl -H "X-API-Key: omega-data-engineer-2026" http://localhost:8000/commandes-cl
 Modélisation en étoile/flocon (bottom-up, 2 datamarts, dimensions
 conformées) — voir `docs/architecture/modelisation_omega_bi.md`. Créé
 dans une base Postgres distincte (`datacore_omega_bi`, même instance que
-la base de staging), 4 schémas Postgres (`dimensions`, `exploitation`,
-`commercial`, `gouvernance`), versionnée via un second environnement
+la base de staging), 3 schémas Postgres créés à ce stade (`dimensions`,
+`exploitation`, `commercial`), versionnée via un second environnement
 Alembic — voir `docs/architecture/creation_entrepot_omega_bi.md` pour la
-procédure complète. Peuplé depuis la base de staging par un pipeline ETL
+procédure complète (les schémas `gouvernance` et `monitoring` rejoignent
+la même base plus tard, respectivement en C16 et au jalon M4). Peuplé
+depuis la base de staging par un pipeline ETL
 (rechargement complet, quarantaine des lignes historique non
 rapprochées) — voir `docs/architecture/pipelines_etl_omega_bi.md`.
 `dimensions.dim_client` est historisée (SCD2, C17) : seule dimension
@@ -170,6 +172,32 @@ puis http://localhost:3000 (identifiants `GRAFANA_ADMIN_USER`/
 `bi_reader`, jamais avec les identifiants admin Postgres. Le notebook
 (`notebooks/tableau_de_bord_sla_omega_bi.ipynb`) reste la preuve
 exploratoire complémentaire (voir `docs/comptes_rendus/M2.md` §5).
+
+## Data lake OMEGA LAKE (C18-C21)
+Stockage objet MinIO (compatible S3), zones `raw`/`staging`/`curated` —
+voir `docs/architecture/architecture_omega_lake.md` pour l'architecture
+et `docs/architecture/integration_infrastructure_omega_lake.md` pour
+l'intégration de MinIO. Ingestion des 4 flux IoT batch et du flux temps
+réel (SSE), puis transformation (DuckDB/`httpfs`) et catalogue par
+introspection :
+
+```bash
+docker compose -f infra/docker/docker-compose.yml --env-file .env up -d minio minio-init
+python3 -m datacore.storage.lake.ingestion_batch  # C19 : 4 flux IoT batch -> raw/
+python3 -m datacore.storage.lake.sse_consumer     # C19 : flux temps reel -> raw/ (continu)
+python3 -m datacore.storage.lake.transform        # C18 : raw/ -> staging/ -> curated/
+python3 -m datacore.storage.lake.catalogue        # C20 : catalogue par introspection
+python3 -m datacore.storage.lake.curated_bi       # C21 : export pseudonymisé (bi_reader)
+```
+
+Gouvernance RGPD (risque de ré-identification `vehicule_id`/
+`tournees.chauffeur`, pseudonymisation HMAC, procédure de purge) — voir
+`docs/architecture/registre_rgpd_lake.md` :
+
+```bash
+python3 -m datacore.governance.audit_rgpd
+python3 -m datacore.storage.lake.purge
+```
 
 ## Monitoring du data lake OMEGA LAKE (C20bis)
 Suivi applicatif (fraîcheur/volumétrie par flux, dernière purge RGPD) et
