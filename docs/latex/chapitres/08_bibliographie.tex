@@ -1,0 +1,57 @@
+\chapter*{Bibliographie}
+\addcontentsline{toc}{chapter}{Bibliographie}
+
+\paragraph{Référentiels et cadrage du programme}
+\begin{itemize}
+  \item \textit{Référentiel d'activités, de compétences et d'évaluation
+    -- Data Engineer}, Simplon / France Compétences --
+    \filepath{docs/reference/Referentiel_Activites_Competences_Evaluation_DE.pdf}
+    (copié dans le dépôt pour vérifier les critères d'évaluation exacts
+    plutôt que de travailler de mémoire, voir chapitre~\ref{chap:m4}).
+  \item \textit{Cahier des charges DATA CORE}, Omega Logistics --
+    \filepath{docs/reference/Cahier_des_charges_DATA_CORE.docx}.
+\end{itemize}
+
+\paragraph{Méthodologie de modélisation}
+\begin{itemize}
+  \item Kimball, R., Ross, M. (2013). \textit{The Data Warehouse
+    Toolkit: The Definitive Guide to Dimensional Modeling} (3\textsuperscript{e}
+    éd.). Wiley. -- approche bottom-up par datamart, dimensions
+    conformées, historisation SCD1/SCD2, periodic snapshot fact table :
+    méthodologie suivie pour l'entrepôt OMEGA BI
+    (chapitre~\ref{chap:bloc3}).
+\end{itemize}
+
+\paragraph{Réglementation et référentiels transverses}
+\begin{itemize}
+  \item Règlement (UE) 2016/679 du Parlement européen et du Conseil du
+    27~avril~2016 (RGPD) -- protection des données personnelles.
+  \item \textit{Référentiel général d'écoconception de services
+    numériques} (RGESN), DINUM / ADEME / Arcep -- sobriété numérique.
+  \item \textit{Référentiel général d'amélioration de l'accessibilité}
+    (RGAA), DINUM -- accessibilité numérique des livrables documentaires.
+\end{itemize}
+
+\paragraph{Documentation technique des outils retenus}
+\begin{itemize}
+  \item PostgreSQL -- \url{https://www.postgresql.org/docs/}
+  \item FastAPI -- \url{https://fastapi.tiangolo.com/}
+  \item SQLAlchemy -- \url{https://docs.sqlalchemy.org/}
+  \item Alembic -- \url{https://alembic.sqlalchemy.org/}
+  \item DuckDB -- \url{https://duckdb.org/docs/}
+  \item MinIO -- \url{https://min.io/docs/}
+  \item Grafana -- \url{https://grafana.com/docs/}
+  \item Mermaid -- \url{https://mermaid.js.org/}
+  \item Docker Compose -- \url{https://docs.docker.com/compose/}
+  \item pytest -- \url{https://docs.pytest.org/}
+  \item Ruff -- \url{https://docs.astral.sh/ruff/}
+  \item mypy -- \url{https://mypy-lang.org/}
+\end{itemize}
+
+\paragraph{Source primaire}
+\begin{itemize}
+  \item Dépôt GitHub du programme DATA CORE -- historique Git complet
+    (commits, Pull Requests, issues), source de vérité pour le détail
+    technique exhaustif que ce rapport synthétise sans reproduire (voir
+    chapitre~\ref{chap:introduction}).
+\end{itemize}

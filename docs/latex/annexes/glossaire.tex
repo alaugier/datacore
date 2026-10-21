@@ -1,0 +1,201 @@
+\chapter{Glossaire métier}
+\label{annexe:glossaire}
+
+Glossaire complet dans \filepath{docs/architecture/topographie_donnees.md}
+\S{}1 (C2) ; repris ici in extenso pour que le rapport reste
+autosuffisant. Chaque terme est une cible de renvoi (voir par exemple
+\hyperref[gloss:scd2]{SCD2} au chapitre~\ref{chap:bloc3}) --
+cliquable dans le PDF.
+
+\begin{longtable}{@{}>{\bfseries\raggedright}p{3.4cm} p{12.2cm}@{}}
+\toprule
+Terme & Définition \\
+\midrule
+\endfirsthead
+\toprule
+Terme & Définition \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+
+\label{gloss:3pl}3PL (\textit{Third-Party Logistics}) &
+Prestataire logistique externalisé gérant entreposage, préparation de
+commandes et transport pour le compte de tiers (les clients d'Omega
+Logistics). \\
+
+\label{gloss:wms}WMS (\textit{Warehouse Management System}) &
+Système de gestion d'entrepôt. Chez Omega Logistics : \textbf{FluxPro},
+qui pilote commandes, stocks, produits et expéditions. \\
+
+\label{gloss:tms}TMS (\textit{Transport Management System}) &
+Système de gestion du transport. Chez Omega Logistics :
+\textbf{TransFlow}, qui organise tournées et livraisons de la flotte. \\
+
+\label{gloss:entrepot}Entrepôt &
+Site d'exploitation d'Omega Logistics. Trois sites : Lyon
+(\texttt{OMG-LYO}), Lille (\texttt{OMG-LIL}), Marseille
+(\texttt{OMG-MAR}). \\
+
+\label{gloss:client}Client &
+Donneur d'ordre d'Omega Logistics. Trois clients fictifs : NordDrive
+(pièces auto), FreshMarket (grande distribution alimentaire), MedioTex
+(textile). \\
+
+\label{gloss:commande}Commande &
+Demande d'expédition de produits passée par un client pour un entrepôt
+donné, composée d'une ou plusieurs lignes de commande. \\
+
+\label{gloss:expedition}Expédition &
+Envoi physique résultant d'une commande, confié à un transporteur,
+identifié par un numéro de suivi (\texttt{tracking\_number}). \\
+
+\label{gloss:stock}Stock &
+Quantité disponible d'un produit dans un entrepôt à une date de mise à
+jour donnée. \\
+
+\label{gloss:sku}SKU (\textit{Stock Keeping Unit}) &
+Référence unique d'un produit dans le référentiel FluxPro. \\
+
+\label{gloss:tournee}Tournée &
+Ensemble de livraisons affectées à un chauffeur et un véhicule, pour
+une date donnée, organisé par TransFlow. \\
+
+\label{gloss:livraison}Livraison &
+Remise d'un colis (une expédition) à une adresse, rattachée à une
+tournée, avec un statut et des horaires estimé/réel. \\
+
+\label{gloss:transporteur}Transporteur &
+Société assurant le transport physique des expéditions (ex.
+RapidFret). Distinct d'Omega Logistics, dont TransFlow orchestre les
+tournées. \\
+
+\label{gloss:sla}SLA (\textit{Service Level Agreement}) &
+Accord de niveau de service définissant la qualité de prestation
+attendue. \\
+
+\label{gloss:rfid}RFID (\textit{Radio Frequency Identification}) &
+Technologie d'étiquetage/scan sans contact utilisée pour tracer les
+palettes en entrepôt. \\
+
+\label{gloss:iot}IoT (\textit{Internet of Things}) &
+Capteurs connectés en entrepôt (température, comptage caméra) et sur
+la flotte (géolocalisation) -- bloc 4 (data lake). \\
+
+\label{gloss:sse}SSE (\textit{Server-Sent Events}) &
+Protocole HTTP de flux continu à sens unique serveur~$\rightarrow$~client
+(une connexion ouverte, le serveur pousse des évènements). Utilisé par
+\texttt{/api/stream/capteurs} pour diffuser les mesures capteurs en
+temps réel (bloc 4). \\
+
+\label{gloss:staging}Staging &
+Base de données de travail intermédiaire, cible de la collecte du
+bloc 2, alimentant ensuite l'entrepôt de données (bloc 3). À ne pas
+confondre avec la zone \texttt{staging} du data lake (bloc 4), qui
+porte le même nom par convention Kimball/data lake mais désigne une
+brique de stockage différente. \\
+
+\label{gloss:scd1}SCD1 (\textit{Slowly Changing Dimension}, type 1) &
+Historisation Kimball où un changement \textbf{écrase} la valeur
+précédente, sans garder de trace. Cas implicite dans OMEGA BI :
+\texttt{Dim\_Client.code} n'est jamais versionné. \\
+
+\label{gloss:scd2}SCD2 (\textit{Slowly Changing Dimension}, type 2) &
+Historisation Kimball où un changement produit une \textbf{nouvelle
+ligne} (nouvelle clé de substitution, \texttt{valid\_from}/
+\texttt{valid\_to}/\texttt{is\_current}), en conservant l'ancienne.
+Implémentée sur \texttt{Dim\_Client.nom}/\texttt{secteur} en C17 --
+voir chapitre~\ref{chap:bloc3}. \\
+
+\label{gloss:s3}S3 (\textit{Simple Storage Service}) &
+Service de stockage objet d'AWS ; son API HTTP est devenue un standard
+de fait, repris par des solutions non-AWS comme \textbf{MinIO}
+(bloc 4) pour rester compatibles avec les mêmes outils sans dépendre
+d'AWS. \\
+
+\label{gloss:bucket}Bucket &
+Conteneur de premier niveau d'un stockage objet S3/MinIO
+(grossièrement, un répertoire racine). OMEGA LAKE utilise un
+\textbf{bucket unique}, \texttt{omega-lake} -- les zones
+\texttt{raw}/\texttt{staging}/\texttt{curated} sont des préfixes à
+l'intérieur de ce bucket, pas des buckets séparés. \\
+
+\label{gloss:zone-lake}Zone (data lake) &
+Une étape de transformation à l'intérieur du bucket unique
+(\texttt{raw}/\texttt{staging}/\texttt{curated}) -- un préfixe de
+chemin, pas un bucket séparé. \\
+
+\label{gloss:flux-lake}Flux (data lake) &
+Une source de données IoT distincte, avec son propre schéma (ex.
+\texttt{capteurs\_temperature}, \texttt{rfid\_scans}) -- un
+sous-préfixe à l'intérieur de chaque zone. 5 flux au total. \\
+
+\label{gloss:httpfs}httpfs &
+Extension DuckDB qui sait lire/écrire des fichiers via HTTP(S) ou
+\texttt{s3://}, y compris contre un stockage S3-compatible non-AWS
+comme MinIO -- nécessite alors une configuration explicite d'endpoint
+(\texttt{s3\_endpoint}) et de style d'adressage
+(\texttt{s3\_url\_style='path'}), MinIO n'étant pas AWS S3. \\
+
+\label{gloss:cosu}CoSu (Comité de suivi) &
+Réunion mensuelle de pilotage entre le chef·fe de projet, le
+commanditaire opérationnel (Karim BELAÏD) et la sponsor (Éléonore
+RAKOTO). \\
+
+\label{gloss:gantt}Diagramme de Gantt &
+Représentation graphique d'un planning : une barre horizontale par
+tâche, positionnée dans le temps, montrant enchaînements et
+chevauchements entre phases -- voir
+figure~\ref{fig:gantt}\footnote{Maintenu en Mermaid (texte versionné
+dans le dépôt) plutôt que dans un outil graphique externe.}. \\
+
+\label{gloss:bi}BI (\textit{Business Intelligence}) &
+Ensemble des pratiques et outils visant l'\textbf{aide à la prise de
+décision} à partir de données consolidées (tableaux de bord,
+indicateurs, restitution visuelle) -- par opposition à la donnée brute
+ou à son seul stockage. Chez Omega Logistics : l'entrepôt
+\textbf{OMEGA BI} (bloc 3) et sa restitution dans \textbf{Grafana}
+(C16bis). \\
+
+\label{gloss:rgpd}RGPD (Règlement Général sur la Protection des
+Données) &
+Règlement européen encadrant le traitement des données personnelles.
+Mis en œuvre via un registre des traitements tenu à chaque brique
+(staging, entrepôt, lake) et la pseudonymisation des identifiants
+sensibles. \\
+
+\label{gloss:rgaa}RGAA (Référentiel Général d'Amélioration de
+l'Accessibilité) &
+Référentiel français d'accessibilité numérique (contrastes, navigation
+clavier, alternatives textuelles), appliqué à l'ensemble des livrables
+du programme. \\
+
+\label{gloss:rgesn}RGESN (Référentiel Général d'Écoconception de
+Services Numériques) &
+Référentiel français de sobriété numérique, mobilisé dans les choix
+d'architecture (open source, auto-hébergé, dimensionnement au volume
+réel plutôt que par principe). \\
+
+\label{gloss:rice}RICE (\textit{Reach, Impact, Confidence, Effort}) &
+Méthode de priorisation de chantiers : score $=$ (Reach~$\times$~Impact
+$\times$~Confidence)~/~Effort. Utilisée pour arbitrer le séquencement
+du programme en C1. \\
+
+\label{gloss:smart}SMART (Spécifique, Mesurable,
+Acceptable/Ambitieux, Réaliste, Temporellement défini) &
+Grille de formulation d'objectifs de projet. Les 5 objectifs du
+programme DATA CORE sont formulés selon cette grille. \\
+
+\label{gloss:etl}ETL (\textit{Extract, Transform, Load}) &
+Chaîne de traitement qui extrait les données d'une source, les
+transforme (nettoyage, conformité au schéma cible) puis les charge
+dans leur destination. Chez Omega Logistics : les pipelines qui
+peuplent l'entrepôt OMEGA BI depuis la base de staging (C15). \\
+
+\label{gloss:datamart}Datamart &
+Sous-ensemble de l'entrepôt de données construit autour d'un processus
+métier précis, plutôt qu'un modèle unique monolithique. OMEGA BI est
+construit \textbf{par datamart} (« Exploitation » et « Commercial »),
+partageant des dimensions conformées. \\
+
+\end{longtable}

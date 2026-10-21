@@ -1,0 +1,148 @@
+\chapter{Bloc 1 --- Cadrage (C1-C7)}
+\label{chap:bloc1}
+
+Le Bloc 1 pose le cadrage complet du programme DATA CORE pour Omega
+Logistics : analyse du besoin, cartographie des données existantes,
+architecture cible, veille, planification, supervision et
+communication. Clos le 25/08/2026 (milestone M0), les 7 compétences
+ont chacune un livrable produit et vérifié -- détail exhaustif dans
+\filepath{docs/comptes_rendus/M0.md} et les documents cités ci-dessous.
+
+\section{C1 --- Analyser l'expression d'un besoin}
+
+L'étude de faisabilité (\filepath{docs/architecture/etude_faisabilite.md})
+s'appuie sur des entretiens avec les parties prenantes du programme
+(commanditaire opérationnel, sponsor, responsables d'entrepôt), une
+analyse d'opportunité et de faisabilité, une priorisation
+\hyperref[gloss:rice]{RICE} des blocs de compétences, et des objectifs
+formulés selon la méthode \hyperref[gloss:smart]{SMART}. Cette analyse
+RICE a directement arbitré le séquencement retenu pour la
+suite du programme (collecte avant entrepôt, entrepôt avant data lake).
+
+\section{C2 --- Cartographier les données disponibles}
+
+La topographie des données (\filepath{docs/architecture/topographie_donnees.md})
+couvre le \hyperref[annexe:glossaire]{glossaire métier} et les modèles
+réels des sept sources identifiées -- FluxPro
+(\hyperref[gloss:wms]{WMS}), TransFlow (\hyperref[gloss:tms]{TMS}), le
+portail transporteur, les fichiers clients hétérogènes, l'historique
+volumineux et les deux flux IoT anticipant le bloc 4 -- en les
+explorant directement dans \filepath{data/raw/} et \filepath{api-mock/},
+plutôt qu'en se fiant à une description théorique des sources.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=\textwidth]{topographie_donnees_cartographie_sources}
+  \caption{Cartographie des sources de données et de leur destination (\filepath{docs/architecture/topographie_donnees.md})}
+\end{figure}
+
+\section{C3 --- Concevoir un cadre technique d'exploitation}
+
+L'étude technique d'architecture (\filepath{docs/architecture/architecture_cible.md})
+établit la cible AS IS/TO BE, une matrice des flux, un registre
+\hyperref[gloss:rgpd]{RGPD} préliminaire par brique technique, et la
+stratégie d'éco-conception (\hyperref[gloss:rgesn]{RGESN}) et
+d'accessibilité (\hyperref[gloss:rgaa]{RGAA}) du programme. C'est à ce
+stade
+qu'est actée la décision structurante de retenir MinIO plutôt que
+Microsoft Fabric pour le futur data lake : contrainte de fonctionnement
+local sans compte cloud, coût, reproductibilité pour un évaluateur
+tiers -- une décision confirmée et revérifiée par la veille technique
+du même jour.
+
+\section{C4 --- Réaliser une veille technique et réglementaire}
+
+Un journal de veille hebdomadaire sur trois semaines
+(\filepath{docs/architecture/veille_technique_reglementaire.md}) couvre
+deux axes, technique (DataOps/\hyperref[gloss:etl]{ETL}) et
+réglementaire (RGPD/RGAA) --
+chaque entrée est reliée à une décision réelle du programme, pas tenue
+comme un exercice isolé.
+
+\section{C5 --- Planifier la réalisation d'un projet data}
+
+La feuille de route (\filepath{docs/architecture/feuille_de_route.md})
+découpe le programme en 4 phases correspondant aux 4 blocs de
+compétences, avec composition d'équipe, budget prévisionnel
+(180~000~€) et diagrammes de Gantt/PERT -- maintenus en Mermaid,
+c'est-à-dire en texte versionné dans le dépôt, plutôt que dans un
+outil graphique externe. GitHub Projects est retenu comme outil de
+suivi, directement intégré à la convention de branches du projet.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=\textwidth]{feuille_de_route_gantt}
+  \caption{Diagramme de Gantt du programme (export du Mermaid source, \filepath{docs/architecture/feuille_de_route.md})}
+  \label{fig:gantt}
+\end{figure}
+
+\section{C6 --- Superviser la réalisation d'un projet data}
+
+La supervision du programme (\filepath{docs/architecture/supervision_projet.md})
+définit les rituels d'équipe (point hebdomadaire, comité de suivi
+mensuel) et le tableau de suivi budgétaire, actualisé à chaque jalon.
+Sur l'ensemble du programme (M0 à M4), le budget du périmètre initial
+(180~000~€) a été consommé intégralement, sans dépassement -- voir le
+chapitre~\ref{chap:synthese-transverse} pour la vue consolidée.
+
+\section{Versionnement et workflow de développement}
+
+Le code et la documentation sont versionnés dans un unique dépôt
+GitHub, selon une convention actée dès M0 et appliquée sans exception
+sur les 5 jalons suivants
+(\filepath{docs/plan_de_developpement.md}) : branche \texttt{main}
+protégée (releases uniquement), branche \texttt{dev} d'intégration
+continue, et une branche \texttt{feat-<numéro>-<slug>} par issue
+GitHub, créée depuis \texttt{dev}. Toute Pull Request d'une branche de
+travail cible \texttt{dev}, jamais \texttt{main} directement ;
+\texttt{dev} ne rejoint \texttt{main} que lors d'une release de fin de
+jalon, validée par une PR dédiée.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=\textwidth]{supervision_projet_cycle_de_vie_1_developpement}
+  \caption{Cycle de vie d'une tâche (1/2) -- développement, jusqu'à la CI (\filepath{docs/architecture/supervision_projet.md})}
+\end{figure}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=\textwidth]{supervision_projet_cycle_de_vie_2_integration}
+  \caption{Cycle de vie d'une tâche (2/2) -- revue et intégration, jusqu'à la release (\filepath{docs/architecture/supervision_projet.md})}
+\end{figure}
+
+Chaque Pull Request déclenche une intégration continue
+(\filepath{.github/workflows/ci.yml}) en trois étapes séquentielles --
+\texttt{ruff} (lint), puis \texttt{mypy} (typage statique), puis
+\texttt{pytest} sur \texttt{tests/unit} et \texttt{tests/integration}
+(176 tests au 21/10/2026) -- les tests ne s'exécutent que si lint et
+typage passent déjà, pour éviter un rapport d'échec bruité par des
+erreurs de surface. Le suivi visuel du travail (GitHub Projects,
+6 statuts : \textit{Backlog} $\rightarrow$ \textit{À faire (sprint)}
+$\rightarrow$ \textit{En cours} $\rightarrow$ \textit{En revue (PR)}
+$\rightarrow$ \textit{Bloqué} $\rightarrow$ \textit{Terminé}) suit ce
+même cycle, mis à jour manuellement à chaque étape -- un mécanisme
+d'automatisation par \textit{linked PR} a été essayé puis abandonné le
+25/08/2026, trop rigide pour les PR de release qui ferment plusieurs
+issues à la fois. À la clôture du dernier issue d'un jalon, un compte
+rendu (\filepath{docs/comptes_rendus/}) et la release vers
+\texttt{main} sont produits dans la même PR, avant de fermer le
+milestone GitHub correspondant.
+
+\section{C7 --- Communiquer tout au long du projet}
+
+Le plan de communication et les supports de lancement
+(\filepath{docs/architecture/communication_lancement.md}) couvrent la
+communication aux parties prenantes à chaque étape clé du programme,
+avec une attention portée à l'accessibilité des documents partagés
+(RGAA).
+
+\section{Écart constaté et traité avant clôture}
+
+Le suivi GitHub initial du Bloc 1 (issues \#1 à \#8) ne couvrait que 4
+des 7 compétences attendues -- gap identifié à la première rédaction
+du compte rendu de milestone, comblé par l'ouverture de 3 issues
+supplémentaires (C4, C6, C7) avant de considérer M0 clos. Ce réflexe de
+vérification --- confronter le suivi du dépôt au périmètre réellement
+exigé, plutôt que de supposer la couverture complète --- est resté une
+pratique constante sur l'ensemble du programme (voir notamment le
+réexamen du périmètre de C20 au chapitre~\ref{chap:bloc4}).

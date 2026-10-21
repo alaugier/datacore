@@ -99,6 +99,13 @@ SupervIT), ce qui laisse une marge de sécurité en cas d'imprévu technique.
 
 ### 4.1 Diagramme de Gantt
 
+**Note (21/10/2026)** : la ligne `m6` ci-dessous a été recalée sur la
+période réelle de soutenance (novembre 2026, aucune contrainte de date
+n'étant imposée par le cahier des charges). Le reste du diagramme
+(phases 2-4) reste daté sur la planification prévisionnelle du cadrage
+initial plutôt que sur les dates réelles de clôture des jalons, qui
+font foi dans `docs/comptes_rendus/`.
+
 ```mermaid
 gantt
     title Feuille de route DATA CORE
@@ -130,8 +137,8 @@ gantt
     Gouvernance des donnees (C21)      :        p4d, after p4c, 7d
     section Transverse
     Restitution BI Grafana (M4)        :done, m4bi, 2026-09-24, 2026-10-19
-    Rapport LaTeX (M5, continu)        :        m5, 2026-08-10, 165d
-    Preparation soutenance (M6)        :        m6, 2027-01-25, 10d
+    Rapport LaTeX (M5, continu)        :        m5, 2026-08-10, 98d
+    Preparation soutenance (M6)        :        m6, 2026-11-16, 10d
 ```
 
 ### 4.2 Roadmap / dépendances (PERT simplifié)

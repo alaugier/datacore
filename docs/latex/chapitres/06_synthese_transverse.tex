@@ -1,0 +1,145 @@
+\chapter{Synthèse transverse}
+\label{chap:synthese-transverse}
+
+Les chapitres précédents couvrent chacun un bloc ou un jalon pris
+isolément. Ce chapitre consolide trois vues que la lecture
+chapitre-par-chapitre ne donne pas : le budget cumulé, l'évolution de
+la qualité du code, et un fil narratif transverse sur la gouvernance
+des données.
+
+\section{Budget cumulé}
+
+Le budget prévisionnel initial (180~000~€,
+\filepath{docs/architecture/feuille_de_route.md} §3) a été consommé
+intégralement sur l'ensemble du programme (M0 à M4), sans
+dépassement -- confirmé au fil des jalons dans
+\filepath{docs/architecture/supervision_projet.md} §2.
+
+\begin{center}
+\begin{tabular}{@{}lrl@{}}
+\toprule
+Phase & Montant & Statut \\
+\midrule
+Phase 1 -- Cadrage (M0) & 25~000~€ & Consommé \\
+Phase 2 -- Collecte \& Stockage (M1) & 45~000~€ & Consommé \\
+Phase 3 -- Entrepôt OMEGA BI (M2) & 55~000~€ & Consommé \\
+Phase 4 -- Data Lake OMEGA LAKE (M3) & 55~000~€ & Consommé \\
+\midrule
+\textbf{Total} & \textbf{180~000~€} & \textbf{Aucun dépassement} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Les jalons transverses (M4 -- restitution BI, M5 -- rapport, M6 --
+soutenance) n'ont jamais eu de ligne budgétaire propre dans la
+planification initiale (staffing interne uniquement, outils open
+source et auto-hébergés -- voir chapitre~\ref{chap:m4} §« Portée
+budgétaire »). Le prestataire externe SupervIT, prévu pour
+l'intégration technique du Bloc 4, n'a en pratique jamais été mobilisé
+(\filepath{docs/architecture/supervision_projet.md} §3) : le périmètre
+pédagogique n'en a pas eu besoin -- écart assumé, pas un abandon
+découvert a posteriori, puisque relevé comme point de vigilance dès
+les comptes rendus M0 à M3.
+
+\section{Bilan qualité : évolution de la suite de tests}
+
+Nombre de fonctions de test présentes dans le dépôt à la clôture de
+chaque jalon (comptage identique à chaque point : occurrences de
+\texttt{def test\_} sous \filepath{tests/}, \texttt{git grep} sur le
+commit de release correspondant -- une mesure cohérente dans le
+temps, à ne pas confondre avec le nombre de cas de test réellement
+exécutés par \texttt{pytest}, légèrement supérieur une fois les tests
+paramétrés comptés individuellement, 176 au 21/10/2026, voir
+chapitre~\ref{chap:bloc1} §« Versionnement ») :
+
+\begin{center}
+\begin{tabular}{@{}lrr@{}}
+\toprule
+Jalon & Fonctions de test & Évolution \\
+\midrule
+M0 -- Cadrage \& Setup & 13 & -- \\
+M1 -- Collecte \& Stockage & 67 & $\times$5,2 \\
+M2 -- Entrepôt OMEGA BI & 96 & $+$43~\% \\
+M3 -- Data Lake OMEGA LAKE & 143 & $+$49~\% \\
+M4 -- Restitution BI & 174 & $+$22~\% \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+La croissance n'est pas linéaire avec le volume de code : les blocs 2
+et 3 (collecte, entrepôt) ajoutent proportionnellement plus de tests
+que le bloc 4, cohérent avec une suite de tests qui couvre
+systématiquement les cas limites (contraintes d'unicité, formats de
+date hétérogènes, grain de dédoublonnage) plutôt que seulement le
+chemin nominal -- voir par exemple les tests dédiés à la contrainte
+SCD2 et au garde-fou de pseudonymisation déjà cités aux
+chapitres~\ref{chap:bloc3} et~\ref{chap:bloc4}.
+
+\section{Gouvernance des données : un fil transverse, RGPD-RGESN-RGAA}
+
+\subsection{RGPD : la pseudonymisation, du risque identifié à sa correction}
+
+L'exemple le plus complet de gouvernance appliquée dans ce programme
+n'est pas un contrôle isolé mais un parcours en plusieurs étapes,
+chacune déclenchée par une relecture externe plutôt que planifiée
+d'emblée :
+
+\begin{enumerate}
+  \item \textbf{Risque identifié dès la conception} (C18,
+    chapitre~\ref{chap:bloc4}) : \texttt{vehicule\_id} (géolocalisation,
+    data lake) se recoupe dans le temps avec \texttt{tournees.chauffeur}
+    (base de staging) -- décision actée : aucune jointure automatisée
+    entre les deux zones.
+  \item \textbf{Première analyse écartée sur un raisonnement
+    incomplet} (C21) : « pas de protection réelle possible, vu le
+    faible nombre de véhicules » -- vraie pour les Data Engineers
+    (accès complet des deux côtés), fausse pour le rôle
+    \texttt{lake\_reader} (accès au lake seul). Réintroduite après
+    relecture externe.
+  \item \textbf{Pseudonymisation HMAC implémentée} (C21,
+    chapitre~\ref{chap:bloc4}) : export dédié \filepath{curated_bi/},
+    clé secrète jamais distribuée au rôle de lecture, droits d'accès
+    restreints au seul préfixe pseudonymisé.
+  \item \textbf{Faille trouvée en seconde relecture externe} : un
+    repli codé en dur pour la clé de pseudonymisation dans
+    \texttt{config.py}, visible dans le dépôt public, aurait rendu la
+    protection silencieusement inopérante en cas d'oubli de
+    configuration -- corrigée en retirant tout repli et en ajoutant
+    un garde-fou qui refuse explicitement de continuer
+    (\texttt{verifier\_cle\_configuree()}, déjà cité
+    chapitre~\ref{chap:bloc4}).
+  \item \textbf{Risque résiduel assumé, pas masqué} : la stabilité de
+    la clé entre exécutions n'est ni garantie ni surveillée (aucune
+    empreinte de clé journalisée) -- consigné explicitement dans
+    \filepath{docs/comptes_rendus/M3.md} comme point ouvert, limité à
+    un poste de développement unique, à traiter avant tout déploiement
+    multi-environnements réel.
+\end{enumerate}
+
+Le motif se répète : chaque étape de ce parcours a été déclenchée par
+une relecture externe trouvant un défaut dans l'étape précédente,
+jamais par un audit de conformité générique -- même logique que le
+réexamen du périmètre de restitution qui a produit le jalon M4
+(chapitre~\ref{chap:m4}).
+
+\subsection{RGESN : la sobriété comme critère de décision, pas une case à cocher}
+
+La stratégie d'éco-conception (\hyperref[gloss:rgesn]{RGESN},
+\filepath{docs/architecture/architecture_cible.md} §5) n'intervient
+pas comme une section à part mais comme un critère invoqué à chaque
+choix d'infrastructure du programme : pas d'outil « big data » séparé
+pour 25~000 lignes (chapitre~\ref{chap:bloc2} §C9), entrepôt sur la
+même instance Postgres que le staging plutôt qu'un second conteneur
+(chapitre~\ref{chap:bloc3} §C14), pas d'orchestrateur de pipelines
+(chapitre~\ref{chap:m4} §« Pourquoi pas un orchestrateur »), outils de
+restitution auto-hébergés plutôt que des services cloud payants
+(Grafana, MinIO -- chapitres~\ref{chap:bloc4} et~\ref{chap:m4}).
+
+\subsection{RGAA : accessibilité des livrables documentaires}
+
+La stratégie d'accessibilité (\hyperref[gloss:rgaa]{RGAA},
+\filepath{docs/architecture/architecture_cible.md} §6) porte sur les
+livrables Markdown/PDF du programme (structure sémantique, titres
+hiérarchisés, texte alternatif pour les schémas) -- appliquée de
+façon continue plutôt que vérifiée une seule fois en fin de
+programme, chapitre~\ref{chap:bloc1} §C7.

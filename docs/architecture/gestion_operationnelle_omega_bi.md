@@ -118,9 +118,16 @@ figures capturées.
 ### 3.5 Outil de restitution de production : Grafana
 
 **Décision prise le 24/09/2026**, après retour de formateur sur M2
-(déjà clos) : vues SQL + notebook, bien que réels et vérifiés, ne
-constituent pas une preuve de restitution suffisante pour C16 — un
-outil de BI dédié est attendu.
+(déjà clos), qui a conduit à relire littéralement le référentiel plutôt
+que de travailler sur un souvenir approximatif des critères : l'activité
+6 de C16 exige un « suivi de l'activité de maintenance : indicateurs de
+service en fonction des SLA à l'aide d'un **tableau de bord** », évalué
+sur « le tableau de bord permet de rendre compte de l'ensemble des
+indicateurs de service » (`docs/reference/Referentiel_Activites_Competences_Evaluation_DE.pdf`,
+p. 19-20). Vues SQL + notebook, bien que réels et vérifiés, ne
+constituent pas un tableau de bord au sens de ce critère — ce n'est pas
+un manque jugé secondaire après coup, mais un écart par rapport à une
+exigence déjà écrite dans le référentiel, découvert tardivement.
 
 **Le notebook n'est pas retiré ni réécrit** (voir §3.4 et `M2.md` §5,
 mise à jour du 24/09/2026) : il reste la preuve exploratoire telle

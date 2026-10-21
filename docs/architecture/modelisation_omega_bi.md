@@ -243,6 +243,28 @@ Côté historique, `poids_kg` est une colonne directe. Deux règles de
 transformation différentes pour la même mesure — à documenter dans le
 pipeline ETL (C15), pas traité ici.
 
+**Pourquoi pas de `Fait_Livraison` séparée** : `livraisons` (base de
+staging, TransFlow) et `expeditions` (FluxPro) décrivent le même
+événement métier -- une expédition remise à son destinataire -- vu par
+deux systèmes sources différents, rapprochés par la clé
+`tracking_number` (C11, voir
+[`modelisation_merise.md`](modelisation_merise.md)). Avant de
+modéliser, la cardinalité réelle de ce rapprochement a été vérifiée
+plutôt que supposée : **100 % des 1100 expéditions FluxPro ont
+exactement une livraison TransFlow correspondante** (relation 1:1
+confirmée empiriquement, voir commentaire de
+`src/datacore/storage/staging/models.py` sur `livraisons.tracking_number`).
+Avec une cardinalité 1:1 vérifiée, scinder ces deux sources en deux
+tables de faits distinctes aurait imposé une jointure fait-à-fait à
+chaque requête d'analyse -- anti-pattern Kimball classique, puisqu'une
+dimension conformée résout normalement ce besoin sans y recourir. Les
+mesures issues de `livraisons` (délai, statut de livraison) sont donc
+absorbées directement dans `Fait_Expedition` au même grain, pas dans
+une table séparée. Si cette cardinalité changeait (une expédition
+pouvant être scindée en plusieurs livraisons partielles, par exemple),
+le modèle devrait être revu -- non vérifié au-delà du jeu de données
+actuel.
+
 ### 5.2 `Fait_Stock` (datamart Exploitation)
 
 **Grain : une ligne par (entrepôt, produit, date).**

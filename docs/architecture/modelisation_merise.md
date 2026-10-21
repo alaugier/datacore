@@ -334,6 +334,33 @@ historique_expeditions.client`) est possible en requête mais non
 garanti par une contrainte — à traiter formellement lors de la
 modélisation de l'entrepôt de données (bloc 3, C13).
 
+### 4.4 `quantite` (`STOCKS`, `LIGNES_COMMANDE`) : unité et agrégation
+
+Ni `stocks.quantite` ni `lignes_commande.quantite` ne portent de colonne
+d'unité de mesure explicite dans le schéma FluxPro (`data/raw/schema.sql`)
+— les deux sont de simples `INTEGER`. `produits.poids_kg` est le seul
+champ qui nomme explicitement une unité, et c'est un attribut **par
+pièce du produit**, pas une mesure globale : il n'est corrélé ni au
+niveau de stock ni aux quantités commandées (vérifié : la quantité
+commandée est répartie uniformément entre 1 et 40 pour chaque produit,
+quel que soit son poids ou sa catégorie — cohérent avec un jeu de
+données pédagogique généré, pas une corrélation réelle à chercher).
+
+**`quantite` est donc à lire comme « nombre de pièces du produit »,
+uniformément entre `stocks` et `lignes_commande`** — pas prouvable
+directement par une colonne d'unité (qui n'existe pas), mais confirmé
+par cohérence interne : la seule table qui calcule un poids agrégé
+(`Fait_Expedition.poids_kg`, bloc 3, C15) le fait en multipliant
+`lignes_commande.quantite` par `produits.poids_kg` avant de sommer
+(`src/datacore/storage/warehouse/load_warehouse.py`) — ce calcul n'est
+exact que si `quantite` représente bien un nombre de pièces. Une somme
+brute de `quantite` à travers plusieurs produits (comme le fait
+`exploitation.v_stock_disponible_site`, bloc 3, C16) reste donc
+légitime **tant qu'elle est interprétée comme un nombre d'articles**,
+jamais comme un poids ou une valeur — ce qui est le cas aujourd'hui
+(le panel Grafana correspondant est intitulé « Stock disponible par
+entrepôt », pas « poids » ni « valeur »).
+
 ---
 
 ## 5. Gestion des migrations avec Alembic
