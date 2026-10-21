@@ -4,14 +4,18 @@
 
 Pour préserver le budget de tokens, chaque script du projet a été
 documenté via GitHub Copilot Chat (hors dépôt, dossier
-`docs-scripts/`). Ce document en est la relecture critique : vérifié
-fichier par fichier contre le code réel du dépôt (pas accepté tel
-quel), avec deux objectifs — préparer les questions techniques
-possibles à l'oral, et détecter d'éventuels bugs silencieux ou
-manques. Aucun bug réel n'a été trouvé dans le code du dépôt lors de
-cette relecture ; les problèmes identifiés sont tous des défauts de la
-documentation Copilot elle-même (obsolescence, oublis), détaillés en
-§1.
+`docs-scripts/`) : une base de compréhension la plus fiable possible,
+sans objectif de versionnement rigoureux des descriptions au fil des
+évolutions du code -- Copilot a fidèlement décrit ce qui lui a été
+fourni à chaque fois. Ce document en est la relecture critique :
+vérifié fichier par fichier contre le code réel du dépôt, avec deux
+objectifs -- préparer les questions techniques possibles à l'oral, et
+détecter d'éventuels bugs silencieux ou manques. Aucun bug réel n'a
+été trouvé dans le code du dépôt lors de cette relecture ; les écarts
+relevés viennent uniquement du fait que certaines descriptions n'ont
+pas été regénérées après une évolution ultérieure du code qu'elles
+documentaient (détaillé en §1) -- utile à savoir avant de citer un
+chiffre ou un comportement depuis `docs-scripts/` à l'oral.
 
 ---
 
