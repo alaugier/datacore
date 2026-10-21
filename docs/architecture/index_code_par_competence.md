@@ -106,6 +106,109 @@ Chaîne d'alerte : `src/datacore/alerting/webhook.py`
 
 ---
 
+## Configuration
+
+`src/datacore/config.py` — point d'entrée unique de toute la
+configuration (une seule variable `os.environ.get("X", "défaut")` par
+paramètre, jamais de valeur codée en dur ailleurs dans le code).
+Repères utiles si la question porte sur un paramètre précis :
+- Ligne 23 : `REPO_ROOT = Path(__file__).resolve().parents[2]` — base
+  de tous les chemins relatifs (`data/raw/`, `data/interim/`).
+- Lignes 30-43 : DSN de connexion aux deux bases Postgres (staging,
+  entrepôt) — construits depuis les variables individuelles, jamais une
+  chaîne de connexion codée en dur.
+- Ligne 75 : `LAKE_PSEUDONYM_KEY` — **pas de valeur par défaut** (seul
+  paramètre sans `os.environ.get(..., "défaut")`) : absence
+  intentionnelle, c'est `verifier_cle_configuree()` (C21, déjà dans le
+  rapport) qui refuse explicitement de continuer si elle est absente.
+- Ligne 101 : `ALERTING_WEBHOOK_SECRET` — a bien un défaut pédagogique
+  (`datacore-alerting-2026`), contrairement à la clé de pseudonymisation
+  : à mentionner si la question porte sur la cohérence du traitement
+  des secrets entre les deux.
+- Appel à `load_dotenv()` en tête de fichier : nécessaire parce qu'un
+  script Python lancé directement (hors Docker Compose) ne reçoit pas
+  `.env` automatiquement, contrairement à un conteneur — point trouvé
+  en relecture de `docs-scripts/` (voir `synthese_technique_oral.md`).
+
+`src/datacore/api/config.py` — registre des rôles API (`Role` : 3
+valeurs) et de `Principal` (identité résolue depuis une clé API) ;
+modèle d'accès par groupe, à ne pas confondre avec `config.py` racine.
+
+`.env.example` — à montrer directement si la question porte sur
+« comment les secrets sont-ils gérés » : chaque variable y est
+commentée avec la compétence qui l'a introduite (ex.
+`LAKE_PSEUDONYM_KEY` commenté « ne jamais réutiliser cette valeur
+d'exemple »). `.env` réel jamais versionné (`.gitignore`).
+
+## Infrastructure
+
+`infra/docker/docker-compose.yml` — les 8 services (voir chapitre 5
+§6.1 du rapport pour le tableau port/URL). 3 Dockerfiles dédiés
+(`api-mock`, `omega-data-api`, `alerting-webhook`) — les autres
+services utilisent une image officielle telle quelle (`postgres`,
+`minio/minio`, `grafana/grafana-oss`, `mailhog/mailhog`), à mentionner
+si la question porte sur « quels services avez-vous construits
+vous-même vs. réutilisés tels quels ».
+
+`infra/grafana/` — tout le provisioning Grafana est déclaratif (YAML/
+JSON versionné), jamais configuré à la main dans l'interface :
+- `provisioning/datasources/omega_bi.yaml` — connexion `bi_reader`.
+- `provisioning/dashboards/dashboards.yaml` — déclare où Grafana va
+  chercher les fichiers JSON de dashboards.
+- `dashboards/sla_omega_bi.json` / `dashboards/monitoring_lake.json` —
+  les 2 dashboards eux-mêmes (C16bis/C20bis).
+- `provisioning/alerting/lake_monitoring.yaml` — règle d'alerte +
+  contact point webhook (secret inclus).
+
+`infra/minio/lake-reader-policy.json` — politique IAM MinIO restreignant
+`lake_reader` au seul préfixe `curated_bi/` (C21, déjà dans le rapport
+pour le principe, ce fichier JSON est la politique réelle appliquée si
+la question demande à la voir).
+
+---
+
+## Questions transverses possibles (au-delà d'une compétence précise)
+
+Questions qu'un jury pose souvent sur les choix d'architecture plutôt
+que sur une compétence isolée — à savoir justifier en une ou deux
+phrases, sans forcément montrer de code :
+
+- **« Pourquoi Postgres et pas un autre SGBD ? »** — SGBD relationnel
+  robuste, adapté au modèle en étoile de l'entrepôt et au schéma MERISE
+  du staging, open source (sobriété RGESN) ; un seul moteur pour les
+  deux bases (staging + entrepôt) plutôt que deux technologies
+  différentes à maintenir.
+- **« Que se passe-t-il si deux exécutions du pipeline ETL tournent en
+  même temps ? »** — la contrainte d'unicité partielle
+  `uq_dim_client_courant` le détecte et lève une erreur diagnostiquée
+  explicitement (chapitre 3 §C17 du rapport), plutôt que de produire un
+  état incohérent silencieux.
+- **« Comment réagiriez-vous à un vrai volume de données (pas 25 000
+  lignes) ? »** — les choix actuels (pas de big data séparé pour
+  l'historique, pas d'orchestrateur) sont explicitement dimensionnés au
+  jeu de données du programme, pas universels ; le chapitre 5
+  §« Pourquoi pas un orchestrateur » du rapport l'assume directement.
+- **« Qui peut lire les secrets (`.env`) ? »** — jamais versionné,
+  jamais codé en dur dans le code applicatif (`config.py` lit
+  uniquement l'environnement) ; en conditions réelles, remplacé par un
+  coffre-fort de secrets (mentionné explicitement dans
+  `src/datacore/api/config.py`).
+- **« Pourquoi FastAPI pour l'API Omega Data ? »** — génération
+  automatique de la spécification OpenAPI, exigée par le livrable C12
+  (déjà dans le rapport) ; validation des types par Pydantic
+  (`schemas.py`) plutôt que des vérifications manuelles.
+- **« Avez-vous mesuré des temps de réponse/performances ? »** — non
+  chiffré formellement : à l'échelle du jeu de données (milliers de
+  lignes, pas de charge concurrente réelle), la performance n'était pas
+  un risque identifié en C1/RICE — à dire franchement plutôt que
+  d'inventer un chiffre.
+- **« Que feriez-vous différemment avec plus de temps ? »** — question
+  ouverte attendue en conclusion du rapport (chapitre 7, limites
+  connues) : préparer une réponse courte et honnête plutôt que de la
+  découvrir à l'oral.
+
+---
+
 ## Conseil de préparation
 
 Pour les fonctions déjà citées dans le rapport (`load_dim_client`,
