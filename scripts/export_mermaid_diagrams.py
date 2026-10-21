@@ -18,6 +18,7 @@ OUT = DOCS / "images"
 
 # (fichier source, slugs de sortie dans l'ordre d'apparition des blocs).
 TARGETS: dict[str, list[str]] = {
+    "topographie_donnees.md": ["topographie_donnees_cartographie_sources"],
     "modelisation_omega_bi.md": ["modelisation_omega_bi_mcd"],
     "feuille_de_route.md": ["feuille_de_route_gantt", "feuille_de_route_pert"],
     "diagrammes_techniques.md": [

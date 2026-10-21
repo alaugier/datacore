@@ -20,6 +20,11 @@
 \usepackage{graphicx}
 \usepackage{fancyhdr}
 \usepackage{titlesec}
+% Empeche un figure/listing de "deriver" au-dela de la section ou il
+% est defini (bug trouve en relecture : une figure de la section C18
+% deferee par l'algorithme de floats de LaTeX a fini au milieu du
+% listing de la section C19 suivante, sur la page suivante).
+\usepackage[section]{placeins}
 
 % Figures réutilisées telles quelles depuis docs/architecture/images/
 % (déjà produites et vérifiées lors des jalons correspondants, pas

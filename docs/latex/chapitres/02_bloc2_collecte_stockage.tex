@@ -24,7 +24,7 @@ API REST (TransFlow), scraping du portail transporteur, requêtes SQL
 directes (FluxPro), fichiers clients hétérogènes, et l'historique
 volumineux -- testés de bout en bout (31 tests).
 
-\begin{figure}[h]
+\begin{figure}[htbp]
   \centering
   \includegraphics[width=0.85\textwidth]{diagrammes_techniques_ingestion_c8}
   \caption{Diagramme de séquence de l'extraction multi-source (\filepath{docs/architecture/diagrammes_techniques.md})}
@@ -37,13 +37,38 @@ Cinq requêtes documentées avec leurs résultats réels
 est chargé dans la base de staging PostgreSQL existante plutôt que dans
 un outil « big data » séparé : au volume réel du jeu de données
 (25~000 lignes), un outil dédié aurait été disproportionné --- choix
-justifié par la sobriété numérique (RGESN) plutôt que par principe.
+justifié par la sobriété numérique (\hyperref[gloss:rgesn]{RGESN})
+plutôt que par principe.
 
 \section{C10 --- Développer des règles d'agrégation de données}
 
 Le nettoyage et le dédoublonnage des fichiers clients sont menés au bon
-grain (commande, produit) : 13 à 17~\% de doublons réels mesurés sur le
-jeu de données, pas un chiffre théorique.
+grain (commande, produit) : une première mesure au grain « commande »
+seul donnait un taux de 55 à 68~\% de doublons, chiffre trompeur qui
+mesurait en réalité le nombre moyen de produits par commande (une
+commande multi-produits génère plusieurs lignes légitimes). Au bon
+grain (commande, produit), le taux réel mesuré tombe à 13 à 17~\% selon
+le client :
+
+\begin{lstlisting}[language=Python,caption={Mesure du taux de doublons au grain (commande, produit) (\filepath{notebooks/exploration_fichiers_clients.ipynb})}]
+for name, (path, sep, key, prod_key) in FILES.items():
+    rows = rows_by_client[name]
+    grain_counts = Counter((r[key], r[prod_key]) for r in rows)
+    true_dups = {k: v for k, v in grain_counts.items() if v > 1}
+    print(f"{name}: {len(rows)} lignes, {len(grain_counts)} couples "
+          f"(commande, produit) uniques, {len(true_dups)} vrais "
+          f"doublons ({len(true_dups) / len(grain_counts):.1%})")
+\end{lstlisting}
+
+\texttt{key}/\texttt{prod\_key} désignent respectivement la colonne
+identifiant de commande et la colonne produit (SKU) de chaque fichier
+client -- \texttt{grain\_counts} compte les occurrences de chaque
+couple (commande, produit) ; un couple vu plus d'une fois
+(\texttt{true\_dups}) est un vrai doublon à ce grain. Ce chiffre,
+corrigé après une première mesure erronée, est celui retenu dans
+\filepath{docs/architecture/topographie_donnees.md} et implémenté dans
+\texttt{deduplicate()}
+(\filepath{src/datacore/processing/clients_cleaning.py}).
 
 \section{C11 --- Créer une base de données}
 
@@ -51,7 +76,7 @@ La base de travail est modélisée selon la méthode MERISE
 (\filepath{docs/architecture/modelisation_merise.md}), versionnée via
 Alembic.
 
-\begin{figure}[h]
+\begin{figure}[htbp]
   \centering
   \includegraphics[width=\textwidth]{modelisation_merise_mcd}
   \caption{Modèle conceptuel de données de la base de travail (\filepath{docs/architecture/modelisation_merise.md})}
@@ -82,7 +107,18 @@ la spécification OpenAPI exigée par le livrable) expose le jeu de
 données consolidé, avec authentification par clé et autorisation par
 rôle -- les référents clients externes sont systématiquement
 restreints à leur propre client, règle reprise directement du registre
-RGPD établi en C11.
+\hyperref[gloss:rgpd]{RGPD} établi en C11. Le comportement le plus
+important n'est pas visible dans un diagramme d'architecture statique :
+un référent client n'est pas seulement \textit{rejeté} s'il demande les
+données d'un autre client, il est \textit{silencieusement ramené} à son
+propre périmètre -- vérifié en conditions réelles
+(\filepath{notebooks/demo_omega_data_api.ipynb}).
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=\textwidth]{diagrammes_techniques_api_sequence_autorisation}
+  \caption{Séquence d'autorisation de l'API Omega Data (\filepath{docs/architecture/diagrammes_techniques.md})}
+\end{figure}
 
 \section{Point ouvert transmis au bloc suivant}
 

@@ -11,19 +11,20 @@ chacune un livrable vérifié -- détail exhaustif dans
 
 L'ordre C13~$\rightarrow$~C14~$\rightarrow$~C15~$\rightarrow$~C17~$\rightarrow$~C16
 (\filepath{docs/architecture/sequencement_bloc3.md}) inverse volontairement
-C16/C17 par rapport au Gantt initial : la procédure de purge RGPD de
-C16 dépend du schéma historisé que C17 doit d'abord créer.
+C16/C17 par rapport au Gantt initial : la procédure de purge
+\hyperref[gloss:rgpd]{RGPD} de C16 dépend du schéma historisé que C17
+doit d'abord créer.
 
 \section{C13 --- Modéliser un entrepôt de données}
 
-Approche bottom-up par datamarts (Kimball) : 2 datamarts, 3 faits, 6
-dimensions conformées, matrice de bus
+Approche bottom-up par \hyperref[gloss:datamart]{datamarts} (Kimball) :
+2 datamarts, 3 faits, 6 dimensions conformées, matrice de bus
 (\filepath{docs/architecture/modelisation_omega_bi.md}). Le seul schéma
 en flocon retenu (\texttt{Dim\_Produit}~$\rightarrow$~\texttt{Dim\_Categorie})
 est justifié par une contrainte réelle des sources, pas par principe de
 modélisation.
 
-\begin{figure}[h]
+\begin{figure}[htbp]
   \centering
   \includegraphics[width=\textwidth]{modelisation_omega_bi_mcd}
   \caption{Modèle conceptuel de données de l'entrepôt OMEGA BI (\filepath{docs/architecture/modelisation_omega_bi.md})}
@@ -32,7 +33,7 @@ modélisation.
 \section{C14 --- Créer un entrepôt de données}
 
 L'entrepôt est créé dans une base PostgreSQL distincte de la base de
-staging, mais sur la même instance (sobriété RGESN) -- 4 schémas
+staging, mais sur la même instance (sobriété \hyperref[gloss:rgesn]{RGESN}) -- 4 schémas
 physiques (\texttt{dimensions}, \texttt{exploitation}, \texttt{commercial},
 \texttt{gouvernance}), versionnés via un second environnement Alembic
 dédié. Le cycle \texttt{upgrade}/\texttt{downgrade} est vérifié contre une
@@ -42,7 +43,7 @@ révélé qu'à la seconde migration).
 
 \section{C15 --- Développer des pipelines de données}
 
-Le pipeline ETL staging~$\rightarrow$~entrepôt applique des contrôles
+Le pipeline \hyperref[gloss:etl]{ETL} staging~$\rightarrow$~entrepôt applique des contrôles
 qualité réels (mise en quarantaine des lignes non rapprochées de
 l'historique, pas un rejet silencieux), et sa cohérence est vérifiée
 en comparant les indicateurs calculés par l'ETL à ceux calculés

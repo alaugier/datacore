@@ -157,4 +157,45 @@ ou à son seul stockage. Chez Omega Logistics : l'entrepôt
 \textbf{OMEGA BI} (bloc 3) et sa restitution dans \textbf{Grafana}
 (C16bis). \\
 
+\label{gloss:rgpd}RGPD (Règlement Général sur la Protection des
+Données) &
+Règlement européen encadrant le traitement des données personnelles.
+Mis en œuvre via un registre des traitements tenu à chaque brique
+(staging, entrepôt, lake) et la pseudonymisation des identifiants
+sensibles. \\
+
+\label{gloss:rgaa}RGAA (Référentiel Général d'Amélioration de
+l'Accessibilité) &
+Référentiel français d'accessibilité numérique (contrastes, navigation
+clavier, alternatives textuelles), appliqué à l'ensemble des livrables
+du programme. \\
+
+\label{gloss:rgesn}RGESN (Référentiel Général d'Écoconception de
+Services Numériques) &
+Référentiel français de sobriété numérique, mobilisé dans les choix
+d'architecture (open source, auto-hébergé, dimensionnement au volume
+réel plutôt que par principe). \\
+
+\label{gloss:rice}RICE (\textit{Reach, Impact, Confidence, Effort}) &
+Méthode de priorisation de chantiers : score $=$ (Reach~$\times$~Impact
+$\times$~Confidence)~/~Effort. Utilisée pour arbitrer le séquencement
+du programme en C1. \\
+
+\label{gloss:smart}SMART (Spécifique, Mesurable,
+Acceptable/Ambitieux, Réaliste, Temporellement défini) &
+Grille de formulation d'objectifs de projet. Les 5 objectifs du
+programme DATA CORE sont formulés selon cette grille. \\
+
+\label{gloss:etl}ETL (\textit{Extract, Transform, Load}) &
+Chaîne de traitement qui extrait les données d'une source, les
+transforme (nettoyage, conformité au schéma cible) puis les charge
+dans leur destination. Chez Omega Logistics : les pipelines qui
+peuplent l'entrepôt OMEGA BI depuis la base de staging (C15). \\
+
+\label{gloss:datamart}Datamart &
+Sous-ensemble de l'entrepôt de données construit autour d'un processus
+métier précis, plutôt qu'un modèle unique monolithique. OMEGA BI est
+construit \textbf{par datamart} (« Exploitation » et « Commercial »),
+partageant des dimensions conformées. \\
+
 \end{longtable}

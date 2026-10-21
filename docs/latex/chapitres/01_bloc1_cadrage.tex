@@ -13,27 +13,37 @@ ont chacune un livrable produit et vérifié -- détail exhaustif dans
 L'étude de faisabilité (\filepath{docs/architecture/etude_faisabilite.md})
 s'appuie sur des entretiens avec les parties prenantes du programme
 (commanditaire opérationnel, sponsor, responsables d'entrepôt), une
-analyse d'opportunité et de faisabilité, une priorisation RICE des
-blocs de compétences, et des objectifs formulés selon la méthode SMART.
-Cette analyse RICE a directement arbitré le séquencement retenu pour la
+analyse d'opportunité et de faisabilité, une priorisation
+\hyperref[gloss:rice]{RICE} des blocs de compétences, et des objectifs
+formulés selon la méthode \hyperref[gloss:smart]{SMART}. Cette analyse
+RICE a directement arbitré le séquencement retenu pour la
 suite du programme (collecte avant entrepôt, entrepôt avant data lake).
 
 \section{C2 --- Cartographier les données disponibles}
 
 La topographie des données (\filepath{docs/architecture/topographie_donnees.md})
 couvre le \hyperref[annexe:glossaire]{glossaire métier} et les modèles
-réels des trois sources identifiées -- FluxPro
-(\hyperref[gloss:wms]{WMS}), TransFlow (\hyperref[gloss:tms]{TMS}) et
-les fichiers clients hétérogènes -- en les explorant directement dans
-\filepath{data/raw/} et \filepath{api-mock/}, plutôt qu'en se fiant à
-une description théorique des sources.
+réels des sept sources identifiées -- FluxPro
+(\hyperref[gloss:wms]{WMS}), TransFlow (\hyperref[gloss:tms]{TMS}), le
+portail transporteur, les fichiers clients hétérogènes, l'historique
+volumineux et les deux flux IoT anticipant le bloc 4 -- en les
+explorant directement dans \filepath{data/raw/} et \filepath{api-mock/},
+plutôt qu'en se fiant à une description théorique des sources.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=\textwidth]{topographie_donnees_cartographie_sources}
+  \caption{Cartographie des sources de données et de leur destination (\filepath{docs/architecture/topographie_donnees.md})}
+\end{figure}
 
 \section{C3 --- Concevoir un cadre technique d'exploitation}
 
 L'étude technique d'architecture (\filepath{docs/architecture/architecture_cible.md})
-établit la cible AS IS/TO BE, une matrice des flux, un registre RGPD
-préliminaire par brique technique, et la stratégie d'éco-conception
-(RGESN) et d'accessibilité (RGAA) du programme. C'est à ce stade
+établit la cible AS IS/TO BE, une matrice des flux, un registre
+\hyperref[gloss:rgpd]{RGPD} préliminaire par brique technique, et la
+stratégie d'éco-conception (\hyperref[gloss:rgesn]{RGESN}) et
+d'accessibilité (\hyperref[gloss:rgaa]{RGAA}) du programme. C'est à ce
+stade
 qu'est actée la décision structurante de retenir MinIO plutôt que
 Microsoft Fabric pour le futur data lake : contrainte de fonctionnement
 local sans compte cloud, coût, reproductibilité pour un évaluateur
@@ -44,7 +54,8 @@ du même jour.
 
 Un journal de veille hebdomadaire sur trois semaines
 (\filepath{docs/architecture/veille_technique_reglementaire.md}) couvre
-deux axes, technique (DataOps/ETL) et réglementaire (RGPD/RGAA) --
+deux axes, technique (DataOps/\hyperref[gloss:etl]{ETL}) et
+réglementaire (RGPD/RGAA) --
 chaque entrée est reliée à une décision réelle du programme, pas tenue
 comme un exercice isolé.
 
@@ -58,7 +69,7 @@ c'est-à-dire en texte versionné dans le dépôt, plutôt que dans un
 outil graphique externe. GitHub Projects est retenu comme outil de
 suivi, directement intégré à la convention de branches du projet.
 
-\begin{figure}[h]
+\begin{figure}[htbp]
   \centering
   \includegraphics[width=\textwidth]{feuille_de_route_gantt}
   \caption{Diagramme de Gantt du programme (export du Mermaid source, \filepath{docs/architecture/feuille_de_route.md})}
