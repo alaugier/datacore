@@ -25,6 +25,10 @@
 % deferee par l'algorithme de floats de LaTeX a fini au milieu du
 % listing de la section C19 suivante, sur la page suivante).
 \usepackage[section]{placeins}
+% Empeche un intitule court (ex. "Base de staging :") d'etre isole en
+% bas de page, separe du listing qui le suit immediatement -- bug
+% trouve en relecture visuelle (capture d'ecran utilisateur).
+\usepackage{needspace}
 
 % Figures réutilisées telles quelles depuis docs/architecture/images/
 % (déjà produites et vérifiées lors des jalons correspondants, pas

@@ -138,6 +138,7 @@ de stockage se peuplent par une séquence de commandes Python
 (\texttt{python3 -m datacore.<module>}), jamais par insertion manuelle
 -- rejouable à l'identique en démonstration, y compris à l'oral.
 
+\needspace{7\baselineskip}
 \textbf{Base de staging (C8-C11, chapitre~\ref{chap:bloc2})} :
 
 \begin{lstlisting}[language=bash,caption={Extraction, nettoyage puis chargement de la base de staging}]
@@ -147,6 +148,7 @@ alembic upgrade head                           # C11 : schema MERISE
 python3 -m datacore.storage.staging.load_staging
 \end{lstlisting}
 
+\needspace{7\baselineskip}
 \textbf{Entrepôt OMEGA BI (C13-C17, chapitre~\ref{chap:bloc3})} :
 
 \begin{lstlisting}[language=bash,caption={Création puis chargement ETL de l'entrepôt}]
@@ -156,6 +158,7 @@ python3 -m datacore.storage.warehouse.load_dim_temps # dimension calendaire gene
 python3 -m datacore.storage.warehouse.load_warehouse # C15 : ETL staging -> entrepot
 \end{lstlisting}
 
+\needspace{9\baselineskip}
 \textbf{Data lake OMEGA LAKE (C18-C21, chapitre~\ref{chap:bloc4})} :
 
 \begin{lstlisting}[language=bash,caption={Ingestion puis transformation du data lake}]
