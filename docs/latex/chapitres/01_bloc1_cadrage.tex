@@ -85,6 +85,49 @@ Sur l'ensemble du programme (M0 à M4), le budget du périmètre initial
 (180~000~€) a été consommé intégralement, sans dépassement -- voir le
 chapitre~\ref{chap:synthese-transverse} pour la vue consolidée.
 
+\section{Versionnement et workflow de développement}
+
+Le code et la documentation sont versionnés dans un unique dépôt
+GitHub, selon une convention actée dès M0 et appliquée sans exception
+sur les 5 jalons suivants
+(\filepath{docs/plan_de_developpement.md}) : branche \texttt{main}
+protégée (releases uniquement), branche \texttt{dev} d'intégration
+continue, et une branche \texttt{feat-<numéro>-<slug>} par issue
+GitHub, créée depuis \texttt{dev}. Toute Pull Request d'une branche de
+travail cible \texttt{dev}, jamais \texttt{main} directement ;
+\texttt{dev} ne rejoint \texttt{main} que lors d'une release de fin de
+jalon, validée par une PR dédiée.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=\textwidth]{supervision_projet_cycle_de_vie_1_developpement}
+  \caption{Cycle de vie d'une tâche (1/2) -- développement, jusqu'à la CI (\filepath{docs/architecture/supervision_projet.md})}
+\end{figure}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=\textwidth]{supervision_projet_cycle_de_vie_2_integration}
+  \caption{Cycle de vie d'une tâche (2/2) -- revue et intégration, jusqu'à la release (\filepath{docs/architecture/supervision_projet.md})}
+\end{figure}
+
+Chaque Pull Request déclenche une intégration continue
+(\filepath{.github/workflows/ci.yml}) en trois étapes séquentielles --
+\texttt{ruff} (lint), puis \texttt{mypy} (typage statique), puis
+\texttt{pytest} sur \texttt{tests/unit} et \texttt{tests/integration}
+(176 tests au 21/10/2026) -- les tests ne s'exécutent que si lint et
+typage passent déjà, pour éviter un rapport d'échec bruité par des
+erreurs de surface. Le suivi visuel du travail (GitHub Projects,
+6 statuts : \textit{Backlog} $\rightarrow$ \textit{À faire (sprint)}
+$\rightarrow$ \textit{En cours} $\rightarrow$ \textit{En revue (PR)}
+$\rightarrow$ \textit{Bloqué} $\rightarrow$ \textit{Terminé}) suit ce
+même cycle, mis à jour manuellement à chaque étape -- un mécanisme
+d'automatisation par \textit{linked PR} a été essayé puis abandonné le
+25/08/2026, trop rigide pour les PR de release qui ferment plusieurs
+issues à la fois. À la clôture du dernier issue d'un jalon, un compte
+rendu (\filepath{docs/comptes_rendus/}) et la release vers
+\texttt{main} sont produits dans la même PR, avant de fermer le
+milestone GitHub correspondant.
+
 \section{C7 --- Communiquer tout au long du projet}
 
 Le plan de communication et les supports de lancement

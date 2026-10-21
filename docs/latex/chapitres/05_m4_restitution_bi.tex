@@ -131,6 +131,109 @@ même principe de sobriété que le choix, déjà justifié ailleurs
 (chapitre~\ref{chap:bloc2} §C9), de ne pas déployer d'outil « big
 data » séparé pour 25~000 lignes.
 
+\section{Rejouer le remplissage des données et les pipelines}
+
+Une fois les services lancés (section précédente), les trois briques
+de stockage se peuplent par une séquence de commandes Python
+(\texttt{python3 -m datacore.<module>}), jamais par insertion manuelle
+-- rejouable à l'identique en démonstration, y compris à l'oral.
+
+\textbf{Base de staging (C8-C11, chapitre~\ref{chap:bloc2})} :
+
+\begin{lstlisting}[language=bash,caption={Extraction, nettoyage puis chargement de la base de staging}]
+python3 -m datacore.ingestion.run_extraction   # C8 : 5 sources -> data/interim/
+python3 -m datacore.processing.run_cleaning    # C10 : dedoublonnage fichiers clients
+alembic upgrade head                           # C11 : schema MERISE
+python3 -m datacore.storage.staging.load_staging
+\end{lstlisting}
+
+\textbf{Entrepôt OMEGA BI (C13-C17, chapitre~\ref{chap:bloc3})} :
+
+\begin{lstlisting}[language=bash,caption={Création puis chargement ETL de l'entrepôt}]
+./scripts/init_omega_bi_db.sh                       # C14 : base + role bi_reader
+alembic -c alembic_omega_bi.ini upgrade head         # C14 : 3 schemas + 9 tables
+python3 -m datacore.storage.warehouse.load_dim_temps # dimension calendaire generee
+python3 -m datacore.storage.warehouse.load_warehouse # C15 : ETL staging -> entrepot
+\end{lstlisting}
+
+\textbf{Data lake OMEGA LAKE (C18-C21, chapitre~\ref{chap:bloc4})} :
+
+\begin{lstlisting}[language=bash,caption={Ingestion puis transformation du data lake}]
+python3 -m datacore.storage.lake.ingestion_batch  # C19 : 4 flux IoT batch -> raw/
+python3 -m datacore.storage.lake.sse_consumer     # C19 : flux temps reel -> raw/ (continu)
+python3 -m datacore.storage.lake.transform        # C18 : raw/ -> staging/ -> curated/
+python3 -m datacore.storage.lake.catalogue        # C20 : catalogue par introspection
+python3 -m datacore.storage.lake.curated_bi       # C21 : export pseudonymise
+\end{lstlisting}
+
+\subsection{Transactions et rollback}
+
+Les trois chargements (\texttt{load\_staging}, \texttt{load\_warehouse})
+s'exécutent dans une \textbf{transaction unique} : un \texttt{COMMIT}
+unique après la dernière étape réussie, un \texttt{ROLLBACK} complet
+sur toute exception -- jamais de base partiellement peuplée :
+
+\begin{lstlisting}[language=Python,caption={Transaction unique du pipeline ETL entrepôt (\filepath{src/datacore/storage/warehouse/load_warehouse.py})}]
+try:
+    truncate_warehouse(warehouse_conn)
+    # ... chargement des 6 dimensions puis des 3 faits ...
+    warehouse_conn.commit()
+except Exception:
+    warehouse_conn.rollback()
+    raise
+finally:
+    staging_conn.close()
+    warehouse_conn.close()
+\end{lstlisting}
+
+Point plus subtil : l'exécution est journalisée
+(\texttt{gouvernance.journal\_operations}, C16) sur une \textbf{connexion
+Postgres séparée} de celle du chargement, committée immédiatement à
+l'ouverture (statut \texttt{en\_cours}) puis mise à jour à la sortie du
+bloc. Si le chargement échoue et annule sa propre transaction, la ligne
+de journal indiquant l'échec, elle, survit -- un \texttt{ROLLBACK} ne
+peut pas invalider un \texttt{COMMIT} déjà passé sur une autre
+connexion. La contrainte d'unicité SCD2
+(\texttt{uq\_dim\_client\_courant}, chapitre~\ref{chap:bloc3} §C17) est
+elle aussi traduite en diagnostic explicite plutôt que laissée remonter
+telle quelle :
+
+\begin{lstlisting}[language=Python,caption={Traduction d'une violation de contrainte en diagnostic (\filepath{src/datacore/storage/warehouse/load_warehouse.py})}]
+except psycopg2.errors.UniqueViolation as exc:
+    raise RuntimeError(
+        f"Conflit SCD2 sur dim_client : une version courante existe "
+        f"deja pour client_id={r['id']} (contrainte "
+        f"uq_dim_client_courant) -- execution concurrente du "
+        f"pipeline ou ecriture directe en base ?"
+    ) from exc
+\end{lstlisting}
+
+\subsection{Visualiser les pipelines}
+
+Aucun orchestrateur à interface graphique (pas d'Airflow, pas de
+Dagster) : chaque pipeline est un script Python invoqué directement,
+choix de sobriété cohérent avec l'échelle du programme (même principe
+que pour C9 ci-dessus). Trois façons concrètes de « voir » un pipeline
+malgré tout :
+\begin{itemize}
+  \item \textbf{La topologie}, statique : la vue d'ensemble
+    staging/entrepôt/lake (figure~\ref{fig:vue-ensemble-trois-couches},
+    chapitre~\ref{chap:bloc4} §C18) montre l'enchaînement réel des
+    étapes, texte Mermaid versionné dans le dépôt.
+  \item \textbf{Le résultat d'une exécution}, après coup : chaque script
+    affiche un résumé en sortie (lignes chargées, doublons résolus),
+    et pour l'entrepôt, \texttt{gouvernance.journal\_operations} garde
+    un historique interrogeable (début, fin, statut, détail) -- visible
+    dans Grafana via \texttt{gouvernance.v\_dernieres\_operations}.
+  \item \textbf{La fraîcheur des données du lake}, en continu : le
+    dashboard « OMEGA LAKE --- Monitoring » (C20bis, section
+    précédente) trace la dernière ingestion par flux.
+\end{itemize}
+Aucun outil ne montre un graphe d'exécution animé en temps réel (type
+DAG Airflow) -- absent du référentiel de compétences et disproportionné
+pour des pipelines de quelques minutes exécutés à la demande, pas en
+continu.
+
 \section{Portée budgétaire}
 
 Comme les jalons transverses de rédaction du rapport et de préparation

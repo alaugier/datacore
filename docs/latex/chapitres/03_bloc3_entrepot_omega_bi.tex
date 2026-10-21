@@ -30,6 +30,20 @@ modélisation.
   \caption{Modèle conceptuel de données de l'entrepôt OMEGA BI (\filepath{docs/architecture/modelisation_omega_bi.md})}
 \end{figure}
 
+\textbf{Pourquoi pas de \texttt{Fait\_Livraison} séparée} :
+\texttt{livraisons} (staging, TransFlow) et \texttt{expeditions}
+(FluxPro) décrivent le même événement métier vu par deux systèmes
+sources, rapprochés par \texttt{tracking\_number}
+(chapitre~\ref{chap:bloc2} §C11). La cardinalité réelle a été vérifiée
+avant de modéliser, pas supposée : 100~\% des 1100 expéditions FluxPro
+ont exactement une livraison TransFlow correspondante (relation 1:1
+confirmée empiriquement). Scinder deux sources en cardinalité 1:1
+vérifiée en deux tables de faits aurait imposé une jointure
+fait-à-fait à chaque requête -- anti-pattern Kimball qu'une dimension
+conformée évite normalement. Les mesures de \texttt{livraisons}
+(délai, statut) sont donc absorbées directement dans
+\texttt{Fait\_Expedition}, au même grain.
+
 \section{C14 --- Créer un entrepôt de données}
 
 L'entrepôt est créé dans une base PostgreSQL distincte de la base de
@@ -109,7 +123,14 @@ if current is not None:
 # ... puis INSERT d'une nouvelle ligne avec une nouvelle client_key.
 \end{lstlisting}
 
-Le mécanisme est vérifié par un changement réel simulé : l'ancienne
+\texttt{r} est la ligne source lue depuis le staging (dict avec
+\texttt{nom}/\texttt{secteur}/\texttt{id} FluxPro) ; \texttt{current}
+est la version actuellement courante de ce client dans l'entrepôt si
+elle existe déjà (\texttt{None} sinon), sous forme de tuple
+\texttt{(client\_key, nom, secteur)} ; \texttt{mapping} associe
+l'identifiant FluxPro à la \texttt{client\_key} à utiliser pour charger
+les faits qui le référencent, qu'une nouvelle version ait été créée ou
+non. Le mécanisme est vérifié par un changement réel simulé : l'ancienne
 version reste close et interrogeable, la nouvelle est créée, et les
 faits déjà chargés continuent de référencer la version qui était
 courante au moment de leur chargement. Écart assumé avec la
