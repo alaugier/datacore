@@ -188,6 +188,44 @@ suivante : ouverture du Bloc 4 (data lake OMEGA LAKE).
   (son port est exposé sur l'hôte) — aucun n'a affecté le calendrier,
   la relecture faisait partie du cycle normal avant merge.
 
+**Exemple — CoSu du 21/10/2026 (clôture de M5, ouverture de M6).**
+
+- **Avancement** : jalon transverse M5 (Rapport LaTeX) clos — les 3
+  issues (#90, #91, #92) livrées sur une seule PR (#93, 37 pages),
+  compte rendu de clôture mergé via la PR #94, release vers `main`
+  via la PR #95. Le programme (M0-M5) est désormais fonctionnellement
+  et documentairement complet. Jalon M6 (Présentation orale) ouvert le
+  jour même : séquencement décidé avant tout contenu
+  ([`sequencement_m6.md`](sequencement_m6.md)), 5 issues créées
+  (#96-#100). Compte rendu complet :
+  [`comptes_rendus/M5.md`](../comptes_rendus/M5.md).
+- **Décisions actées depuis le dernier point** : découpage en issues
+  du rapport non respecté à la lettre par rapport au séquencement
+  initial (3 issues prévues sur 3 PR distinctes, livrées en pratique
+  sur une seule branche/PR) — `dev` ne portait pas encore
+  l'infrastructure LaTeX tant que la première issue n'était pas
+  mergée, démarrer une branche séparée depuis `dev` pour les suivantes
+  aurait dupliqué cette infrastructure plutôt que de la réutiliser ;
+  écart assumé et expliqué dans la PR, pas découvert a posteriori. Une
+  bibliographie (chapitre 8) a été ajoutée hors périmètre initial, à
+  la demande de l'utilisateur. Attribution Claude retirée après coup
+  de 11 commits de la branche du rapport (`git filter-branch` +
+  force-push, PR encore ouverte à ce moment -- aucun impact sur le
+  contenu, vérifié par diff identique avant/après).
+- **Point d'attention à faire remonter à Éléonore RAKOTO** : aucun,
+  pas de risque budgétaire ou calendaire identifié pour M5 ni pour
+  l'ouverture de M6.
+- **Budget** : voir §2.2 ci-dessous — toujours aucun dépassement, M5
+  et M6 restent hors du périmètre budgété initial (staffing interne).
+- **Risques** : aucun risque bloquant. Point de vigilance calendaire
+  signalé par l'utilisateur : soutenance orale prévue mi-novembre
+  2026 (date précise non encore communiquée), 2 jours ouvrés restants
+  cette semaine (22-23/10) puis une pause jusqu'à la semaine de la
+  soutenance (3 jours ouvrés prévus avant le passage) — à anticiper
+  dans le séquencement des 5 issues de M6, Q&A jury (issue #96)
+  délibérément traitée en premier pour ne pas la sacrifier si le temps
+  venait à manquer.
+
 ---
 
 ## 2. Tableau de suivi budgétaire
