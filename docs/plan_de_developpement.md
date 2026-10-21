@@ -166,10 +166,10 @@ technique avant merge (un piège `docker compose --env-file` résiduel
 trouvé en revue et corrigé par la PR #88, mergée dans `dev` avant la
 release).
 
-### M5 — Rapport LaTeX (ouvert le 20/10/2026)
-- [ ] Chapitres 01-05 — synthèse Blocs 1-4 + M4 (#90)
-- [ ] Chapitre 06 — synthèse transverse (#91)
-- [ ] Chapitres 00/07 + annexe (#92)
+### M5 — Rapport LaTeX (ouvert le 20/10/2026, clos le 21/10/2026)
+- [x] Chapitres 01-05 — synthèse Blocs 1-4 + M4 (#90)
+- [x] Chapitre 06 — synthèse transverse (#91)
+- [x] Chapitres 00/07 + annexe (#92)
 
 Structure du rapport (document maître + chapitres + annexes) élaborée
 avec l'assistance d'un outil IA, arbitrée et validée par le Data
@@ -177,7 +177,12 @@ Engineer / chef de projet. Découpage en 3 issues par niveau de risque
 (pas une par chapitre, pas une seule monolithique) et ordre de
 rédaction tranchés avant toute rédaction — voir
 `docs/architecture/sequencement_m5.md` pour le détail et la
-justification complète.
+justification complète. Les 3 issues ont finalement été livrées sur
+une seule PR (#93, voir `docs/comptes_rendus/M5.md` §4 pour la
+justification de cet écart au séquencement initial).
+
+Voir `docs/comptes_rendus/M5.md` pour le compte rendu de fin de
+milestone.
 
 ## Règles pour Claude Code
 - Ne jamais committer `data/raw/*` (voir `.gitignore`).
