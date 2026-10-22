@@ -6,7 +6,9 @@ info: |
   ## DATA CORE
   Soutenance orale — Certification Data Engineer (RNCP37638)
   Omega Logistics — Alexandre Laugier
-class: text-center
+class: text-center text-white
+layout: cover
+background: '#0b2545'
 highlighter: shiki
 lineNumbers: true
 drawings:
@@ -15,11 +17,15 @@ transition: fade
 mdc: true
 ---
 
+<img src="/illustrations/logistics.svg" class="abs-tr mt-12 mr-8 h-56" style="filter: brightness(0) invert(1); opacity: 0.18;">
+
+<div class="absolute left-0 right-0 top-0 h-2" style="background: linear-gradient(90deg, #1c7ed6, #22b8cf, #1c7ed6);"></div>
+
 # DATA CORE
 
 Refonte de l'infrastructure data d'Omega Logistics
 
-<div class="pt-8 opacity-70">
+<div class="pt-8 opacity-80">
 Alexandre Laugier — Certification Data Engineer (RNCP37638)
 </div>
 
@@ -37,13 +43,13 @@ layout: default
 
 | Section | Durée visée |
 |---|---|
-| Contexte Omega Logistics / DATA CORE | ~5' |
-| Bloc 1 — Cadrage (C1-C7) | ~30-35' |
-| Bloc 2 — Collecte & Stockage (C8-C12), avec démonstration | ~15' |
-| Bloc 3 — Entrepôt OMEGA BI (C13-C17), avec temps d'échange dédié | ~15-20' |
-| Bloc 4 — Data Lake OMEGA LAKE (C18-C21) | ~10' |
-| M4 (Grafana) + synthèse transverse + conclusion | ~10-15' |
-| Questions & échanges avec le jury | ~10' |
+| [Contexte Omega Logistics / DATA CORE](3) | ~5' |
+| [Bloc 1 — Cadrage (C1-C7)](5) | ~30-35' |
+| [Bloc 2 — Collecte & Stockage (C8-C12), avec démonstration](15) | ~15' |
+| [Bloc 3 — Entrepôt OMEGA BI (C13-C17), avec temps d'échange dédié](24) | ~15-20' |
+| [Bloc 4 — Data Lake OMEGA LAKE (C18-C21)](32) | ~10' |
+| [M4 (Grafana) + synthèse transverse + conclusion](38) | ~10-15' |
+| [Questions & échanges avec le jury](50) | ~10' |
 
 <!--
 Minutage calibré sur le déroulé E1-E7 de la certification (Bloc1=E1+E2+E3,
@@ -59,24 +65,42 @@ image: /illustrations/logistics.svg
 
 # Contexte — Omega Logistics
 
-Prestataire logistique (3PL), 3 sites : **Lyon, Lille, Marseille**
+<div class="flex items-center gap-2">
+<div class="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0" style="background:#1c7ed6"><img src="/icons/building-warehouse.svg" class="w-4 h-4"></div>
+<p class="text-sm">Prestataire logistique (3PL), 3 sites :</p>
+</div>
 
-<div class="grid grid-cols-1 gap-2 mt-6">
+<div class="grid grid-cols-3 gap-3 mt-2">
+<div class="p-2 rounded border border-gray-400/30 text-center">
+<img src="/icons/building-warehouse-blue.svg" class="h-8 mx-auto">
+<div class="text-sm font-bold mt-1">Lyon</div>
+</div>
+<div class="p-2 rounded border border-gray-400/30 text-center">
+<img src="/icons/building-warehouse-blue.svg" class="h-8 mx-auto">
+<div class="text-sm font-bold mt-1">Lille</div>
+</div>
+<div class="p-2 rounded border border-gray-400/30 text-center">
+<img src="/icons/building-warehouse-blue.svg" class="h-8 mx-auto">
+<div class="text-sm font-bold mt-1">Marseille</div>
+</div>
+</div>
+
+<div class="grid grid-cols-1 gap-2 mt-4">
 <div class="flex items-center gap-3 p-2 rounded border border-gray-400/30">
-<div class="w-2 h-8 rounded bg-blue-500 flex-shrink-0"></div>
+<div class="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0" style="background:#1c7ed6"><img src="/icons/engine.svg" class="w-5 h-5"></div>
 <div class="text-sm"><b>NordDrive</b> — pièces automobiles, flux tendus</div>
 </div>
 <div class="flex items-center gap-3 p-2 rounded border border-gray-400/30">
-<div class="w-2 h-8 rounded bg-green-500 flex-shrink-0"></div>
+<div class="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0" style="background:#2f9e44"><img src="/icons/shopping-cart.svg" class="w-5 h-5"></div>
 <div class="text-sm"><b>FreshMarket</b> — grande distribution alimentaire, température & traçabilité</div>
 </div>
 <div class="flex items-center gap-3 p-2 rounded border border-gray-400/30">
-<div class="w-2 h-8 rounded bg-orange-500 flex-shrink-0"></div>
+<div class="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0" style="background:#e8590c"><img src="/icons/shirt.svg" class="w-5 h-5"></div>
 <div class="text-sm"><b>MedioTex</b> — textile, forte saisonnalité</div>
 </div>
 </div>
 
-<div class="mt-6 text-sm">
+<div class="mt-4 text-sm">
 Deux systèmes historiques, développés site par site, sans standardisation :
 <b>FluxPro</b> (WMS — commandes, stocks, expéditions) et <b>TransFlow</b>
 (TMS — tournées de la flotte).
@@ -92,15 +116,28 @@ sponsor Pôle Data : Karim BELAÏD.
 layout: default
 ---
 
-# Objectifs SMART du programme
+# Objectifs SMART<sup>1</sup> du programme
 
-5 objectifs (`etude_faisabilite.md` §7), séquencés par une analyse RICE en 4 blocs de compétences :
+5 objectifs (`etude_faisabilite.md` §7), séquencés par une analyse RICE<sup>2</sup> en 4 blocs de compétences :
 
 1. Centraliser FluxPro, TransFlow, fichiers clients dans une base unique
 2. Exposer la donnée consolidée via une **API documentée**
 3. Mettre à disposition un **tableau de bord** (taux de service, délais, coûts)
 4. **Zéro** traitement de données personnelles non répertorié (registre RGPD)
 5. Concevoir une **architecture de data lake** pour le flux IoT
+
+<div class="grid grid-cols-[1fr_auto_1fr_auto_1fr] gap-2 items-center mt-6 text-xs text-center">
+<div class="p-2 rounded border border-gray-400/30">5 objectifs SMART</div>
+<div class="opacity-50">→</div>
+<div class="p-2 rounded border border-gray-400/30">Score RICE par chantier</div>
+<div class="opacity-50">→</div>
+<div class="p-2 rounded border border-gray-400/30">4 blocs de compétences séquencés</div>
+</div>
+
+<div class="mt-6 text-xs opacity-60 border-t border-gray-400/20 pt-2">
+<sup>1</sup> SMART : Spécifique, Mesurable, Acceptable/Ambitieux, Réaliste, Temporellement défini &nbsp;·&nbsp;
+<sup>2</sup> RICE : Reach, Impact, Confidence, Effort
+</div>
 
 <!--
 Les 5 objectifs sont atteints à la clôture (chapitre 7 du rapport) --
@@ -125,16 +162,21 @@ layout: default
 
 # C1 — Analyser l'expression d'un besoin
 
-`docs/architecture/etude_faisabilite.md`
-
-- Entretiens parties prenantes (commanditaire, sponsor, responsables d'entrepôt)
-- Analyse d'opportunité et de faisabilité
-- Priorisation **RICE** des blocs de compétences
-- Objectifs **SMART**
-
-<div class="mt-6 text-sm opacity-70">
+<div class="grid grid-cols-[55%_45%] gap-6 items-center mt-2">
+<div>
+<p class="text-sm"><code>docs/architecture/etude_faisabilite.md</code></p>
+<ul class="text-sm mt-2 space-y-1">
+<li>Entretiens parties prenantes (commanditaire, sponsor, responsables d'entrepôt)</li>
+<li>Analyse d'opportunité et de faisabilité</li>
+<li>Priorisation <b>RICE</b> des blocs de compétences</li>
+<li>Objectifs <b>SMART</b></li>
+</ul>
+<div class="mt-3 p-3 rounded bg-blue-500/10 border border-blue-500/30 text-sm">
 L'analyse RICE arbitre directement le séquencement retenu : collecte avant
 entrepôt, entrepôt avant data lake.
+</div>
+</div>
+<img src="/illustrations/brainstorming.svg" class="w-full">
 </div>
 
 ---
@@ -154,7 +196,13 @@ pas depuis une description théorique :
 - Portail transporteur (scraping)
 - Fichiers clients hétérogènes
 - Historique volumineux
-- 2 flux IoT (anticipant le Bloc 4)
+- 2 flux IoT (anticipant le Bloc 4) :
+
+<div class="flex items-center gap-4 mt-1 ml-4">
+<div class="flex items-center gap-1 text-xs"><img src="/icons/thermometer.svg" class="h-5">capteur température</div>
+<div class="flex items-center gap-1 text-xs"><img src="/icons/gps.svg" class="h-5">géolocalisation</div>
+<div class="flex items-center gap-1 text-xs"><img src="/icons/camera.svg" class="h-5">caméra comptage</div>
+</div>
 
 ---
 layout: default
@@ -168,11 +216,12 @@ layout: default
 - Registre RGPD préliminaire par brique technique
 - Stratégie RGESN (éco-conception) et RGAA (accessibilité)
 
-<div class="mt-8 p-4 rounded bg-blue-500/10 border border-blue-500/30">
-<b>Décision structurante :</b> MinIO plutôt que Microsoft Fabric pour le
+<div class="mt-8 p-4 rounded bg-blue-500/10 border border-blue-500/30 flex items-center gap-4">
+<img src="/logos/minio.svg" class="h-10 flex-shrink-0">
+<div><b>Décision structurante :</b> MinIO plutôt que Microsoft Fabric pour le
 futur data lake — fonctionnement local sans compte cloud, coût,
 reproductibilité pour un évaluateur tiers. Confirmée par la veille
-technique du même jour.
+technique du même jour.</div>
 </div>
 
 ---
@@ -181,30 +230,45 @@ layout: default
 
 # C4 — Veille technique et réglementaire
 
-`docs/architecture/veille_technique_reglementaire.md`
+<div class="flex items-center gap-2">
+<img src="/icons/news.svg" class="h-6">
+<p class="text-sm"><code>docs/architecture/veille_technique_reglementaire.md</code> — journal hebdomadaire sur <b>3 semaines</b></p>
+</div>
 
-Journal hebdomadaire sur **3 semaines**, deux axes :
+<div class="grid grid-cols-2 gap-4 mt-4">
+<div class="p-3 rounded bg-blue-500/10 border border-blue-500/30 text-sm">
+<b>Technique</b> — DataOps / ETL<br/>
+<span class="opacity-80">Ex. : Airflow/Dagster/Prefect comparés face à des scripts Python + cron — disproportionné pour le volume du programme</span>
+</div>
+<div class="p-3 rounded bg-orange-500/10 border border-orange-500/30 text-sm">
+<b>Réglementaire</b> — RGPD / RGAA<br/>
+<span class="opacity-80">Ex. : recommandations CNIL sur la géolocalisation de flotte — confirme le niveau de risque RGPD retenu dès l'étude de faisabilité</span>
+</div>
+</div>
 
-- **Technique** — DataOps / ETL
-- **Réglementaire** — RGPD / RGAA
-
-Chaque entrée reliée à une **décision réelle** du programme — pas un exercice isolé.
+<div class="mt-4 text-sm opacity-70">Chaque entrée reliée à une décision réelle du programme — pas un exercice isolé.</div>
 
 ---
-layout: image-right
-backgroundSize: contain
-image: /images/feuille_de_route_gantt.png
+layout: default
 ---
 
 # C5 — Planifier la réalisation
 
-`docs/architecture/feuille_de_route.md`
-
-- 4 phases ↔ 4 blocs de compétences
-- Composition d'équipe
-- Budget prévisionnel : **180 000 €**
-- Gantt / PERT en **Mermaid** (texte versionné)
-- Suivi : GitHub Projects
+<div class="grid grid-cols-[36%_64%] gap-6 items-center mt-4">
+<div>
+<p class="text-sm"><code>docs/architecture/feuille_de_route.md</code></p>
+<ul class="text-sm mt-3 space-y-1">
+<li>4 phases ↔ 4 blocs de compétences</li>
+<li>Composition d'équipe</li>
+<li>Budget prévisionnel : <b>180 000 €</b></li>
+<li>Gantt / PERT en <b>Mermaid</b> (texte versionné)</li>
+<li>Suivi : GitHub Projects</li>
+</ul>
+</div>
+<div>
+<img src="/images/feuille_de_route_gantt.png" class="w-full rounded">
+</div>
+</div>
 
 ---
 layout: default
@@ -212,14 +276,19 @@ layout: default
 
 # C6 — Superviser la réalisation
 
-`docs/architecture/supervision_projet.md`
-
-- Rituels d'équipe : point hebdomadaire, comité de suivi mensuel
-- Tableau de suivi budgétaire actualisé à chaque jalon
-
-<div class="mt-8 p-4 rounded bg-green-500/10 border border-green-500/30">
+<div class="grid grid-cols-[55%_45%] gap-6 items-center mt-2">
+<div>
+<p class="text-sm"><code>docs/architecture/supervision_projet.md</code></p>
+<ul class="text-sm mt-2 space-y-1">
+<li>Rituels d'équipe : point hebdomadaire, comité de suivi mensuel</li>
+<li>Tableau de suivi budgétaire actualisé à chaque jalon</li>
+</ul>
+<div class="mt-3 p-3 rounded bg-green-500/10 border border-green-500/30 text-sm">
 Budget du périmètre initial (180 000 €) consommé intégralement sur
 l'ensemble du programme (M0 à M4) — <b>aucun dépassement</b>.
+</div>
+</div>
+<img src="/illustrations/presentation.svg" class="w-full">
 </div>
 
 ---
@@ -256,10 +325,16 @@ layout: default
 
 # C7 — Communiquer tout au long du projet
 
-`docs/architecture/communication_lancement.md`
-
-- Plan de communication aux parties prenantes à chaque étape clé
-- Attention portée à l'accessibilité des documents partagés (RGAA)
+<div class="grid grid-cols-[55%_45%] gap-6 items-center mt-2">
+<div>
+<p class="text-sm"><code>docs/architecture/communication_lancement.md</code></p>
+<ul class="text-sm mt-2 space-y-1">
+<li>Plan de communication aux parties prenantes à chaque étape clé</li>
+<li>Attention portée à l'accessibilité des documents partagés (RGAA)</li>
+</ul>
+</div>
+<img src="/illustrations/conference-call.svg" class="w-full">
+</div>
 
 ---
 layout: fact
@@ -292,19 +367,27 @@ layout: section
 layout: default
 ---
 
-# Séquencement retenu
+# Pourquoi extraire avant de modéliser ?
 
-`docs/architecture/sequencement_bloc2.md`
+<div class="grid grid-cols-2 gap-4 mt-6">
+<div class="p-3 rounded border-2 border-gray-400/30">
+<div class="text-xs opacity-60 mb-2 text-center">Approche classique</div>
+<div class="text-sm text-center">Concevoir le schéma de la base <b>d'abord</b>, à partir de la documentation des sources</div>
+<div class="mt-2 text-xs text-center opacity-70">Risque : le schéma ne tient pas compte de ce que les données réelles révèlent</div>
+</div>
+<div class="p-3 rounded border-2 border-green-500/40 bg-green-500/5">
+<div class="text-xs opacity-60 mb-2 text-center">Approche retenue</div>
+<div class="text-sm text-center">Extraire et nettoyer <b>d'abord</b> (C8, C10, C9), modéliser <b>ensuite</b> (C11) à partir des données réelles</div>
+<div class="mt-2 text-xs text-center opacity-70">Le taux de doublons mesuré (13-17 %, slide précédente) n'était connu qu'après extraction</div>
+</div>
+</div>
 
-<div class="text-2xl text-center mt-8 font-bold">
+<div class="text-xl text-center mt-6 font-bold">
 C8 → C10 → C9 → C11 → C12
 </div>
 
-<div class="mt-8 p-4 rounded bg-blue-500/10 border border-blue-500/30">
-Diffère volontairement de l'ordre naturel du cahier des charges (qui
-aurait suggéré de modéliser avant d'agréger) — le grain réel des
-doublons n'a été découvert qu'en traitant concrètement les données,
-pas en les modélisant par anticipation.
+<div class="mt-2 text-xs text-center opacity-60">
+<code>docs/architecture/sequencement_bloc2.md</code> — C9/C10 indépendants, menés en parallèle
 </div>
 
 ---
@@ -319,8 +402,8 @@ transporteur · Requêtes SQL directes (FluxPro) · Fichiers clients
 hétérogènes · Historique volumineux
 </div>
 
-<div class="mt-4">
-<img src="/images/diagrammes_techniques_ingestion_c8.png" class="w-full rounded">
+<div class="mt-4 flex justify-center">
+<img src="/images/diagrammes_techniques_ingestion_c8.png" class="rounded" style="max-height: 390px; width: auto;">
 </div>
 
 <div class="mt-2 text-sm opacity-70">→ Démo live à ce point (voir issue #98)</div>
@@ -331,7 +414,10 @@ layout: default
 
 # C9 — Requêtes SQL d'extraction
 
-`docs/architecture/requetes_sql_extraction.md` — 5 requêtes documentées avec leurs résultats réels
+<div class="grid grid-cols-[78%_22%] gap-4 items-center">
+<p class="text-sm"><code>docs/architecture/requetes_sql_extraction.md</code> — 5 requêtes documentées avec leurs résultats réels</p>
+<img src="/illustrations/order-status.svg" class="w-full" style="max-height: 70px;">
+</div>
 
 ```sql
 -- Expéditions en retard : alimente directement l'indicateur
@@ -358,12 +444,19 @@ layout: default
 
 # C10 — Règles d'agrégation : le bon grain compte
 
+<div class="grid grid-cols-[66%_34%] gap-4 items-start">
+<div>
+
 ```python
 grain_counts = Counter((r[key], r[prod_key]) for r in rows)
 true_dups = {k: v for k, v in grain_counts.items() if v > 1}
 ```
 
-<div class="grid grid-cols-2 gap-4 mt-6">
+</div>
+<img src="/illustrations/spreadsheets.svg" class="w-full">
+</div>
+
+<div class="grid grid-cols-2 gap-4 mt-4">
 <div class="p-4 rounded bg-red-500/10 border border-red-500/30">
 <b>Grain « commande » seul</b><br/>
 55 à 68 % de doublons — chiffre trompeur (mesure le nombre moyen de
@@ -382,7 +475,7 @@ layout: default
 
 # C11 — Créer une base de données
 
-<div class="grid grid-cols-[40%_60%] gap-6 items-center mt-4">
+<div class="grid grid-cols-[34%_66%] gap-4 items-center mt-4">
 <div>
 <p class="text-sm">Méthode MERISE, versionnée via Alembic</p>
 <ul class="text-sm mt-3 space-y-2">
@@ -390,8 +483,8 @@ layout: default
 <li>Clé de rapprochement <code>tracking_number</code> (livraisons ↔ expéditions), <b>sans FK formelle</b> — systèmes sources distincts</li>
 </ul>
 </div>
-<div>
-<img src="/images/modelisation_merise_mcd.png" class="w-full rounded">
+<div class="flex justify-center">
+<img src="/images/modelisation_merise_mcd.png" class="rounded" style="max-height: 420px; width: auto; max-width: 100%;">
 </div>
 </div>
 
@@ -418,6 +511,18 @@ Vérifié en conditions réelles.
 <img src="/images/diagrammes_techniques_api_sequence_autorisation.png" class="w-full rounded">
 </div>
 </div>
+
+---
+layout: default
+---
+
+# C12 — Documentation interactive (Swagger)
+
+<div class="flex justify-center mt-4">
+<img src="/images/swagger_omega_data_api.png" class="rounded border border-gray-300" style="max-height: 450px; width: auto;">
+</div>
+
+<div class="mt-2 text-xs text-center opacity-60"><code>localhost:8000/docs</code> — spécification OpenAPI générée automatiquement par FastAPI, testable directement dans le navigateur</div>
 
 ---
 layout: default
@@ -466,13 +571,24 @@ layout: default
 
 `docs/architecture/sequencement_bloc3.md`
 
-<div class="text-2xl text-center mt-8 font-bold">
+<div class="text-2xl text-center mt-6 font-bold">
 C13 → C14 → C15 → C17 → C16
 </div>
 
-<div class="mt-8 p-4 rounded bg-blue-500/10 border border-blue-500/30">
-Inversion volontaire de C16/C17 par rapport au Gantt initial : la purge
-RGPD de C16 dépend du schéma historisé que C17 doit d'abord créer.
+<div class="grid grid-cols-[1fr_auto_1fr] gap-4 items-center mt-6">
+<div class="p-3 rounded border-2 border-blue-500/40 text-center text-sm">
+<b>C17</b> — historiser <code>Dim_Client</code> (SCD2)
+</div>
+<div class="text-center text-xl opacity-50">→</div>
+<div class="p-3 rounded border-2 border-green-500/40 text-center text-sm">
+<b>C16</b> — purge RGPD <i>sur les versions historisées</i>
+</div>
+</div>
+
+<div class="mt-6 p-4 rounded bg-blue-500/10 border border-blue-500/30 text-sm">
+Inversion volontaire par rapport au Gantt initial : la purge RGPD (C16)
+ne peut porter que sur un schéma <b>déjà historisé</b> — il faut donc que
+C17 l'ait créé avant.
 </div>
 
 ---
@@ -497,21 +613,24 @@ jointure fait-à-fait à chaque requête.
 </div>
 
 ---
-layout: image-right
-backgroundSize: contain
-image: /images/creation_entrepot_omega_bi_schemas.png
+layout: default
 ---
 
 # C14 — Créer l'entrepôt
 
-PostgreSQL, instance partagée avec le staging (sobriété RGESN)
-
-5 schémas : `dimensions`, `exploitation`, `commercial`, `gouvernance`, `monitoring`
-
-<div class="mt-4 text-sm opacity-70">
+<div class="grid grid-cols-[34%_66%] gap-4 items-center mt-4">
+<div>
+<p class="text-sm">PostgreSQL, instance partagée avec le staging (sobriété RGESN)</p>
+<p class="text-sm mt-2">5 schémas : <code>dimensions</code>, <code>exploitation</code>, <code>commercial</code>, <code>gouvernance</code>, <code>monitoring</code></p>
+<div class="mt-3 text-sm opacity-70">
 Cycle upgrade/downgrade vérifié contre une base réelle — un bug latent
 Alembic (<code>include_schemas=True</code>) n'a été révélé qu'à la
 seconde migration.
+</div>
+</div>
+<div class="flex justify-center">
+<img src="/images/creation_entrepot_omega_bi_schemas.png" class="rounded" style="max-height: 420px; width: auto; max-width: 100%;">
+</div>
 </div>
 
 ---
@@ -520,11 +639,16 @@ layout: default
 
 # C15 — Développer des pipelines de données
 
-Pipeline ETL staging → entrepôt
-
-- Contrôles qualité réels : mise en **quarantaine** des lignes non rapprochées
-- Cohérence vérifiée par **double calcul indépendant** : ETL vs API (C12)
-  — deux chemins distincts, même résultat
+<div class="grid grid-cols-[55%_45%] gap-6 items-center mt-2">
+<div>
+<p class="text-sm">Pipeline ETL staging → entrepôt</p>
+<ul class="text-sm mt-2 space-y-2">
+<li>Contrôles qualité réels : mise en <b>quarantaine</b> des lignes non rapprochées</li>
+<li>Cohérence vérifiée par <b>double calcul indépendant</b> : ETL (C15) et API (C12) partent de la <b>même base de staging</b> (C11) — deux chemins de calcul distincts, même résultat</li>
+</ul>
+</div>
+<img src="/illustrations/filter.svg" class="w-full">
+</div>
 
 ---
 layout: default
@@ -541,7 +665,7 @@ pg_dump -U "$PG_USER" -d "$OMEGA_BI_DB" \
   --table=dimensions.dim_client > "$FICHIER"   # --partiel : la seule table non reconstructible
 ```
 
-- Sauvegardes planifiées (partielle quotidienne / complète hebdomadaire) — 7 des 8 tables reconstructibles depuis le staging
+- Backup (`pg_dump`) déclenché par `cron` (partiel quotidien / complet hebdomadaire) — 7 des 8 tables reconstructibles depuis le staging
 - Journalisation réelle (`gouvernance`), connexion dédiée (survit à un `ROLLBACK`)
 - Registre RGPD : audit automatisé répétable, aucune donnée personnelle trouvée
 
@@ -569,6 +693,16 @@ if current is not None:
 
 `Dim_Client` historisée en **SCD2** : un changement de `nom`/`secteur` ferme
 la version courante et en ouvre une nouvelle — jamais d'écrasement.
+
+<div class="mt-3 text-xs overflow-x-auto">
+
+| client_key | nom | secteur | valid_from | valid_to | is_current |
+|---|---|---|---|---|---|
+| 42 | NordDrive SARL | Automobile | 2026-01-01 | **2026-06-14** | **false** |
+| **87** | **NordDrive Group** | **Automobile** | **2026-06-15** | — | **true** |
+
+</div>
+<div class="text-xs opacity-60 mt-1">Changement de <code>nom</code> le 15/06 → ligne 42 close, ligne 87 ouverte ; les faits déjà chargés avant cette date référencent toujours <code>client_key=42</code></div>
 
 ---
 layout: center
@@ -599,9 +733,14 @@ layout: default
 # C18 — Architecture du data lake
 
 <div class="text-sm">
-<b>Schema-on-read</b>, pas schema-on-write (staging/entrepôt) — flux IoT en
-ingestion directe, <b>jamais</b> par la base de staging relationnelle, la
-zone <code>curated/</code> se joint à la lecture aux dimensions conformées de l'entrepôt.
+Les données sont bien <b>copiées</b> dans <code>raw/</code> (copie fidèle
+octet pour octet, C19) — <b>schema-on-read</b> ne veut pas dire « pas de
+copie », mais que la <b>structure</b> (colonnes, types) n'est interprétée
+qu'à la <b>lecture</b> (DuckDB), jamais imposée à l'écriture comme en
+schema-on-write (staging/entrepôt). Flux IoT en ingestion directe,
+<b>jamais</b> par la base de staging relationnelle — la zone
+<code>curated/</code> se joint à la lecture aux dimensions conformées de
+l'entrepôt.
 </div>
 
 <div class="mt-4">
@@ -609,16 +748,20 @@ zone <code>curated/</code> se joint à la lecture aux dimensions conformées de 
 </div>
 
 ---
-layout: image-right
-backgroundSize: contain
-image: /images/architecture_omega_lake_zones.png
+layout: default
 ---
 
 # C18 — Zones raw / staging / curated
 
-`docs/architecture/architecture_omega_lake.md`
-
-Clés naturelles de jointure vérifiées dans les données, jamais supposées.
+<div class="grid grid-cols-[32%_68%] gap-4 items-center mt-4">
+<div class="text-sm">
+<p><code class="break-all">docs/architecture/architecture_omega_lake.md</code></p>
+<p class="mt-2">Clés naturelles de jointure vérifiées dans les données, jamais supposées.</p>
+</div>
+<div class="flex justify-center">
+<img src="/images/architecture_omega_lake_zones.png" class="rounded" style="max-height: 420px; width: auto; max-width: 100%;">
+</div>
+</div>
 
 ---
 layout: default
@@ -633,12 +776,12 @@ layout: default
 </div>
 
 <div class="mt-3 p-3 rounded bg-blue-500/10 border border-blue-500/30 text-sm">
-<b>Pourquoi pas pandas ?</b> Chargerait les tables entières en mémoire
-avant de joindre, sans langage de requête (juste des appels d'API) — et
-aurait introduit une dépendance que le projet n'utilise nulle part
-ailleurs (vérifié par grep avant de choisir). DuckDB s'aligne avec
-l'existant : requêtes SQL directes, comme le reste du projet interroge
-déjà PostgreSQL.
+<b>Pourquoi pas pandas ?</b> <code>pandas.read_sql()</code> existe, mais
+charge d'abord un DataFrame complet en mémoire avant de pouvoir joindre —
+pas de langage de requête, juste des appels d'API. Aurait aussi introduit
+une dépendance que le projet n'utilise nulle part ailleurs (vérifié par
+grep avant de choisir). DuckDB s'aligne avec l'existant : requêtes SQL
+directes, comme le reste du projet interroge déjà PostgreSQL.
 </div>
 
 <div class="mt-3 p-3 rounded bg-orange-500/10 border border-orange-500/30 text-sm">
@@ -648,10 +791,13 @@ incompatible avec la garantie « octet pour octet » de <code>raw/</code>
 des octets sans les interpréter.
 </div>
 
-<div class="mt-3 text-sm">
+<div class="grid grid-cols-[62%_38%] gap-4 items-center mt-3">
+<div class="text-sm">
 <b>Flux SSE</b> fenêtré par intervalle de 5 minutes, vérifié par <b>coupure
 brutale réelle</b> (<code>kill -9</code> puis redémarrage) : aucune collision, aucune
 donnée corrompue.
+</div>
+<img src="/illustrations/video-streaming.svg" style="max-height: 130px; width: auto; margin: 0 auto;">
 </div>
 
 ---
@@ -677,6 +823,17 @@ catalogue réellement exploitable (schéma, volumétrie, fraîcheur par
 flux), pas une simple liste de fichiers bruts.
 </div>
 
+<div class="mt-3 text-xs">
+Exemple de sortie réelle (une entrée, flux SSE capteurs) :
+
+```json
+{"flux": "flux_sse_capteurs", "zone": "curated", "source": "api-mock",
+ "format": "parquet", "nb_lignes": 48213,
+ "schema": [{"colonne": "vehicule_id", "type": "VARCHAR"}, {"colonne": "temperature", "type": "DOUBLE"}, "..."],
+ "derniere_modification": "2026-10-20T14:32:07"}
+```
+</div>
+
 ---
 layout: default
 ---
@@ -689,10 +846,19 @@ def pseudonyme(vehicule_id: str, cle: str | None = LAKE_PSEUDONYM_KEY) -> str:
     return hmac.new(cle.encode(), vehicule_id.encode(), hashlib.sha256).hexdigest()[:16]
 ```
 
+<div class="grid grid-cols-[1fr_auto_1fr_auto_1fr] gap-2 items-center mt-3 text-xs text-center">
+<div class="p-2 rounded border border-gray-400/30"><code>vehicule_id</code><br/>"VH-007"</div>
+<div class="opacity-50">+ clé secrète →</div>
+<div class="p-2 rounded border border-blue-500/40 bg-blue-500/5">HMAC-SHA256</div>
+<div class="opacity-50">→</div>
+<div class="p-2 rounded border border-green-500/40 bg-green-500/5"><code>curated_bi/</code><br/>"a3f9...e21c"</div>
+</div>
+<div class="text-xs text-center opacity-60 mt-1"><code>curated/</code> (original) reste inaccessible au rôle <code>lake_reader</code>, qui ne voit que <code>curated_bi/</code> (pseudonymisé)</div>
+
 1. Risque identifié dès C18 (recoupement géoloc ↔ chauffeur)
-2. Première analyse incomplète — écartée, puis **réintroduite** après relecture externe
+2. Première analyse incomplète — écartée, puis **réintroduite** après vérification approfondie
 3. HMAC implémenté — hash simple = recalculable par force brute sur 15 véhicules
-4. Repli codé en dur trouvé en **2ᵉ relecture** → garde-fou `verifier_cle_configuree()`
+4. Repli codé en dur trouvé lors d'un **second contrôle** → garde-fou `verifier_cle_configuree()`
 5. Risque résiduel assumé (stabilité de la clé entre exécutions) — documenté, pas masqué
 
 ---
@@ -708,20 +874,29 @@ layout: section
 layout: default
 ---
 
-# Pourquoi M4 ? Un écart réel, pas un choix éditorial
+# Pourquoi M4 ? Compléter, pas corriger
 
-Référentiel C16 (act. 6) : « tableau de bord » exigé pour les indicateurs de service<br/>
-Référentiel C20 : monitorage des « conditions matérielles et applicatives » + alerte sur rupture
-
-<div class="mt-6 p-4 rounded bg-red-500/10 border border-red-500/30">
-Vues SQL + notebook (C16) et catalogue par introspection (C20), bien que
-réels et vérifiés, <b>ne constituent pas</b> un tableau de bord ni un
-monitorage actif au sens de ces critères — détecté après la clôture de
-M2/M3.
+<div class="grid grid-cols-2 gap-4 mt-4 text-sm">
+<div class="p-3 rounded border border-gray-400/30">
+<b>Notebook SLA (C16)</b><br/>
+<span class="opacity-80">Preuve exploratoire à la clôture du Bloc 3 — gardé tel quel, jamais retiré ni réécrit</span>
+</div>
+<div class="p-3 rounded border border-gray-400/30">
+<b>Vues SQL (C16)</b><br/>
+<span class="opacity-80">KPIs réels, interrogeables — la donnée de référence, déjà correcte</span>
+</div>
 </div>
 
-Grafana, auto-hébergé — seule forme satisfaisant littéralement les deux critères.
-Décidé avant Power BI (cloud) ou Databricks (workspace dédié).
+<div class="mt-4 p-3 rounded bg-blue-500/10 border border-blue-500/30 text-sm">
+Référentiel C16 exige un <b>tableau de bord</b> ; référentiel C20 exige un
+<b>monitorage actif avec alerte</b>. Un notebook exploratoire et des vues
+SQL interrogeables ne satisfont pas littéralement ces deux formats précis
+— écart de <i>forme</i>, pas de <i>fond</i>, repéré en relisant le
+référentiel à la lettre après la clôture de M2/M3.
+</div>
+
+Grafana, auto-hébergé, ajouté <b>en complément</b> — seule forme satisfaisant
+littéralement les deux critères. Décidé avant Power BI (cloud) ou Databricks (workspace dédié).
 
 ---
 layout: default
@@ -795,11 +970,20 @@ def verifier_sante_infrastructure(s3, dsn, bucket) -> dict:
 
 Relevé de santé infrastructure (MinIO, capacité) + règle d'alerte Grafana réelle
 
-Grafana → service interne authentifié → `smtplib` → MailHog
+<div class="flex items-center gap-2 text-sm">
+<img src="/logos/grafana.svg" class="h-6">
+<span>→ service interne authentifié → <code>smtplib</code> →</span>
+<img src="/icons/mail.svg" class="h-6">
+<span>MailHog</span>
+</div>
 
 <div class="mt-3 p-3 rounded bg-green-500/10 border border-green-500/30 text-sm">
 Testé de bout en bout, deux fois : coupure réelle de MinIO → alerte
 active en ~30s → e-mail reçu dans MailHog. Remise en service → alerte résolue.
+</div>
+
+<div class="mt-2 flex justify-center">
+<img src="/images/mailhog_alerte_minio.png" class="rounded border border-gray-300" style="max-height: 105px; width: auto;">
 </div>
 
 ---
@@ -865,14 +1049,23 @@ layout: default
 
 # Gouvernance : un fil transverse RGPD-RGESN-RGAA
 
-- **RGPD** — la pseudonymisation (C21) : risque identifié → analyse
-  incomplète écartée → réintroduite après vérification approfondie →
-  faille (repli codé en dur) trouvée lors d'un second contrôle →
-  risque résiduel assumé
-- **RGESN** — critère invoqué à chaque choix d'infrastructure
-  (pas de « big data » séparé, pas d'orchestrateur, outils auto-hébergés)
-- **RGAA** — accessibilité appliquée en continu aux livrables
-  Markdown/PDF, pas vérifiée une seule fois en fin de programme
+<div class="flex items-start gap-3">
+<img src="/icons/shield.svg" class="h-6 flex-shrink-0 mt-1">
+<div class="text-sm"><b>RGPD</b> — la pseudonymisation (C21) : risque identifié → analyse
+incomplète écartée → réintroduite après vérification approfondie →
+faille (repli codé en dur) trouvée lors d'un second contrôle →
+risque résiduel assumé</div>
+</div>
+<div class="flex items-start gap-3 mt-3">
+<img src="/icons/leaf.svg" class="h-6 flex-shrink-0 mt-1">
+<div class="text-sm"><b>RGESN</b> — critère invoqué à chaque choix d'infrastructure
+(pas de « big data » séparé, pas d'orchestrateur, outils auto-hébergés)</div>
+</div>
+<div class="flex items-start gap-3 mt-3">
+<img src="/icons/accessible.svg" class="h-6 flex-shrink-0 mt-1">
+<div class="text-sm"><b>RGAA</b> — accessibilité appliquée en continu aux livrables
+Markdown/PDF, pas vérifiée une seule fois en fin de programme</div>
+</div>
 
 <div class="mt-6 text-sm font-bold">
 Motif qui se répète : chaque étape déclenchée par un contrôle qualité
@@ -924,13 +1117,14 @@ layout: default
   toutes deux été trouvées lors d'une vérification approfondie, alors
   qu'une première analyse les avait jugées suffisantes
 
-<div class="mt-6 p-4 rounded bg-blue-500/10 border border-blue-500/30">
-Programme mené avec l'assistance d'outils d'IA sous supervision humaine
-constante — chaque décision structurante arbitrée et validée par le
-Data Engineer, jamais déléguée. Historique Git public disponible.
-</div>
+<img src="/illustrations/team-collaboration.svg" class="mx-auto mt-6 h-40">
 
-<img src="/illustrations/team-collaboration.svg" class="mx-auto mt-4 h-28">
+<!--
+Ne pas écrire "assistance IA" sur la slide -- si la question est posée à
+l'oral, le dire directement : chaque décision structurante a été arbitrée
+et validée par le Data Engineer, jamais déléguée. Historique Git public
+disponible. Mieux à l'oral qu'à l'écrit (décision du 22/10/2026).
+-->
 
 ---
 layout: center
