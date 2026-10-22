@@ -25,3 +25,11 @@ docs/latex/annexes/*.aux
 # (crochets échappés : [ ] sont des métacaractères gitignore)
 docs/reference/\[DE\] Notes sur la certification.pdf
 docs/reference/Cahier_des_charges_DATA_CORE.docx
+
+# Trame de présentation Slidev (M6) -- dépendances et exports générés,
+# pas les sources (slides.md, package.json versionnés).
+slides/node_modules/
+slides/dist/
+slides/.slidev/
+slides/*.pdf
+slides/*.pptx
