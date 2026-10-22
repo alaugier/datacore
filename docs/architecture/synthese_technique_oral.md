@@ -169,6 +169,33 @@ pédagogique fourni pour la certification, pas un choix technique du
 programme -- à assumer directement si la question se pose, plutôt que
 de laisser le jury la découvrir en posant la question suivante.
 
+**« Avez-vous des métriques de suivi pour le flux SSE et le scraping
+du portail transporteur ? »**
+Question posée par l'utilisateur en relecture, vérifiée dans le code
+avant de répondre plutôt que supposée -- réponse différenciée, pas
+uniforme :
+- **Flux SSE** : partiellement. `flux_sse_capteurs` est un flux nommé
+  à part entière dans le catalogue du lake
+  (`src/datacore/storage/lake/catalogue.py`), sa fraîcheur et sa
+  volumétrie sont relevées par `monitoring.enregistrer_catalogue()`
+  comme n'importe quel autre flux IoT, visibles dans le dashboard
+  Grafana « OMEGA LAKE --- Monitoring ». Mais c'est un suivi de
+  fraîcheur (dernière donnée reçue), pas une métrique de performance
+  du flux en continu -- pas de débit d'événements/seconde, pas de
+  latence, pas de détection de déconnexion en direct.
+- **Scraping du portail** : non, aucun suivi persisté.
+  `run_extraction.py` imprime un résumé en console au moment de
+  l'exécution, rien n'est enregistré ni interrogeable après coup. Le
+  monitorage (`monitoring`, C20bis) a été construit spécifiquement
+  pour répondre à l'exigence C20 du data lake (Bloc 4) -- le Bloc 2
+  (collecte, C8-C12, où vit le scraping) n'a jamais eu d'équivalent,
+  rien dans son référentiel ne l'exige.
+
+Écart assumé entre les deux blocs, pas une négligence incohérente --
+documenté aussi au chapitre 6 §« Granularité réelle du monitorage » du
+rapport. À traiter si le temps le permet avant la soutenance, sinon
+cette réponse factuelle suffit à l'oral.
+
 **« Quels écarts avez-vous eus par rapport au cahier des charges ? »**
 Six écarts réels sur l'ensemble du programme, tous décidés avant
 codage ou documentés au moment où ils ont été trouvés, jamais
