@@ -19,7 +19,10 @@ Le programme (M0-M5) est fonctionnellement et documentairement complet
 (`docs/comptes_rendus/M5.md` §5). M6 ne modifie **aucun** script ni
 pipeline existant — déjà validés de bout en bout, en conditions
 réelles, à chaque jalon précédent. M6 produit uniquement les supports
-de la soutenance :
+de la soutenance, listés en §1.1 ; la forme attendue par le jury pour
+ces supports est précisée en §1.2.
+
+### 1.1 Supports déjà disponibles, réutilisés pour M6
 
 | Support déjà disponible | Réutilisation prévue pour M6 |
 |---|---|
@@ -28,6 +31,32 @@ de la soutenance :
 | `docs/architecture/index_code_par_competence.md` | Base de l'anticipation Q&A jury sur le code |
 | `docs/architecture/synthese_technique_oral.md` | Base de l'anticipation Q&A jury sur les écarts/limites |
 | Chapitre 5 §6.5 du rapport (commandes de rejeu des pipelines) | Base du script de démo live |
+
+### 1.2 Forme attendue par le jury
+
+`docs/reference/[DE] Notes sur la certification.pdf` (copié dans le
+dépôt le 22/10/2026) page 8 détaille un déroulé d'épreuve par bloc
+(E1-E7), chacune avec un temps de passage oral distinct : E1 (5'),
+E2 (20'), E3 (10') pour le Bloc 1 ; E4 (15') pour le Bloc 2 ; E5 (10'),
+E6 (5-10') pour le Bloc 3 ; E7 (10') pour le Bloc 4 ; plus 10' de
+questions/échanges transverses avec le jury à la fin. Ce même document
+(pages 4-7) associe à chaque épreuve un livrable écrit distinct
+(rapport de 5 à 20 pages selon l'épreuve).
+
+**Décision actée le 22/10/2026** : ce livrable écrit séparé par
+épreuve **n'est pas exigé** pour cette certification -- c'est l'oral
+qui est jugé. Le rapport unique déjà produit en M5
+(`docs/latex/rapport.pdf`, 37 pages) reste la base écrite du
+programme, **non retravaillé** pour épouser ce découpage en 7
+documents séparés : le temps restant avant la soutenance est mieux
+investi dans la préparation de l'oral lui-même. En revanche, le
+**minutage et le contenu attendu par épreuve** servent de boussole
+pour calibrer la trame de présentation (livrable 2 ci-dessous) --
+seule donnée fiable disponible sur le temps réellement alloué par
+section. **À confirmer avec le formateur** : la durée totale réelle de
+la soutenance et si elle se déroule en plusieurs temps distincts par
+bloc ou en un passage continu -- n'a pas encore été vérifié, traité
+comme hypothèse de travail par défaut en attendant.
 
 ## 2. Livrables attendus
 
@@ -43,6 +72,27 @@ de la soutenance :
 le reste du projet versionné en texte), bascule vers PowerPoint si le
 rendu d'un premier jet n'est pas jugé assez illustré/professionnel --
 décision prise après ce premier jet, pas a priori.
+
+**Minutage de la trame** (hypothèse de travail, §1.2) : le découpage
+E1-E7 ne couvre explicitement que les 4 blocs RNCP, pas les jalons
+transverses propres au programme (M4, synthèse transverse, conclusion)
+-- calibrage proposé pour que la trame reste réaliste sur un total
+d'environ 90-100 minutes :
+
+| Section de la trame | Durée visée | Calibrée sur |
+|---|---|---|
+| Contexte Omega Logistics / DATA CORE | ~5' | (hors grille E1-E7, mise en contexte nécessaire) |
+| Bloc 1 — Cadrage (C1-C7) | ~30-35' | E1+E2+E3 |
+| Bloc 2 — Collecte & Stockage (C8-C12), avec démonstration | ~15' | E4 |
+| Bloc 3 — Entrepôt OMEGA BI (C13-C17), avec temps d'échange dédié | ~15-20' | E5+E6 |
+| Bloc 4 — Data Lake OMEGA LAKE (C18-C21) | ~10' | E7 |
+| M4 (Grafana) + synthèse transverse + conclusion/perspectives | ~10-15' | (hors grille E1-E7, ajout propre au programme) |
+| Questions & échanges avec le jury | ~10' | TOUS |
+
+E6 est explicitement un **échange questions-réponses**, pas une
+présentation continue -- à traiter comme tel dans la trame (prévoir un
+temps d'arrêt/interaction sur le Bloc 3, pas un monologue jusqu'au
+bout).
 
 **Sur l'orchestrateur (Airflow)** : déjà tranché en M5 (chapitre 5 du
 rapport, « Pourquoi pas un orchestrateur ») -- non exigé pour valider
