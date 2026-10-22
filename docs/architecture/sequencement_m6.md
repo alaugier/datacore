@@ -60,6 +60,37 @@ la soutenance et si elle se déroule en plusieurs temps distincts par
 bloc ou en un passage continu -- n'a pas encore été vérifié, traité
 comme hypothèse de travail par défaut en attendant.
 
+### 1.3 Documents de formation retirés du suivi Git
+
+Deux documents de `docs/reference/` concernés par la question des
+droits de redistribution publique, tranchée différemment selon le
+document après vérification (pas une règle uniforme appliquée sans
+examen) :
+
+- `Referentiel_Activites_Competences_Evaluation_DE.pdf` **reste
+  versionné** : vérifié correspondre au référentiel RNCP37638 officiel
+  « Expert en infrastructures de données massives », publié par France
+  Compétences (art. L6113-1 du Code de l'éducation) -- document public
+  gouvernemental, pas un support Simplon à droits restreints.
+- `Cahier_des_charges_DATA_CORE.docx` et `[DE] Notes sur la
+  certification.pdf` **retirés du suivi** (ajoutés au `.gitignore`,
+  gardés en local uniquement) : supports pédagogiques internes
+  Simplon, sans confirmation de droits de redistribution publique.
+
+**Limite assumée, pas une réparation complète** : `Cahier_des_charges_DATA_CORE.docx`
+était public sur `main` depuis plusieurs semaines (commit `bc23769`)
+avant ce retrait -- il reste présent dans l'historique Git antérieur à
+la PR #101, le retrait n'étant pas rétroactif. Choix délibéré plutôt
+qu'un oubli : une réécriture complète de l'historique (+ force-push
+sur `main`) casserait les SHA de commits/PR déjà fermés, pour un
+bénéfice incertain face à un risque jugé faible (support pédagogique,
+aucune donnée personnelle, le registre RGPD du projet ne le couvre pas
+-- pas la même classe de risque). Même logique que les limites déjà
+documentées ailleurs dans le programme plutôt que masquées (ex.
+`registre_rgpd_lake.md` §2 sur la ré-identification résiduelle en
+géolocalisation). Réexaminable après la soutenance, à froid, si
+souhaité -- pas sous contrainte de calendrier.
+
 ## 2. Livrables attendus
 
 | # | Livrable | S'appuie sur |
