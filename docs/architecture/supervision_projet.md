@@ -350,7 +350,7 @@ flowchart LR
 
 ```mermaid
 flowchart LR
-    CI2{"CI : succès"} --> REVIEW["Revue humaine"]
+    CI2{"CI : succès"} --> REVIEW["Revue"]
     REVIEW -->|"approuvée"| MERGE["Merge dans dev"]
     MERGE -->|"dernier issue<br/>du milestone"| RELEASE["PR de release<br/>dev vers main"]
     RELEASE --> MAINB["main (protégée)"]
