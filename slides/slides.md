@@ -29,6 +29,10 @@ Refonte de l'infrastructure data d'Omega Logistics
 Alexandre Laugier — Certification Data Engineer (RNCP37638)
 </div>
 
+<div class="abs-bl ml-8 mb-8 bg-white rounded-lg px-4 py-2 inline-block">
+<img src="/images/simplon_logo.png" class="h-6">
+</div>
+
 <!--
 Trame calibrée sur `docs/architecture/sequencement_m6.md` §1.2-2
 (minutage hypothèse de travail, à confirmer avec le formateur).
@@ -48,8 +52,8 @@ layout: default
 | [Bloc 2 — Collecte & Stockage (C8-C12), avec démonstration](15) | ~15' |
 | [Bloc 3 — Entrepôt OMEGA BI (C13-C17), avec temps d'échange dédié](24) | ~15-20' |
 | [Bloc 4 — Data Lake OMEGA LAKE (C18-C21)](32) | ~10' |
-| [M4 (Grafana) + synthèse transverse + conclusion](38) | ~10-15' |
-| [Questions & échanges avec le jury](50) | ~10' |
+| [M4 (Grafana) + synthèse transverse + conclusion](39) | ~10-15' |
+| [Questions & échanges avec le jury](51) | ~10' |
 
 <!--
 Minutage calibré sur le déroulé E1-E7 de la certification (Bloc1=E1+E2+E3,
@@ -414,10 +418,9 @@ layout: default
 
 # C9 — Requêtes SQL d'extraction
 
-<div class="grid grid-cols-[78%_22%] gap-4 items-center">
-<p class="text-sm"><code>docs/architecture/requetes_sql_extraction.md</code> — 5 requêtes documentées avec leurs résultats réels</p>
-<img src="/illustrations/order-status.svg" class="w-full" style="max-height: 70px;">
-</div>
+<img src="/illustrations/alarm-clock.svg" class="abs-tr mr-6 mt-2 h-28">
+
+<p class="text-sm" style="max-width: 70%;"><code>docs/architecture/requetes_sql_extraction.md</code> — 5 requêtes documentées avec leurs résultats réels</p>
 
 ```sql
 -- Expéditions en retard : alimente directement l'indicateur
@@ -799,6 +802,23 @@ donnée corrompue.
 </div>
 <img src="/illustrations/video-streaming.svg" style="max-height: 130px; width: auto; margin: 0 auto;">
 </div>
+
+---
+layout: default
+---
+
+# C19 — MinIO en conditions réelles
+
+<div class="flex items-center gap-2 mb-2">
+<img src="/logos/minio.svg" class="h-6">
+<span class="text-sm"><code>localhost:9001</code> — console web, bucket <code>omega-lake</code></span>
+</div>
+
+<div class="flex justify-center">
+<img src="/images/minio_console_buckets.png" class="rounded border border-gray-300" style="max-height: 400px; width: auto;">
+</div>
+
+<div class="mt-2 text-xs text-center opacity-60">4 zones visibles comme de vrais préfixes S3 : <code>raw/</code>, <code>staging/</code>, <code>curated/</code>, <code>curated_bi/</code> (export pseudonymisé, C21)</div>
 
 ---
 layout: default

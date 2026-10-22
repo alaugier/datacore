@@ -33,3 +33,10 @@ slides/dist/
 slides/.slidev/
 slides/*.pdf
 slides/*.pptx
+
+# Logo Simplon.co (slides/public/images/simplon_logo.png) -- même
+# traitement que les documents Simplon ci-dessus : extrait du PDF de
+# certification gardé en local uniquement, jamais versionné sur le
+# dépôt public. Utilisé localement pour la soutenance (slides.md le
+# référence), pas commité.
+slides/public/images/simplon_logo.png
