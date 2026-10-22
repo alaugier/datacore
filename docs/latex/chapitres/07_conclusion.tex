@@ -39,6 +39,17 @@ Consignées explicitement dans les comptes rendus de chaque jalon
 pour les besoins de ce rapport :
 
 \begin{itemize}
+  \item \textbf{Aucune interaction réelle avec un système tiers
+    externe} (transporteurs, clients, capteurs physiques) -- toutes
+    les sources externes du programme sont simulées par
+    \texttt{api-mock} (FluxPro/TransFlow, portail transporteur à
+    scraper, flux IoT), limite structurelle du pack pédagogique fourni
+    pour la certification, pas un choix technique du programme. Le
+    flux capteurs « temps réel » (chapitre~\ref{chap:bloc4} §C19)
+    génère des valeurs aléatoires simulées, pas de vraies mesures
+    physiques -- le mécanisme de streaming lui-même (consommateur
+    continu, fenêtrage par intervalle, test de coupure brutale) reste
+    bien réel, seule la donnée transportée est fictive.
   \item \textbf{Rapprochement \texttt{clients.nom}~$\leftrightarrow$~\texttt{historique\_expeditions.client}}
     jamais garanti par une contrainte formelle -- vérifié cohérent sur
     le jeu de données actuel, pas structurellement sûr
