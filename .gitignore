@@ -16,3 +16,8 @@ docs/latex/*.out
 docs/latex/*.toc
 docs/latex/chapitres/*.aux
 docs/latex/annexes/*.aux
+
+# Supports de formation Simplon (droits de redistribution non
+# confirmés) -- jamais versionnés, gardés en local uniquement.
+# (crochets échappés : [ ] sont des métacaractères gitignore)
+docs/reference/\[DE\] Notes sur la certification.pdf

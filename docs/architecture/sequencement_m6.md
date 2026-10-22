@@ -34,8 +34,10 @@ ces supports est précisée en §1.2.
 
 ### 1.2 Forme attendue par le jury
 
-`docs/reference/[DE] Notes sur la certification.pdf` (copié dans le
-dépôt le 22/10/2026) page 8 détaille un déroulé d'épreuve par bloc
+`[DE] Notes sur la certification.pdf` (support de formation Simplon,
+gardé en local uniquement -- droits de redistribution publique non
+confirmés, voir `.gitignore`, pas versionné dans le dépôt) page 8
+détaille un déroulé d'épreuve par bloc
 (E1-E7), chacune avec un temps de passage oral distinct : E1 (5'),
 E2 (20'), E3 (10') pour le Bloc 1 ; E4 (15') pour le Bloc 2 ; E5 (10'),
 E6 (5-10') pour le Bloc 3 ; E7 (10') pour le Bloc 4 ; plus 10' de
