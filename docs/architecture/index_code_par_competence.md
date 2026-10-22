@@ -14,10 +14,11 @@ dépôt) -- fonctionnent dans l'aperçu GitHub comme dans la plupart des
 concret de programmation -- script, classe, fonction/méthode, variable
 d'environnement, fichier de configuration, ou commande
 Python/Docker/shell. Les questions de jugement sans objet technique
-précis (performance, passage à l'échelle, "que feriez-vous
-différemment") n'ont pas leur place ici -- elles vivent dans
-[`synthese_technique_oral.md`](synthese_technique_oral.md) et seront
-enrichies avec l'issue #96 (anticipation Q&A jury, milestone M6).
+précis (performance, passage à l'échelle, choix d'architecture
+argumentés, écarts cahier des charges) n'ont pas leur place ici --
+elles vivent dans
+[`synthese_technique_oral.md` §3](synthese_technique_oral.md#3-anticipation-qa-jury--points-sensibles)
+(anticipation Q&A jury, issue #96).
 
 Les compétences C1, C4-C7 n'ont pas de code associé (livrables
 documentaires) — indiqué explicitement pour ne pas chercher un script
@@ -44,7 +45,7 @@ qui n'existe pas.
 **C8 — Automatiser l'extraction** : [`src/datacore/ingestion/`](../../src/datacore/ingestion/)
 - [`run_extraction.py`](../../src/datacore/ingestion/run_extraction.py) — orchestrateur, appelle les 5 connecteurs dans l'ordre.
 - [`fluxpro.py`](../../src/datacore/ingestion/fluxpro.py) / [`transflow.py`](../../src/datacore/ingestion/transflow.py) — requêtes SQL directes / appels API REST (`requests`).
-- [`portail_scraping.py`](../../src/datacore/ingestion/portail_scraping.py) — `scrape_colis_list()`/`scrape_colis_detail()` : scraping HTML (pas d'API côté portail transporteur), à montrer si la question porte spécifiquement sur le scraping.
+- [`portail_scraping.py`](../../src/datacore/ingestion/portail_scraping.py) — `scrape_colis_list()`/`scrape_colis_detail()` : scraping HTML (pas d'API côté portail transporteur), à montrer si la question porte spécifiquement sur le scraping. Le portail scrapé est lui-même simulé par `api-mock` (voir § dédié plus bas).
 - [`clients_files.py`](../../src/datacore/ingestion/clients_files.py) — `read_norddrive()`/`read_freshmarket()`/`read_mediotex()` : un lecteur par format hétérogène.
 - [`landing.py`](../../src/datacore/ingestion/landing.py) — écrit dans `data/interim/` (zone d'atterrissage, non versionnée).
 
@@ -92,7 +93,7 @@ qui n'existe pas.
 
 **C19 — Intégration infrastructure** : [`src/datacore/storage/lake/`](../../src/datacore/storage/lake/)
 - [`ingestion_batch.py`](../../src/datacore/storage/lake/ingestion_batch.py) — `ingerer_flux_batch()` : dépôt `boto3` des 4 flux IoT batch dans `raw/`, copie fidèle octet pour octet.
-- [`sse_consumer.py`](../../src/datacore/storage/lake/sse_consumer.py) — consommateur du flux temps réel, fenêtré par intervalle de 5 minutes ; testé par coupure brutale réelle (`kill -9`). Processus continu, pas un script à exécution unique — à préciser si on vous demande de le lancer en direct.
+- [`sse_consumer.py`](../../src/datacore/storage/lake/sse_consumer.py) — consommateur du flux temps réel, fenêtré par intervalle de 5 minutes ; testé par coupure brutale réelle (`kill -9`). Processus continu, pas un script à exécution unique — à préciser si on vous demande de le lancer en direct. Le flux consommé est généré aléatoirement par `api-mock` (voir § dédié plus bas), pas par de vrais capteurs.
 - [`transform.py`](../../src/datacore/storage/lake/transform.py) — jointure DuckDB `raw/`→`staging/`→`curated/`. **Déjà dans le rapport** (pourquoi `boto3` et pas DuckDB pour `raw/`, chapitre 4 §C19).
 
 **C20 — Catalogue de données** : [`src/datacore/storage/lake/catalogue.py`](../../src/datacore/storage/lake/catalogue.py)
@@ -178,6 +179,41 @@ JSON versionné), jamais configuré à la main dans l'interface :
 `lake_reader` au seul préfixe `curated_bi/` (C21, déjà dans le rapport
 pour le principe, ce fichier JSON est la politique réelle appliquée si
 la question demande à la voir).
+
+---
+
+## `api-mock` : simulateur des sources externes
+
+Un seul fichier, [`api-mock/app.py`](../../api-mock/app.py), simule
+**les trois sources externes** que le programme n'a jamais vraiment
+contactées (FluxPro/TransFlow, le portail transporteur, les capteurs
+IoT) -- à montrer directement si la question porte sur « comment vos
+flux `temps réel`/`scraping` sont-ils générés » ou « interagissez-vous
+avec de vrais systèmes externes » (réponse : non, voir
+[`synthese_technique_oral.md` §3](synthese_technique_oral.md#3-anticipation-qa-jury--points-sensibles)
+pour la réponse orale complète).
+
+- `stream_capteurs()` (ligne ~210) — génère le flux SSE
+  `/api/stream/capteurs` consommé par
+  [`sse_consumer.py`](../../src/datacore/storage/lake/sse_consumer.py) (C19) : une boucle
+  `while True` (processus réellement continu) qui tire une température
+  (`random.gauss(3.0, 1.0)`), une géolocalisation (`random.uniform`)
+  et un véhicule (`random.randint(1,15)`) aléatoires toutes les 2
+  secondes -- aucun vrai capteur physique.
+- `portail_index()` / `portail_colis()` (lignes ~252-270) — servent les
+  pages HTML scrapées par
+  [`scrape_colis_list()`/`scrape_colis_detail()`](../../src/datacore/ingestion/portail_scraping.py) (C8) : liste
+  d'un échantillon aléatoire de colis (`random.sample(LIVRAISONS, ...)`)
+  et fiche détail par `tracking_number`, générées depuis les fixtures
+  JSON du mock, jamais un vrai site transporteur.
+- `get_transporteurs()` / `get_tournees()` / `get_livraisons()`
+  (lignes ~125-186) — routes REST consommées par
+  [`transflow.py`](../../src/datacore/ingestion/transflow.py) (C8),
+  même principe : données fixtures, pas un vrai TMS.
+- `require_api_key()` (ligne ~65) — vérifie `X-API-Key: datacore-training-2026`
+  sur toutes les routes sauf `/api/health` -- à mentionner si la
+  question porte sur l'authentification côté source, symétrique à
+  l'authentification côté API Omega Data (C12, `auth.py`).
 
 ---
 
