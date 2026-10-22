@@ -131,16 +131,43 @@ chapitre 5 du rapport).
 **« Pourquoi pas d'orchestrateur (Airflow, Dagster) pour les
 pipelines ? »**
 Question posée explicitement au formateur plutôt que tranchée seul :
-pas exigé pour valider la compétence, mais constitue un plus. Trois
-raisons au choix de ne pas en intégrer un : le référentiel (C8/C15/
-C19) n'exige aucun outil d'orchestration précis ; le coût est concret,
-pas hypothétique (un orchestrateur ajoute au minimum trois services --
+pas exigé pour valider la compétence, mais constitue un plus. Nuance
+importante, à ne pas généraliser à tort : les pipelines batch
+(extraction FluxPro/fichiers clients/historique, scraping du portail
+transporteur, chargement staging, ETL entrepôt) sont bien invoqués à
+la demande sur des fichiers CSV statiques -- mais le consommateur du
+flux capteurs (`sse_consumer.py`) est, lui, un **processus réellement
+continu** (`while True`), cohérent avec le flux SSE
+`/api/stream/capteurs` d'`api-mock` qui génère un événement toutes les
+2 secondes indéfiniment. Trois raisons au choix de ne pas intégrer
+d'orchestrateur malgré tout : le référentiel (C8/C15/C19) n'exige
+aucun outil d'orchestration précis ; le coût est concret, pas
+hypothétique (un orchestrateur ajoute au minimum trois services --
 initialisation, ordonnanceur, interface web -- plus sa propre base de
 métadonnées, sur une infrastructure qui en compte déjà huit) ; et
-surtout aucun pipeline du programme ne s'exécute aujourd'hui selon une
-cadence récurrente réelle à orchestrer -- chacun est invoqué à la
-demande sur un jeu de données statique (chapitre 5 du rapport,
-« Pourquoi pas un orchestrateur »).
+surtout un orchestrateur sert à **planifier des exécutions
+périodiques/batch**, pas à superviser un processus déjà continu en
+lui-même -- le consommateur SSE n'a justement pas ce besoin
+(chapitre 5 du rapport, « Pourquoi pas un orchestrateur »).
+
+**« Le flux capteurs temps réel interagit-il avec de vrais capteurs ou
+transporteurs ? »**
+Non, et c'est une limite assumée du programme à dire clairement plutôt
+qu'à laisser deviner : **aucune interaction réelle avec un système
+tiers externe** n'existe dans ce projet. Le flux SSE
+(`api-mock/app.py::stream_capteurs()`) génère des valeurs aléatoires
+simulées (`random.gauss`/`random.uniform`), pas de vraies mesures de
+capteurs physiques ; le scraping du portail transporteur
+(`portail_scraping.py`) interroge `TRANSFLOW_API_URL`, qui pointe par
+défaut sur `api-mock` local, jamais un vrai site transporteur externe
+-- `TRANSFLOW_API_URL`/`API_KEY` seraient à reconfigurer vers un vrai
+système en conditions réelles, rien dans le code ne le suppose codé en
+dur. Les fichiers CSV (FluxPro, fichiers clients, historique) sont un
+instantané statique fourni pour le programme, pas une connexion à un
+système source vivant. Cette limite est structurelle au pack
+pédagogique fourni pour la certification, pas un choix technique du
+programme -- à assumer directement si la question se pose, plutôt que
+de laisser le jury la découvrir en posant la question suivante.
 
 **« Quels écarts avez-vous eus par rapport au cahier des charges ? »**
 Six écarts réels sur l'ensemble du programme, tous décidés avant
