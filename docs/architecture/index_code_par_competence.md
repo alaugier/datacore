@@ -14,10 +14,11 @@ dépôt) -- fonctionnent dans l'aperçu GitHub comme dans la plupart des
 concret de programmation -- script, classe, fonction/méthode, variable
 d'environnement, fichier de configuration, ou commande
 Python/Docker/shell. Les questions de jugement sans objet technique
-précis (performance, passage à l'échelle, "que feriez-vous
-différemment") n'ont pas leur place ici -- elles vivent dans
-[`synthese_technique_oral.md`](synthese_technique_oral.md) et seront
-enrichies avec l'issue #96 (anticipation Q&A jury, milestone M6).
+précis (performance, passage à l'échelle, choix d'architecture
+argumentés, écarts cahier des charges) n'ont pas leur place ici --
+elles vivent dans
+[`synthese_technique_oral.md` §3](synthese_technique_oral.md#3-anticipation-qa-jury--points-sensibles)
+(anticipation Q&A jury, issue #96).
 
 Les compétences C1, C4-C7 n'ont pas de code associé (livrables
 documentaires) — indiqué explicitement pour ne pas chercher un script
