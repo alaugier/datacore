@@ -131,6 +131,27 @@ même principe de sobriété que le choix, déjà justifié ailleurs
 (chapitre~\ref{chap:bloc2} §C9), de ne pas déployer d'outil « big
 data » séparé pour 25~000 lignes.
 
+\textbf{Granularité réelle du monitorage} : le schéma
+\texttt{monitoring} couvre le data lake (chapitre~\ref{chap:bloc4}),
+flux temps réel SSE inclus -- sa fraîcheur et sa volumétrie sont
+relevées comme n'importe quel autre flux IoT (\texttt{flux\_sse\_capteurs}
+dans le catalogue, chapitre~\ref{chap:bloc4} §C20), visibles dans le
+dashboard Grafana « OMEGA LAKE --- Monitoring ». Ce relevé reste un
+suivi de fraîcheur (dernière donnée reçue), pas une métrique de
+performance du flux en continu (pas de débit d'événements par
+seconde, pas de latence, pas de détection de déconnexion en direct --
+seul le test de coupure brutale \texttt{kill -9} du
+chapitre~\ref{chap:bloc4} §C19 vérifie la résilience, sans observer le
+flux en continu). Le scraping du portail transporteur
+(chapitre~\ref{chap:bloc2} §C8), lui, n'a \textbf{aucun} suivi
+persisté : seul un résumé imprimé en console au moment de
+l'exécution, rien d'interrogeable après coup -- le monitorage
+(\texttt{monitoring}, C20bis) a été construit spécifiquement pour
+répondre à l'exigence C20 du data lake (Bloc 4), le Bloc 2 n'a jamais
+eu d'équivalent. Écart assumé, identifié en relisant le code plutôt
+que découvert par le jury : à traiter si le temps le permet avant la
+soutenance, sans quoi cette réponse factuelle suffit.
+
 \section{Rejouer le remplissage des données et les pipelines}
 
 Une fois les services lancés (section précédente), les trois briques
