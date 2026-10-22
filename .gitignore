@@ -19,5 +19,9 @@ docs/latex/annexes/*.aux
 
 # Supports de formation Simplon (droits de redistribution non
 # confirmés) -- jamais versionnés, gardés en local uniquement.
+# Le référentiel RNCP (Referentiel_Activites_Competences_Evaluation_DE.pdf)
+# reste versionné : document public France Compétences (art. L6113-1
+# du Code de l'éducation, RNCP37638), pas un support Simplon restreint.
 # (crochets échappés : [ ] sont des métacaractères gitignore)
 docs/reference/\[DE\] Notes sur la certification.pdf
+docs/reference/Cahier_des_charges_DATA_CORE.docx
