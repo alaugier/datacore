@@ -130,12 +130,21 @@ layout: default
 4. **Zéro** traitement de données personnelles non répertorié (registre RGPD)
 5. Concevoir une **architecture de data lake** pour le flux IoT
 
-<div class="grid grid-cols-[1fr_auto_1fr_auto_1fr] gap-2 items-center mt-6 text-xs text-center">
-<div class="p-2 rounded border border-gray-400/30">5 objectifs SMART</div>
-<div class="opacity-50">→</div>
-<div class="p-2 rounded border border-gray-400/30">Score RICE par chantier</div>
-<div class="opacity-50">→</div>
-<div class="p-2 rounded border border-gray-400/30">4 blocs de compétences séquencés</div>
+<div class="grid grid-cols-[1fr_auto_1fr_auto_1fr] gap-3 items-center mt-6 text-sm text-center">
+<div class="p-3 rounded-lg bg-blue-500/10 border-2 border-blue-500/30">
+<img src="/icons/target.svg" class="h-7 mx-auto mb-1">
+5 objectifs SMART
+</div>
+<div class="text-xl opacity-40">→</div>
+<div class="p-3 rounded-lg bg-green-500/10 border-2 border-green-500/30">
+<img src="/icons/sort-ascending-2.svg" class="h-7 mx-auto mb-1">
+Score RICE par chantier
+</div>
+<div class="text-xl opacity-40">→</div>
+<div class="p-3 rounded-lg bg-orange-500/10 border-2 border-orange-500/30">
+<img src="/icons/stack-2.svg" class="h-7 mx-auto mb-1">
+4 blocs de compétences séquencés
+</div>
 </div>
 
 <div class="mt-6 text-xs opacity-60 border-t border-gray-400/20 pt-2">
@@ -418,9 +427,9 @@ layout: default
 
 # C9 — Requêtes SQL d'extraction
 
-<img src="/illustrations/alarm-clock.svg" class="abs-tr mr-6 mt-2 h-28">
+<img src="/illustrations/alarm-clock.svg" class="abs-tr mr-16 mt-2 h-28">
 
-<p class="text-sm" style="max-width: 70%;"><code>docs/architecture/requetes_sql_extraction.md</code> — 5 requêtes documentées avec leurs résultats réels</p>
+<p class="text-sm" style="max-width: 78%;"><code>docs/architecture/requetes_sql_extraction.md</code> — 5 requêtes documentées avec leurs résultats réels</p>
 
 ```sql
 -- Expéditions en retard : alimente directement l'indicateur
@@ -456,7 +465,7 @@ true_dups = {k: v for k, v in grain_counts.items() if v > 1}
 ```
 
 </div>
-<img src="/illustrations/spreadsheets.svg" class="w-full">
+<img src="/illustrations/spreadsheets.svg" style="max-height: 160px; width: auto; margin: 0 auto; display: block;">
 </div>
 
 <div class="grid grid-cols-2 gap-4 mt-4">
@@ -1107,6 +1116,8 @@ premier coup** :
 3. Tableau de bord ✅ — en **deux temps** (vues SQL/notebook → Grafana M4)
 4. Zéro traitement RGPD non répertorié ✅
 5. Architecture data lake pour le flux IoT ✅
+
+<img src="/illustrations/completed-steps.svg" class="mx-auto mt-6 h-32">
 
 ---
 layout: default
