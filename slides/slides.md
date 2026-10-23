@@ -276,7 +276,7 @@ layout: default
 
 <div class="grid grid-cols-[31%_69%] gap-4 items-center mt-4">
 <div>
-<p class="text-sm"><code>docs/architecture/feuille_de_route.md</code></p>
+<p style="font-size: 0.7rem; white-space: nowrap;"><code>docs/architecture/feuille_de_route.md</code></p>
 <ul class="text-sm mt-3 space-y-1">
 <li>4 phases ↔ 4 blocs de compétences</li>
 <li>Composition d'équipe</li>
@@ -284,7 +284,7 @@ layout: default
 <li>Gantt / PERT en <b>Mermaid</b> (texte versionné)</li>
 <li>Suivi : GitHub Projects</li>
 </ul>
-<img src="/illustrations/five-year-plan.svg" class="mt-4" style="max-height: 100px;">
+<img src="/illustrations/five-year-plan.svg" class="mt-4" style="max-height: 150px;">
 </div>
 <div>
 <img src="/images/feuille_de_route_gantt.png" class="w-full rounded">
@@ -311,34 +311,6 @@ l'ensemble du programme (M0 à M4) — <b>aucun dépassement</b>.
 </div>
 <img src="/illustrations/presentation.svg" class="w-full">
 </div>
-
----
-layout: default
----
-
-# Workflow Git
-
-<div class="flex items-center gap-2 text-sm opacity-80">
-<img src="/logos/github.svg" class="h-5 flex-shrink-0">
-<span><code>main</code> protégée · <code>dev</code> intégration continue · <code>feat-&lt;n&gt;-&lt;slug&gt;</code> par issue ·
-CI : <code>ruff</code> → <code>mypy</code> → <code>pytest</code> (176 tests) · GitHub Projects (6 statuts)</span>
-</div>
-
-<div class="mt-3">
-<div class="text-xs opacity-60">1. Développement, jusqu'à la CI</div>
-<img src="/images/supervision_projet_cycle_de_vie_1_developpement.png" class="w-full rounded">
-</div>
-
-<div class="mt-2">
-<div class="text-xs opacity-60">2. Revue et intégration, jusqu'à la release</div>
-<img src="/images/supervision_projet_cycle_de_vie_2_integration.png" class="w-full rounded">
-</div>
-
-<!--
-Le mécanisme d'automatisation "linked PR" a été essayé puis abandonné le
-25/08/2026 : trop rigide pour les PR de release qui ferment plusieurs
-issues à la fois.
--->
 
 ---
 layout: default
@@ -371,6 +343,34 @@ le suivi initial (issues #1-#8) ne couvrait que 4 des 7 compétences --
 gap identifié à la première rédaction du compte rendu M0, comblé par
 3 issues supplémentaires (C4, C6, C7). Réflexe resté constant sur tout
 le programme (cf. réexamen du périmètre C20, Bloc 4).
+-->
+
+---
+layout: default
+---
+
+# Workflow Git
+
+<div class="flex items-center gap-2 text-sm opacity-80">
+<img src="/logos/github.svg" class="h-5 flex-shrink-0">
+<span><code>main</code> protégée · <code>dev</code> intégration continue · <code>feat-&lt;n&gt;-&lt;slug&gt;</code> par issue ·
+CI : <code>ruff</code> → <code>mypy</code> → <code>pytest</code> (176 tests) · GitHub Projects (6 statuts)</span>
+</div>
+
+<div class="mt-3">
+<div class="text-xs opacity-60">1. Développement, jusqu'à la CI</div>
+<img src="/images/supervision_projet_cycle_de_vie_1_developpement.png" class="w-full rounded">
+</div>
+
+<div class="mt-2">
+<div class="text-xs opacity-60">2. Revue et intégration, jusqu'à la release</div>
+<img src="/images/supervision_projet_cycle_de_vie_2_integration.png" class="w-full rounded">
+</div>
+
+<!--
+Le mécanisme d'automatisation "linked PR" a été essayé puis abandonné le
+25/08/2026 : trop rigide pour les PR de release qui ferment plusieurs
+issues à la fois.
 -->
 
 ---
@@ -411,7 +411,7 @@ C8 → C10 → C9 → C11 → C12
 <code>docs/architecture/sequencement_bloc2.md</code> — C9/C10 indépendants, menés en parallèle
 </div>
 
-<img src="/illustrations/choice.svg" class="mx-auto mt-4 h-28">
+<img src="/illustrations/choice.svg" class="mx-auto mt-4 h-36">
 
 ---
 layout: default
@@ -501,7 +501,9 @@ layout: default
 <div>
 <p class="text-sm">Méthode MERISE, versionnée via Alembic</p>
 <ul class="text-sm mt-3 space-y-2">
-<li>2 violations de formes normales trouvées <b>empiriquement</b>, corrigées</li>
+<li>2 violations de formes normales trouvées <b>empiriquement</b>, corrigées :
+  <code>livraisons.statut</code> (3NF, dépendance transitive → vue SQL) et
+  <code>commandes_clients</code> (2NF, dépendance partielle → décomposée en-tête/lignes)</li>
 <li>Clé de rapprochement <code>tracking_number</code> (livraisons ↔ expéditions), <b>sans FK formelle</b> — systèmes sources distincts</li>
 </ul>
 </div>
@@ -629,6 +631,10 @@ layout: default
 <div class="grid grid-cols-[40%_60%] gap-6 items-center mt-4">
 <div>
 <p class="text-sm">Approche bottom-up Kimball : <b>2 datamarts, 3 faits, 6 dimensions conformées</b></p>
+<div class="flex flex-col gap-1 mt-2">
+<span class="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full bg-blue-500/10 text-blue-700" style="width:fit-content"><b>Exploitation</b> — Fait_Expedition, Fait_Stock</span>
+<span class="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full bg-orange-500/10" style="width:fit-content; color:#d9480f"><b>Commercial</b> — Fait_Commande</span>
+</div>
 <div class="mt-3 text-sm">
 <b>Pourquoi pas de <code>Fait_Livraison</code> séparée ?</b><br/>
 100 % des 1100 expéditions FluxPro ont exactement une livraison TransFlow
@@ -670,8 +676,9 @@ layout: default
 
 <div class="grid grid-cols-[55%_45%] gap-6 items-center mt-2">
 <div>
-<p class="text-sm">Pipeline ETL staging → entrepôt</p>
+<p class="text-sm">Pipeline ETL staging → entrepôt (<code>load_warehouse.py</code>)</p>
 <ul class="text-sm mt-2 space-y-2">
+<li>6 dimensions puis 3 faits, <b>une transaction unique</b> — rechargement complet à chaque exécution, sauf <code>Dim_Client</code> (historisée SCD2, jamais tronquée)</li>
 <li>Contrôles qualité réels : mise en <b>quarantaine</b> des lignes non rapprochées</li>
 <li>Cohérence vérifiée par <b>double calcul indépendant</b> : ETL (C15) et API (C12) partent de la <b>même base de staging</b> (C11) — deux chemins de calcul distincts, même résultat</li>
 </ul>
@@ -698,6 +705,16 @@ pg_dump -U "$PG_USER" -d "$OMEGA_BI_DB" \
 - Journalisation réelle (`gouvernance`), connexion dédiée (survit à un `ROLLBACK`)
 - Registre RGPD : audit automatisé répétable, aucune donnée personnelle trouvée
 
+<div class="flex items-center justify-center gap-2 mt-4 text-xs">
+<div class="flex flex-col items-center gap-1"><img src="/icons/calendar-time.svg" class="h-9"><span>cron<br/>02h/03h</span></div>
+<span class="opacity-30 text-lg">→</span>
+<div class="flex flex-col items-center gap-1"><img src="/icons/database-blue.svg" class="h-9"><span><code>pg_dump</code></span></div>
+<span class="opacity-30 text-lg">→</span>
+<div class="flex flex-col items-center gap-1"><img src="/icons/archive.svg" class="h-9"><span><code>backups/</code></span></div>
+<span class="opacity-30 text-lg">+</span>
+<div class="flex flex-col items-center gap-1"><img src="/icons/clipboard-list.svg" class="h-9"><span>journal_<br/>operations</span></div>
+</div>
+
 <div class="mt-3 p-3 rounded bg-blue-500/10 border border-blue-500/30 text-sm">
 Périmètre étendu après clôture initiale : vues SQL + notebook jugés
 insuffisants comme preuve de restitution → jalon transverse M4.
@@ -720,8 +737,19 @@ if current is not None:
 # ... puis INSERT d'une nouvelle ligne
 ```
 
-`Dim_Client` historisée en **SCD2** : un changement de `nom`/`secteur` ferme
+<div class="grid grid-cols-[55%_45%] gap-4 items-center mt-2">
+<div class="text-sm">
+<code>Dim_Client</code> historisée en <b>SCD2</b> : un changement de <code>nom</code>/<code>secteur</code> ferme
 la version courante et en ouvre une nouvelle — jamais d'écrasement.
+</div>
+<div class="flex items-center justify-center gap-2 text-xs">
+<span>Donnée source</span>
+<span class="opacity-30">→</span>
+<div class="flex flex-col items-center gap-1"><img src="/icons/git-branch.svg" class="h-8"><span>changement<br/>détecté</span></div>
+<span class="opacity-30">→</span>
+<span>ferme v42<br/>+ ouvre v87</span>
+</div>
+</div>
 
 <div class="mt-3 text-xs overflow-x-auto">
 
@@ -894,12 +922,12 @@ def pseudonyme(vehicule_id: str, cle: str | None = LAKE_PSEUDONYM_KEY) -> str:
 
 <div class="grid grid-cols-[1fr_auto_1fr_auto_1fr] gap-2 items-center mt-3 text-xs text-center">
 <div class="p-2 rounded border border-gray-400/30"><code>vehicule_id</code><br/>"VH-007"</div>
-<div class="opacity-50">+ clé secrète →</div>
+<div class="opacity-50"><img src="/icons/key.svg" class="h-6 mx-auto">+ clé secrète →</div>
 <div class="p-2 rounded border border-blue-500/40 bg-blue-500/5">HMAC-SHA256</div>
 <div class="opacity-50">→</div>
-<div class="p-2 rounded border border-green-500/40 bg-green-500/5"><code>curated_bi/</code><br/>"a3f9...e21c"</div>
+<div class="p-2 rounded border border-green-500/40 bg-green-500/5"><img src="/icons/eye-off.svg" class="h-5 mx-auto mb-1"><code>curated_bi/</code><br/>"a3f9...e21c"</div>
 </div>
-<div class="text-xs text-center opacity-60 mt-1"><code>curated/</code> (original) reste inaccessible au rôle <code>lake_reader</code>, qui ne voit que <code>curated_bi/</code> (pseudonymisé)</div>
+<div class="text-xs text-center opacity-60 mt-1"><img src="/icons/shield.svg" class="h-4 inline mr-1" style="vertical-align: -3px;"><code>curated/</code> (original) reste inaccessible au rôle <code>lake_reader</code>, qui ne voit que <code>curated_bi/</code> (pseudonymisé)</div>
 
 1. Risque identifié dès C18 (recoupement géoloc ↔ chauffeur)
 2. Première analyse incomplète — écartée, puis **réintroduite** après vérification approfondie
