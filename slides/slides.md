@@ -403,6 +403,8 @@ C8 → C10 → C9 → C11 → C12
 <code>docs/architecture/sequencement_bloc2.md</code> — C9/C10 indépendants, menés en parallèle
 </div>
 
+<img src="/illustrations/choice.svg" class="mx-auto mt-4 h-28">
+
 ---
 layout: default
 ---
@@ -597,10 +599,13 @@ C13 → C14 → C15 → C17 → C16
 </div>
 </div>
 
-<div class="mt-6 p-4 rounded bg-blue-500/10 border border-blue-500/30 text-sm">
+<div class="grid grid-cols-[62%_38%] gap-4 items-center mt-6">
+<div class="p-4 rounded bg-blue-500/10 border border-blue-500/30 text-sm">
 Inversion volontaire par rapport au Gantt initial : la purge RGPD (C16)
 ne peut porter que sur un schéma <b>déjà historisé</b> — il faut donc que
 C17 l'ait créé avant.
+</div>
+<img src="/illustrations/version-control.svg" class="w-full">
 </div>
 
 ---
