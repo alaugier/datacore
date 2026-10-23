@@ -551,6 +551,7 @@ hétérogènes · Historique volumineux
 - 5 connecteurs, 31 tests — citer le chiffre
 - Ne pas décrire chaque connecteur un par un, renvoyer au schéma affiché
 - Lancer la démo live ici si le script est prêt (issue #98), sinon l'annoncer pour plus tard
+- URLs utiles pour la démo : localhost:5050/portail-transporteur/colis (scraping, api-mock) et localhost:8000/docs (API Omega Data, FastAPI) — les deux sont listées sur la slide "Infrastructure"
 -->
 
 ---
@@ -559,16 +560,16 @@ layout: default
 
 # C9 — Requêtes SQL d'extraction
 
-<div class="flex items-center gap-3 mb-1">
-<div class="flex items-center gap-2 text-xs text-center flex-shrink-0">
-<div class="flex flex-col items-center gap-0.5"><img src="/icons/clock-blue.svg" class="h-8"><span>prévue</span></div>
+<div class="flex items-center gap-2 mb-1">
+<div class="flex items-center gap-1.5 text-xs text-center flex-shrink-0">
+<div class="flex flex-col items-center gap-0.5"><img src="/icons/clock-blue.svg" class="h-7"><span>prévue</span></div>
 <span class="opacity-40 text-sm">≠</span>
-<div class="flex flex-col items-center gap-0.5"><img src="/icons/clock-orange.svg" class="h-8"><span>réelle</span></div>
+<div class="flex flex-col items-center gap-0.5"><img src="/icons/clock-orange.svg" class="h-7"><span>réelle</span></div>
 </div>
 <p class="text-xs"><code>docs/architecture/requetes_sql_extraction.md</code> — 5 requêtes documentées avec leurs résultats réels</p>
 </div>
 
-<div style="font-size: 0.72em;">
+<div style="font-size: 0.66em;">
 
 ```sql
 -- Expéditions en retard : alimente l'indicateur « taux de service » (Direction des Opérations)
@@ -584,7 +585,7 @@ ORDER BY jours_retard DESC;
 
 </div>
 
-<div class="mt-1 text-xs leading-tight">
+<div class="text-xs leading-tight">
 ↳ produit (extrait réel) :
 
 | tracking_number | transporteur | client | date_livraison_prevue | date_livraison_reelle | jours_retard |
@@ -594,7 +595,7 @@ ORDER BY jours_retard DESC;
 
 </div>
 
-<div class="mt-1 p-1.5 rounded bg-blue-500/10 border border-blue-500/30 text-xs leading-tight">
+<div class="p-1 rounded bg-blue-500/10 border border-blue-500/30 text-xs leading-tight">
 Historique chargé dans la base de staging PostgreSQL existante, pas dans un outil
 « big data » séparé : au volume réel (25 000 lignes), disproportionné — choix de
 sobriété numérique (RGESN), pas de principe.
@@ -622,22 +623,23 @@ true_dups = {k: v for k, v in grain_counts.items() if v > 1}
 
 </div>
 <div class="flex flex-col items-center">
-<img src="/illustrations/spreadsheets.svg" style="max-height: 185px; width: auto;">
-<div class="flex flex-col items-center text-sm mt-1">
-<div class="p-1.5 rounded border-2 border-gray-400/40">Commande #123</div>
+<img src="/illustrations/spreadsheets.svg" style="max-height: 130px; width: auto;">
+<div class="text-xs mt-1 opacity-60 text-center" style="max-width: 230px;">2 lignes réelles, même <code style="font-size:0.85em;">ref_commande</code> — <code style="font-size:0.85em;">norddrive_commandes.csv</code></div>
+<div class="flex flex-col items-center text-xs mt-1.5">
+<div class="p-1.5 rounded border-2 border-gray-400/40">ND-000402</div>
 <div style="width:1px; height:8px; background:#adb5bd;"></div>
-<div class="flex items-start" style="width: 190px;">
+<div class="flex items-start" style="width: 230px;">
 <div style="flex:1; border-top:2px solid #adb5bd; border-right:2px solid #adb5bd; height:10px;"></div>
 <div style="flex:1; border-top:2px solid #adb5bd; border-left:2px solid #adb5bd; height:10px;"></div>
 </div>
-<div class="flex gap-4">
+<div class="flex gap-3">
 <div class="flex flex-col items-center">
-<div class="p-1.5 rounded border-2 border-green-500/40 bg-green-500/5">Produit A</div>
-<span class="opacity-60" style="font-size: 0.7rem;">couple distinct</span>
+<div class="p-1.5 rounded border-2 border-green-500/40 bg-green-500/5 text-center">SKU-10009<br/><span class="opacity-70" style="font-size:0.85em;">Rétroviseur</span></div>
+<span class="opacity-60" style="font-size: 0.65rem;">couple distinct</span>
 </div>
 <div class="flex flex-col items-center">
-<div class="p-1.5 rounded border-2 border-green-500/40 bg-green-500/5">Produit B</div>
-<span class="opacity-60" style="font-size: 0.7rem;">couple distinct</span>
+<div class="p-1.5 rounded border-2 border-green-500/40 bg-green-500/5 text-center">SKU-10003<br/><span class="opacity-70" style="font-size:0.85em;">Filtre à huile</span></div>
+<span class="opacity-60" style="font-size: 0.65rem;">couple distinct</span>
 </div>
 </div>
 </div>
@@ -1343,6 +1345,12 @@ layout: default
 <div style="width: 260px;">PostgreSQL (staging + entrepôt)</div>
 <div style="width: 60px;" class="opacity-70">5432</div>
 <code class="text-xs">psql ou client SQL</code>
+</div>
+<div class="flex items-center gap-3 p-2 rounded border-b border-gray-400/20">
+<div class="rounded-full flex items-center justify-center flex-shrink-0" style="width:28px; height:28px; background:#1c7ed6;"><img src="/icons/engine.svg" style="width:16px; height:16px;"></div>
+<div style="width: 260px;">api-mock (FluxPro / TransFlow / portail / capteurs)</div>
+<div style="width: 60px;" class="opacity-70">5050</div>
+<code class="text-xs">localhost:5050/portail-transporteur/colis</code>
 </div>
 <div class="flex items-center gap-3 p-2 rounded border-b border-gray-400/20">
 <img src="/logos/fastapi.svg" class="h-7" style="width:28px;">
