@@ -629,10 +629,14 @@ true_dups = {k: v for k, v in grain_counts.items() if v > 1}
 
 <div class="mt-5">
 <div class="text-xs opacity-60 text-center">Exemple réel — <code>norddrive_commandes.csv</code>, 2 lignes avec même <code>ref_commande</code></div>
-<div class="flex justify-center items-center gap-6 mt-2">
+<div class="flex items-stretch justify-center gap-0 mt-2">
+<div class="flex items-center">
 <div class="p-2 rounded border-2 border-gray-400/40 text-sm">ND-000402</div>
-<div class="flex flex-col gap-2 text-xs" style="position:relative;">
-<div style="position:absolute; left:-24px; top:8px; width:24px; height:34px; border-top:2px solid #adb5bd; border-bottom:2px solid #adb5bd; border-left:2px solid #adb5bd; border-radius: 8px 0 0 8px;"></div>
+</div>
+<svg width="28" style="flex-shrink:0; align-self:stretch;" viewBox="0 0 28 100" preserveAspectRatio="none">
+<path d="M0 50 L11 50 L11 16 L28 16 M11 50 L11 84 L28 84" fill="none" stroke="#adb5bd" stroke-width="2.5" />
+</svg>
+<div class="flex flex-col gap-3 text-xs justify-center">
 <div class="flex items-center gap-2">
 <div class="p-1.5 rounded border-2 border-green-500/40 bg-green-500/5">SKU-10009 · Rétroviseur</div>
 <span class="opacity-60">couple distinct</span>
