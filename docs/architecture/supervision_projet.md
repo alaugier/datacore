@@ -344,17 +344,27 @@ flowchart LR
     BRANCH -->|"ouverture"| PR1["Pull Request<br/>vers dev"]
     PR1 --> CI{"CI : ruff + mypy<br/>+ pytest (176 tests)"}
     CI -->|"échec"| BRANCH
+    style ISSUE fill:#e7f5ff,stroke:#1c7ed6,color:#1c1c1c
+    style BRANCH fill:#e7f5ff,stroke:#1c7ed6,color:#1c1c1c
+    style PR1 fill:#e7f5ff,stroke:#1c7ed6,color:#1c1c1c
+    style CI fill:#fff4e6,stroke:#e8590c,color:#1c1c1c
 ```
 
 Étape 2 — revue et intégration, jusqu'à la release :
 
 ```mermaid
 flowchart LR
-    CI2{"CI : succès"} --> REVIEW["Revue humaine"]
+    CI2{"CI : succès"} --> REVIEW["Revue"]
     REVIEW -->|"approuvée"| MERGE["Merge dans dev"]
     MERGE -->|"dernier issue<br/>du milestone"| RELEASE["PR de release<br/>dev vers main"]
     RELEASE --> MAINB["main (protégée)"]
     MERGE -.->|"sinon"| NEXT["Issue suivante"]
+    style CI2 fill:#fff4e6,stroke:#e8590c,color:#1c1c1c
+    style REVIEW fill:#e7f5ff,stroke:#1c7ed6,color:#1c1c1c
+    style MERGE fill:#e7f5ff,stroke:#1c7ed6,color:#1c1c1c
+    style RELEASE fill:#e7f5ff,stroke:#1c7ed6,color:#1c1c1c
+    style MAINB fill:#ebfbee,stroke:#2f9e44,color:#1c1c1c
+    style NEXT fill:#f1f3f5,stroke:#868e96,color:#1c1c1c
 ```
 
 Le statut Kanban du Project #3 (6 états : `Backlog` → `À faire

@@ -25,3 +25,18 @@ docs/latex/annexes/*.aux
 # (crochets échappés : [ ] sont des métacaractères gitignore)
 docs/reference/\[DE\] Notes sur la certification.pdf
 docs/reference/Cahier_des_charges_DATA_CORE.docx
+
+# Trame de présentation Slidev (M6) -- dépendances et exports générés,
+# pas les sources (slides.md, package.json versionnés).
+slides/node_modules/
+slides/dist/
+slides/.slidev/
+slides/*.pdf
+slides/*.pptx
+
+# Logo Simplon.co (slides/public/images/simplon_logo.png) -- même
+# traitement que les documents Simplon ci-dessus : extrait du PDF de
+# certification gardé en local uniquement, jamais versionné sur le
+# dépôt public. Utilisé localement pour la soutenance (slides.md le
+# référence), pas commité.
+slides/public/images/simplon_logo.png
