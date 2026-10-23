@@ -32,9 +32,10 @@ Alexandre Laugier — Certification Data Engineer (RNCP37638)
 </div>
 
 <!--
-Trame calibrée sur `docs/architecture/sequencement_m6.md` §1.2-2
-(minutage hypothèse de travail, à confirmer avec le formateur).
-Durée totale visée : ~90-100 minutes, 4 blocs + jalons transverses + Q&R.
+- Se présenter : nom, certification visée (Data Engineer, RNCP37638)
+- Annoncer le plan en une phrase : 4 blocs de compétences + jalon transverse M4
+- Durée visée ~90-100 min, sans s'excuser du temps
+- Ne pas lire le sous-titre à voix haute, juste enchaîner
 -->
 
 ---
@@ -54,9 +55,9 @@ layout: default
 | [Questions & échanges avec le jury](51) | ~10' |
 
 <!--
-Minutage calibré sur le déroulé E1-E7 de la certification (Bloc1=E1+E2+E3,
-Bloc2=E4, Bloc3=E5+E6, Bloc4=E7) -- pas un livrable écrit séparé par
-épreuve, décision actée le 22/10/2026 (sequencement_m6.md §1.2).
+- Annoncer le minutage par section une seule fois ici, pas à répéter ensuite
+- Préciser que ce minutage est calé sur le déroulé E1-E7 de la certification
+- Ne pas s'excuser si le minutage glisse en cours de route
 -->
 
 ---
@@ -109,9 +110,10 @@ Deux systèmes historiques, développés site par site, sans standardisation :
 </div>
 
 <!--
-Dispersion → erreurs/incidents récurrents, pas de vision consolidée pour
-la Direction des Opérations. Commanditaire : Éléonore RAKOTO (DOps),
-sponsor Pôle Data : Karim BELAÏD.
+- Présenter Omega Logistics en une phrase : 3PL, 3 sites, 3 clients aux besoins très différents
+- Nommer le commanditaire (Éléonore RAKOTO, Directrice des Opérations) et le sponsor (Karim BELAÏD, Pôle Data)
+- Le vrai problème métier : dispersion → erreurs récurrentes + pas de vision consolidée (pas juste "deux vieux systèmes")
+- FluxPro = WMS (entrepôts) / TransFlow = TMS (tournées) — ne pas les inverser à l'oral
 -->
 
 ---
@@ -151,9 +153,10 @@ Score RICE par chantier
 </div>
 
 <!--
-Les 5 objectifs sont atteints à la clôture (chapitre 7 du rapport) --
-mais pas tous du premier coup : l'objectif 3 a nécessité un détour
-(vues SQL/notebook insuffisantes → jalon M4 Grafana), à dire honnêtement.
+- Lire les 5 objectifs au fil du slide, sans les reformuler un par un
+- Dire dès maintenant que l'objectif 3 a nécessité un détour (vues SQL/notebook → Grafana M4) — anticiper plutôt que laisser découvrir
+- Sigles SMART/RICE en note de bas de page : les lire seulement si le jury le demande
+- Insister sur le schéma : c'est RICE qui a arbitré le séquencement des 4 blocs, pas un choix arbitraire
 -->
 
 ---
@@ -165,7 +168,10 @@ layout: section
 
 <img src="/illustrations/route-planning.svg" class="mx-auto mt-6 h-40">
 
-<!-- Clos le 25/08/2026 (M0). Calibré sur E1 (5') + E2 (20') + E3 (10'). -->
+<!--
+- Transition courte : "Premier bloc, le cadrage — 7 compétences, clos le 25/08"
+- Ne pas s'attarder sur cette slide, enchaîner vite sur C1
+-->
 
 ---
 layout: default
@@ -189,6 +195,12 @@ entrepôt, entrepôt avant data lake.
 </div>
 <img src="/illustrations/brainstorming.svg" class="w-full">
 </div>
+
+<!--
+- Citer les 3 types d'entretiens : commanditaire, sponsor, responsables d'entrepôt
+- Ordre réel de la méthode : RICE priorise, SMART formule les objectifs ensuite
+- Point clé à redire : c'est cette analyse RICE qui arbitre l'ordre des 4 blocs (collecte avant entrepôt avant lake)
+-->
 
 ---
 layout: image-right
@@ -215,6 +227,12 @@ pas depuis une description théorique :
 <div class="flex items-center gap-1 text-xs"><img src="/icons/camera.svg" class="h-5">caméra comptage</div>
 </div>
 
+<!--
+- Insister : sources explorées directement dans le code (data/raw/, api-mock/), pas depuis une description théorique
+- Citer les 7 sources si le temps le permet, sinon renvoyer au schéma affiché
+- Les 2 flux IoT anticipent le Bloc 4 — le dire explicitement, ça crée un fil avec la suite
+-->
+
 ---
 layout: default
 ---
@@ -240,6 +258,12 @@ futur data lake — fonctionnement local sans compte cloud, coût,
 reproductibilité pour un évaluateur tiers. Confirmée par la veille
 technique du même jour.</div>
 </div>
+
+<!--
+- La décision MinIO vs Microsoft Fabric est LE choix structurant de ce bloc — prendre le temps de la détailler
+- 3 raisons dans l'ordre : pas de compte cloud, coût, reproductibilité pour un évaluateur tiers
+- RGESN/RGAA : juste les citer ici, détaillés plus tard dans la synthèse transverse
+-->
 
 ---
 layout: default
@@ -268,6 +292,12 @@ layout: default
 <img src="/illustrations/search.svg" class="w-full">
 </div>
 
+<!--
+- 3 semaines de veille, 2 axes : technique et réglementaire
+- Donner l'exemple déjà affiché pour chaque axe (Airflow/Dagster/Prefect écartés ; CNIL géolocalisation) — pas besoin d'en improviser d'autres
+- Le point à marteler : chaque entrée reliée à une décision réelle, pas un exercice scolaire isolé
+-->
+
 ---
 layout: default
 ---
@@ -291,6 +321,12 @@ layout: default
 </div>
 </div>
 
+<!--
+- Montrer le Gantt du doigt, citer les 4 phases dans l'ordre
+- Budget 180 000 € — le dire ici une première fois, sera repris en synthèse transverse
+- GitHub Projects = outil de suivi réellement utilisé, pas juste mentionné sur le papier
+-->
+
 ---
 layout: default
 ---
@@ -312,6 +348,11 @@ l'ensemble du programme (M0 à M4) — <b>aucun dépassement</b>.
 <img src="/illustrations/presentation.svg" class="w-full">
 </div>
 
+<!--
+- Rituels d'équipe : point hebdomadaire + comité de suivi mensuel
+- Point fort à marteler : budget consommé intégralement, 0 dépassement sur tout le programme
+-->
+
 ---
 layout: default
 ---
@@ -329,6 +370,11 @@ layout: default
 <img src="/illustrations/conference-call.svg" class="w-full">
 </div>
 
+<!--
+- Plan de communication aux parties prenantes à chaque étape clé
+- RGAA appliqué aussi à la communication, pas seulement au code/aux documents techniques
+-->
+
 ---
 layout: fact
 ---
@@ -338,11 +384,10 @@ layout: fact
 Compétences couvertes par le suivi GitHub initial du Bloc 1
 
 <!--
-Écart constaté et traité AVANT clôture (pas découvert par le jury) :
-le suivi initial (issues #1-#8) ne couvrait que 4 des 7 compétences --
-gap identifié à la première rédaction du compte rendu M0, comblé par
-3 issues supplémentaires (C4, C6, C7). Réflexe resté constant sur tout
-le programme (cf. réexamen du périmètre C20, Bloc 4).
+- Annoncer le chiffre directement : 4 compétences sur 7 couvertes au départ
+- Expliquer : trouvé en rédigeant le compte-rendu M0, PAS découvert après coup par un tiers
+- Comblé par 3 issues supplémentaires (C4, C6, C7) avant de considérer le jalon clos
+- Message clé : ce réflexe de vérification est resté constant sur tout le programme (cf. C20, Bloc 4)
 -->
 
 ---
@@ -368,9 +413,10 @@ CI : <code>ruff</code> → <code>mypy</code> → <code>pytest</code> (176 tests)
 </div>
 
 <!--
-Le mécanisme d'automatisation "linked PR" a été essayé puis abandonné le
-25/08/2026 : trop rigide pour les PR de release qui ferment plusieurs
-issues à la fois.
+- Transition : "avant le Bloc 2, le processus qui a structuré tout le travail"
+- Dans l'ordre : main protégée / dev intégration continue / feat-<n> par issue
+- CI dans cet ordre précis : ruff → mypy → pytest (176 tests) — le dire si question technique
+- Si interrogé sur "linked PR" : essayé puis abandonné le 25/08, trop rigide pour les PR de release qui ferment plusieurs issues à la fois
 -->
 
 ---
@@ -382,7 +428,10 @@ layout: section
 
 <img src="/illustrations/delivery-truck.svg" class="mx-auto mt-6 h-40">
 
-<!-- Clos le 27/08/2026 (M1). Calibré sur E4 (15'). -->
+<!--
+- Transition rapide : "Bloc 2, collecte et stockage — 5 compétences, avec une démo prévue à C8"
+- Prévenir le jury qu'une démonstration live arrive bientôt
+-->
 
 ---
 layout: default
@@ -413,6 +462,12 @@ C8 → C10 → C9 → C11 → C12
 
 <img src="/illustrations/choice.svg" class="mx-auto mt-4 h-36">
 
+<!--
+- Poser le dilemme avant de donner la réponse : modéliser d'abord semble plus "propre" sur le papier
+- La vraie raison du choix : le taux de doublons réel n'était pas connu avant d'extraire concrètement
+- Préciser : C9/C10 sont indépendants, menés en parallèle — pas un ordre strictement imposé
+-->
+
 ---
 layout: default
 ---
@@ -430,6 +485,12 @@ hétérogènes · Historique volumineux
 </div>
 
 <div class="mt-2 text-sm opacity-70">→ Démo live à ce point (voir issue #98)</div>
+
+<!--
+- 5 connecteurs, 31 tests — citer le chiffre
+- Ne pas décrire chaque connecteur un par un, renvoyer au schéma affiché
+- Lancer la démo live ici si le script est prêt (issue #98), sinon l'annoncer pour plus tard
+-->
 
 ---
 layout: default
@@ -459,6 +520,12 @@ Historique chargé dans la base de staging PostgreSQL existante, pas dans
 un outil « big data » séparé : au volume réel (25 000 lignes), disproportionné —
 choix de sobriété numérique (RGESN), pas de principe.
 </div>
+
+<!--
+- Montrer la requête affichée : expéditions en retard = date réelle > date prévue
+- Relier explicitement à l'indicateur "taux de service" demandé par la Direction des Opérations
+- Rappeler le choix RGESN : staging existant plutôt qu'un outil big data pour 25 000 lignes
+-->
 
 ---
 layout: default
@@ -491,6 +558,12 @@ produits par commande)
 </div>
 </div>
 
+<!--
+- LE moment clé de la présentation : annoncer d'abord le chiffre trompeur (55-68 %) avant de révéler le vrai (13-17 %)
+- Expliquer la confusion : grain "commande" seul confond commandes multi-produits et vrais doublons
+- Citer deduplicate() comme l'implémentation réelle, pas juste un calcul théorique
+-->
+
 ---
 layout: default
 ---
@@ -511,6 +584,12 @@ layout: default
 <img src="/images/modelisation_merise_mcd.png" class="rounded" style="max-height: 420px; width: auto; max-width: 100%;">
 </div>
 </div>
+
+<!--
+- Méthode MERISE, versionnée via Alembic — pas modélisée "dans la tête", tracée
+- Citer les 2 violations trouvées et comment elles ont été corrigées (vue SQL / décomposition en-tête-lignes)
+- tracking_number : expliquer pourquoi pas de FK formelle (deux systèmes sources distincts, FluxPro et TransFlow)
+-->
 
 ---
 layout: default
@@ -537,6 +616,12 @@ Vérifié en conditions réelles.
 </div>
 </div>
 
+<!--
+- FastAPI choisi pour la génération automatique de la spécification OpenAPI
+- LE point clé : pas rejeté, silencieusement ramené à son périmètre — donner l'exemple du diagramme (FreshMarket → NordDrive)
+- Dire "vérifié en conditions réelles", pas juste "prévu en théorie"
+-->
+
 ---
 layout: default
 ---
@@ -548,6 +633,12 @@ layout: default
 </div>
 
 <div class="mt-2 text-xs text-center opacity-60"><code>localhost:8000/docs</code> — spécification OpenAPI générée automatiquement par FastAPI, testable directement dans le navigateur</div>
+
+<!--
+- Montrer l'URL à l'écran : localhost:8000/docs
+- Dire que c'est généré automatiquement par FastAPI, pas écrit/maintenu à la main
+- Si le temps le permet : ouvrir un endpoint en direct pour montrer l'auto-génération
+-->
 
 ---
 layout: default
@@ -580,6 +671,12 @@ l'entrepôt (Bloc 3).
 <img src="/illustrations/connection.svg" class="w-full">
 </div>
 
+<!--
+- Présenter comme une transition honnête vers le Bloc 3, pas une faiblesse cachée
+- Lire l'exemple concret affiché à voix haute : "NordDrive SARL" vs "NordDrive"
+- Dire explicitement : signalé AVANT d'être découvert par quelqu'un d'autre
+-->
+
 ---
 layout: section
 ---
@@ -589,7 +686,10 @@ layout: section
 
 <img src="/illustrations/database-tables.svg" class="mx-auto mt-6 h-40">
 
-<!-- Clos le 21/09/2026 (M2). Calibré sur E5 (10') + E6 (5-10', échange). -->
+<!--
+- Transition : "Bloc 3, l'entrepôt OMEGA BI — 5 compétences, avec un temps d'échange dédié après C17"
+- Prévenir le jury du temps d'échange à venir, pas une surprise
+-->
 
 ---
 layout: default
@@ -622,6 +722,11 @@ C17 l'ait créé avant.
 <img src="/illustrations/version-control.svg" class="w-full">
 </div>
 
+<!--
+- Expliquer l'inversion C16/C17 par rapport au Gantt initial
+- Raison simple : la purge RGPD (C16) a besoin du schéma déjà historisé, donc C17 doit passer avant
+-->
+
 ---
 layout: default
 ---
@@ -647,6 +752,12 @@ jointure fait-à-fait à chaque requête.
 </div>
 </div>
 
+<!--
+- Kimball bottom-up, par datamart — pas un modèle monolithique unique
+- Citer les 2 datamarts explicitement : Exploitation (expédition + stock) et Commercial (commande)
+- LE point à expliquer : pourquoi pas de Fait_Livraison séparée — cardinalité 1:1 vérifiée empiriquement sur 1100 expéditions
+-->
+
 ---
 layout: default
 ---
@@ -668,6 +779,11 @@ seconde migration.
 </div>
 </div>
 
+<!--
+- 5 schémas dans la même base Postgres que le staging — sobriété, pas un second conteneur
+- Anecdote utile si le jury demande une difficulté rencontrée : bug Alembic (include_schemas=True manquant), trouvé seulement à la 2e migration
+-->
+
 ---
 layout: default
 ---
@@ -685,6 +801,12 @@ layout: default
 </div>
 <img src="/illustrations/filter.svg" class="w-full">
 </div>
+
+<!--
+- 6 dimensions puis 3 faits, dans une transaction unique
+- Rechargement complet à CHAQUE exécution, sauf Dim_Client (SCD2, jamais tronquée) — lien direct avec C17 à venir
+- Double calcul indépendant ETL vs API : preuve de cohérence vérifiée, pas juste une affirmation
+-->
 
 ---
 layout: default
@@ -719,6 +841,12 @@ pg_dump -U "$PG_USER" -d "$OMEGA_BI_DB" \
 Périmètre étendu après clôture initiale : vues SQL + notebook jugés
 insuffisants comme preuve de restitution → jalon transverse M4.
 </div>
+
+<!--
+- Backup partiel quotidien (dim_client seule) / complet hebdomadaire (toute la base), déclenché par cron
+- Pourquoi le mode partiel suffit : 7 des 8 tables sont reconstructibles depuis le staging, seule Dim_Client (historisée) ne l'est pas
+- Journalisation sur une connexion séparée — survit à un ROLLBACK, bon point technique si la question se pose
+-->
 
 ---
 layout: default
@@ -761,6 +889,12 @@ la version courante et en ouvre une nouvelle — jamais d'écrasement.
 </div>
 <div class="text-xs opacity-60 mt-1">Changement de <code>nom</code> le 15/06 → ligne 42 close, ligne 87 ouverte ; les faits déjà chargés avant cette date référencent toujours <code>client_key=42</code></div>
 
+<!--
+- Résumer le code affiché en 3 mots : comparer, fermer, ouvrir — pas besoin de le lire ligne par ligne
+- Donner l'exemple du tableau à voix haute : NordDrive SARL (close 14/06) → NordDrive Group (ouverte 15/06)
+- Point clé : les faits déjà chargés gardent la clé historique — pas de réécriture silencieuse de l'historique analytique
+-->
+
 ---
 layout: center
 class: text-center
@@ -772,6 +906,12 @@ Questions du jury sur la modélisation / l'entrepôt
 
 <div class="opacity-70 mt-4">(calibré sur E6, échange questions-réponses — pas une présentation continue)</div>
 
+<!--
+- S'arrêter vraiment ici, ne pas enchaîner automatiquement sur la suite
+- Attendre les questions du jury avant de reprendre
+- Si silence : proposer un angle (ex. "voulez-vous revenir sur la modélisation ou sur SCD2 ?")
+-->
+
 ---
 layout: section
 ---
@@ -781,7 +921,10 @@ layout: section
 
 <img src="/illustrations/secure-server.svg" class="mx-auto mt-6 h-40">
 
-<!-- Clos le 23/09/2026 (M3). Calibré sur E7 (10'). -->
+<!--
+- Transition rapide : "Bloc 4, le data lake OMEGA LAKE — 4 compétences, le plus technique"
+- Annoncer que c'est le dernier bloc avant les jalons transverses
+-->
 
 ---
 layout: default
@@ -804,6 +947,12 @@ l'entrepôt.
 <img src="/images/architecture_omega_lake_trois_couches.png" class="w-full rounded">
 </div>
 
+<!--
+- Bien distinguer schema-on-write (staging/entrepôt) vs schema-on-read (lake)
+- Si question "vous copiez quand même les données ?" : oui, raw/ est une copie fidèle octet pour octet — le schema-on-read porte sur l'interprétation de la structure, pas sur la copie elle-même
+- Flux IoT jamais par le staging relationnel — flux d'ingestion séparé
+-->
+
 ---
 layout: default
 ---
@@ -819,6 +968,11 @@ layout: default
 <img src="/images/architecture_omega_lake_zones.png" class="rounded" style="max-height: 420px; width: auto; max-width: 100%;">
 </div>
 </div>
+
+<!--
+- Zones raw / staging / curated — bien les nommer dans l'ordre
+- Point clé : clés naturelles de jointure vérifiées dans les données réelles, jamais supposées à l'avance
+-->
 
 ---
 layout: default
@@ -857,6 +1011,12 @@ donnée corrompue.
 <img src="/illustrations/video-streaming.svg" style="max-height: 130px; width: auto; margin: 0 auto;">
 </div>
 
+<!--
+- 3 outils, 3 rôles différents — ne pas les confondre : MinIO = stockage, DuckDB = jointures, boto3 = copie fidèle
+- Argument complet "pourquoi pas pandas" : charge tout en mémoire avant de joindre + dépendance jamais utilisée ailleurs dans le projet
+- Anecdote concrète si "comment vérifié ?" : test kill -9 du consommateur SSE en cours de réception, puis redémarrage — aucune collision
+-->
+
 ---
 layout: default
 ---
@@ -873,6 +1033,11 @@ layout: default
 </div>
 
 <div class="mt-2 text-xs text-center opacity-60">4 zones visibles comme de vrais préfixes S3 : <code>raw/</code>, <code>staging/</code>, <code>curated/</code>, <code>curated_bi/</code> (export pseudonymisé, C21)</div>
+
+<!--
+- Montrer la vraie console en direct si le temps/la connexion le permet, sinon la capture suffit
+- 4 zones visibles comme de vrais préfixes S3 — pas une maquette, l'infrastructure réelle
+-->
 
 ---
 layout: default
@@ -908,6 +1073,12 @@ Exemple de sortie réelle (une entrée, flux SSE capteurs) :
 ```
 </div>
 
+<!--
+- Généré par introspection réelle, jamais maintenu à la main — même principe que l'audit RGPD de C16
+- Si besoin d'une preuve concrète : montrer l'exemple JSON affiché, c'est une vraie sortie du programme
+- Périmètre élargi à staging/curated, pas seulement raw/ — un catalogue réellement exploitable (schéma, volumétrie, fraîcheur)
+-->
+
 ---
 layout: default
 ---
@@ -935,6 +1106,14 @@ def pseudonyme(vehicule_id: str, cle: str | None = LAKE_PSEUDONYM_KEY) -> str:
 4. Repli codé en dur trouvé lors d'un **second contrôle** → garde-fou `verifier_cle_configuree()`
 5. Risque résiduel assumé (stabilité de la clé entre exécutions) — documenté, pas masqué
 
+<!--
+- C'est le récit le plus riche de la présentation — prendre le temps, ne pas le précipiter
+- Dérouler les 5 étapes dans l'ordre affiché, sans en sauter une
+- Bien insister sur l'étape 2 (première analyse incomplète, réintroduite après vérification) — montre la rigueur de la démarche, pas une erreur à minimiser
+- HMAC vs hash simple : expliquer pourquoi (15 véhicules seulement → recalculable par force brute sans clé)
+- Étape 4 (repli codé en dur trouvé) : bon exemple concret si le jury demande "une difficulté rencontrée"
+-->
+
 ---
 layout: section
 ---
@@ -943,6 +1122,11 @@ layout: section
 ## + synthèse transverse + conclusion — ~10-15'
 
 <img src="/illustrations/growth-analytics.svg" class="mx-auto mt-6 h-40">
+
+<!--
+- Transition : "jalon transverse M4, pas un bloc de compétences — ajouté en cours de programme"
+- Annoncer qu'on enchaîne aussi la synthèse transverse et la conclusion dans ce même temps
+-->
 
 ---
 layout: default
@@ -971,6 +1155,12 @@ référentiel à la lettre après la clôture de M2/M3.
 
 Grafana, auto-hébergé, ajouté <b>en complément</b> — seule forme satisfaisant
 littéralement les deux critères. Décidé avant Power BI (cloud) ou Databricks (workspace dédié).
+
+<!--
+- Ne pas laisser penser que le monitoring initial était un échec — c'est un écart de forme, pas de fond
+- Notebook = preuve exploratoire gardée telle quelle ; vues SQL = KPIs déjà corrects et interrogeables
+- Grafana = complément, pas un remplacement — décidé avant Power BI/Databricks pour rester 100 % local
+-->
 
 ---
 layout: default
@@ -1022,6 +1212,11 @@ sobriété numérique (RGESN) retenue dès C3. Mots de passe injectés via
 <code>--env-file .env</code>, jamais codés en dur.
 </div>
 
+<!--
+- Un seul docker-compose.yml, tout auto-hébergé — pas de service cloud payant
+- Mots de passe injectés via .env, jamais codés en dur — bon réflexe sécurité à mentionner si demandé
+-->
+
 ---
 layout: default
 ---
@@ -1041,6 +1236,11 @@ layout: default
 <img src="/images/gestion_operationnelle_omega_bi_dashboard_grafana.png" class="w-full rounded">
 </div>
 </div>
+
+<!--
+- Montrer le dashboard, citer les 3 chiffres affichés (taux de service, délai moyen, stock disponible)
+- bi_reader = rôle lecture seule, pas d'accès en écriture au dashboard
+-->
 
 ---
 layout: default
@@ -1078,6 +1278,11 @@ active en ~30s → e-mail reçu dans MailHog. Remise en service → alerte réso
 <img src="/images/mailhog_alerte_minio.png" class="rounded border border-gray-300" style="max-height: 105px; width: auto;">
 </div>
 
+<!--
+- Point technique important si demandé : verifier_sante_infrastructure() ne lève jamais d'exception — l'échec EST le résultat à enregistrer, pas un bug à cacher
+- Raconter le test réel dans l'ordre : coupure MinIO → relevé en échec → alerte Grafana active en ~30s → e-mail reçu dans MailHog → remise en service → alerte résolue
+-->
+
 ---
 layout: default
 ---
@@ -1108,6 +1313,12 @@ spécifiquement pour C20 (data lake, Bloc 4) — le Bloc 2 n'a jamais eu
 d'équivalent. Documenté au chapitre 6 du rapport, suivi par l'issue #104
 (backlog, à traiter si le temps le permet).
 </div>
+
+<!--
+- Assumer directement, ne pas attendre la question : SSE partiellement suivi, scraping pas du tout
+- Expliquer pourquoi : le monitorage a été construit spécifiquement pour C20 (Bloc 4), jamais étendu au Bloc 2
+- Mentionner l'issue #104 (backlog) — montre que c'est tracé et assumé, pas oublié
+-->
 
 ---
 layout: default
@@ -1147,6 +1358,11 @@ layout: default
 Jalons transverses (M4, M5, M6) : staffing interne uniquement, outils
 open source auto-hébergés — jamais de ligne budgétaire propre.
 </div>
+
+<!--
+- Lire le total : 180 000 €, aucun dépassement sur l'ensemble du programme
+- Préciser que M4/M5/M6 (jalons transverses) n'ont jamais eu de ligne budgétaire propre — staffing interne, outils open source
+-->
 
 ---
 layout: default
@@ -1189,6 +1405,11 @@ ajoutent proportionnellement plus de tests, cohérent avec une suite qui
 couvre systématiquement les cas limites.
 </div>
 
+<!--
+- 174 fonctions de test (176 cas pytest une fois les tests paramétrés comptés) — expliquer la nuance seulement si demandé
+- Croissance pas linéaire : blocs 2 et 3 ajoutent proportionnellement plus de tests, cohérent avec une couverture des cas limites
+-->
+
 ---
 layout: default
 ---
@@ -1219,6 +1440,12 @@ supplémentaire qui trouve un défaut dans l'étape précédente — jamais un
 audit générique ponctuel.
 </div>
 
+<!--
+- LE message à faire passer : contrôle qualité à chaque étape, pas un audit ponctuel en fin de programme
+- RGPD : renvoyer en une phrase au parcours pseudonymisation déjà vu en C21, ne pas tout redérouler
+- RGESN : citer 2-3 exemples déjà vus (pas de big data séparé, pas d'orchestrateur, outils auto-hébergés)
+-->
+
 ---
 layout: default
 ---
@@ -1235,6 +1462,11 @@ premier coup** :
 5. Architecture data lake pour le flux IoT ✅
 
 <img src="/illustrations/completed-steps.svg" class="mx-auto mt-6 h-32">
+
+<!--
+- Revenir sur les 5 objectifs, insister sur "pas tous du premier coup" — honnêteté assumée, pas une excuse
+- Objectif 3 (tableau de bord) = le seul avec un détour (vues SQL/notebook → Grafana M4) — le redire une dernière fois ici
+-->
 
 ---
 layout: default
@@ -1275,6 +1507,11 @@ Systèmes réels<br/><span class="opacity-70">ERP, TMS, portail, capteurs physiq
 </div>
 <div class="text-xs text-center opacity-60 mt-2">Même interface des deux côtés — reconfigurer <code>*_API_URL</code>/<code>API_KEY</code> suffirait, rien n'est codé en dur</div>
 
+<!--
+- Ne pas minimiser : lire les limites clairement, avec un ton assumé plutôt que gêné
+- Le schéma câblé/pas câblé résume tout : même interface des deux côtés, question de configuration, pas de code à réécrire
+-->
+
 ---
 layout: default
 ---
@@ -1293,10 +1530,9 @@ layout: default
 <img src="/illustrations/team-collaboration.svg" class="mx-auto mt-6 h-40">
 
 <!--
-Ne pas écrire "assistance IA" sur la slide -- si la question est posée à
-l'oral, le dire directement : chaque décision structurante a été arbitrée
-et validée par le Data Engineer, jamais déléguée. Historique Git public
-disponible. Mieux à l'oral qu'à l'écrit (décision du 22/10/2026).
+- 3 apprentissages, dans l'ordre affiché : décider avant de coder, vérifier empiriquement, contrôle qualité à plusieurs niveaux
+- Ne PAS écrire "assistance IA" sur la slide (décision du 22/10/2026)
+- Si la question de l'IA est posée par le jury, le dire oralement ici : chaque décision structurante a été arbitrée et validée par le Data Engineer, jamais déléguée — historique Git public disponible si besoin de preuve
 -->
 
 ---
@@ -1307,6 +1543,11 @@ class: text-center
 # Questions & échanges avec le jury
 
 <div class="opacity-70 mt-4">~10' — ouvert à tous les blocs</div>
+
+<!--
+- Rester silencieux, laisser le jury prendre la parole en premier
+- Se relire mentalement synthese_technique_oral.md avant la soutenance, pas pendant
+-->
 
 ---
 layout: end
@@ -1319,3 +1560,9 @@ layout: end
 <div class="opacity-70">
 Dépôt public : github.com/alaugier/datacore
 </div>
+
+<!--
+- Remercier le jury pour son temps et son attention
+- Rappeler que le dépôt est public, consultable après la soutenance
+- Rester disponible pour des questions complémentaires même après la clôture officielle
+-->
