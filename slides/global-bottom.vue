@@ -8,10 +8,10 @@ const { currentPage, total } = useNav()
 // la numérotation réelle via `node list_slides.mjs` sur le serveur de
 // dev avant de les modifier).
 const BLOCKS = [
-  { from: 5, to: 14, icon: '/icons/badge-bloc1.svg', label: 'Bloc 1 — Cadrage' },
-  { from: 15, to: 23, icon: '/icons/badge-bloc2.svg', label: 'Bloc 2 — Collecte & Stockage' },
-  { from: 24, to: 31, icon: '/icons/badge-bloc3.svg', label: 'Bloc 3 — Entrepôt OMEGA BI' },
-  { from: 32, to: 38, icon: '/icons/badge-bloc4.svg', label: 'Bloc 4 — Data Lake OMEGA LAKE' },
+  { from: 6, to: 15, icon: '/icons/badge-bloc1.svg', label: 'Bloc 1 — Cadrage' },
+  { from: 16, to: 24, icon: '/icons/badge-bloc2.svg', label: 'Bloc 2 — Collecte & Stockage' },
+  { from: 25, to: 33, icon: '/icons/badge-bloc3.svg', label: 'Bloc 3 — Entrepôt OMEGA BI' },
+  { from: 34, to: 40, icon: '/icons/badge-bloc4.svg', label: 'Bloc 4 — Data Lake OMEGA LAKE' },
 ]
 
 const currentBlock = computed(() =>
