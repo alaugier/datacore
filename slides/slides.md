@@ -221,13 +221,19 @@ layout: default
 
 # C3 — Concevoir un cadre technique d'exploitation
 
-`docs/architecture/architecture_cible.md`
+<div class="grid grid-cols-[62%_38%] gap-4 items-center">
+<div>
+<p class="text-sm"><code>docs/architecture/architecture_cible.md</code></p>
+<ul class="text-sm mt-2 space-y-1">
+<li>Cible AS IS / TO BE, matrice des flux</li>
+<li>Registre RGPD préliminaire par brique technique</li>
+<li>Stratégie RGESN (éco-conception) et RGAA (accessibilité)</li>
+</ul>
+</div>
+<img src="/illustrations/building-blocks.svg" class="w-full">
+</div>
 
-- Cible AS IS / TO BE, matrice des flux
-- Registre RGPD préliminaire par brique technique
-- Stratégie RGESN (éco-conception) et RGAA (accessibilité)
-
-<div class="mt-8 p-4 rounded bg-blue-500/10 border border-blue-500/30 flex items-center gap-4">
+<div class="mt-6 p-4 rounded bg-blue-500/10 border border-blue-500/30 flex items-center gap-4">
 <img src="/logos/minio.svg" class="h-10 flex-shrink-0">
 <div><b>Décision structurante :</b> MinIO plutôt que Microsoft Fabric pour le
 futur data lake — fonctionnement local sans compte cloud, coût,
@@ -257,7 +263,10 @@ layout: default
 </div>
 </div>
 
-<div class="mt-4 text-sm opacity-70">Chaque entrée reliée à une décision réelle du programme — pas un exercice isolé.</div>
+<div class="grid grid-cols-[72%_28%] gap-4 items-center mt-4">
+<div class="text-sm opacity-70">Chaque entrée reliée à une décision réelle du programme — pas un exercice isolé.</div>
+<img src="/illustrations/search.svg" class="w-full">
+</div>
 
 ---
 layout: default
@@ -275,6 +284,7 @@ layout: default
 <li>Gantt / PERT en <b>Mermaid</b> (texte versionné)</li>
 <li>Suivi : GitHub Projects</li>
 </ul>
+<img src="/illustrations/five-year-plan.svg" class="mt-4" style="max-height: 110px;">
 </div>
 <div>
 <img src="/images/feuille_de_route_gantt.png" class="w-full rounded">
@@ -518,7 +528,7 @@ Un référent client externe n'est pas <i>rejeté</i> s'il demande un autre
 client — il est <i>silencieusement ramené</i> à son propre périmètre.
 Vérifié en conditions réelles.
 </div>
-<img src="/illustrations/secure-login.svg" class="mt-4 mx-auto" style="max-height: 130px;">
+<img src="/illustrations/question-answered.svg" class="mt-4 mx-auto" style="max-height: 130px;">
 </div>
 <div>
 <img src="/images/diagrammes_techniques_api_sequence_autorisation.png" class="w-full rounded">
@@ -1028,10 +1038,21 @@ layout: default
 
 # Limite assumée : granularité réelle du monitorage
 
-| Flux | Suivi |
-|---|---|
-| **SSE capteurs** (`flux_sse_capteurs`) | Fraîcheur/volumétrie oui — débit, latence, déconnexion **non** |
-| **Scraping portail transporteur** | **Aucun** suivi persisté — `print()` console uniquement |
+<div class="flex flex-col gap-3 mt-4">
+<div class="flex items-center gap-4 p-3 rounded border border-gray-400/30">
+<div class="text-sm font-bold" style="width: 220px;">SSE capteurs<br/><code class="text-xs font-normal">flux_sse_capteurs</code></div>
+<div class="flex gap-2 flex-wrap">
+<span class="inline-flex items-center gap-1 text-sm px-2 py-1 rounded-full bg-green-500/15 text-green-700"><b>✓</b> Fraîcheur/volumétrie</span>
+<span class="inline-flex items-center gap-1 text-sm px-2 py-1 rounded-full bg-red-500/10" style="color:#c92a2a"><b>✕</b> Débit / latence / déconnexion</span>
+</div>
+</div>
+<div class="flex items-center gap-4 p-3 rounded border border-gray-400/30">
+<div class="text-sm font-bold" style="width: 220px;">Scraping portail transporteur</div>
+<div class="flex gap-2 flex-wrap">
+<span class="inline-flex items-center gap-1 text-sm px-2 py-1 rounded-full bg-red-500/10" style="color:#c92a2a"><b>✕</b> Aucun suivi persisté — <code class="text-xs">print()</code> console uniquement</span>
+</div>
+</div>
+</div>
 
 <div class="mt-6 text-sm opacity-70">
 Le monitorage (<code>monitoring</code>, C20bis) a été construit
@@ -1046,13 +1067,33 @@ layout: default
 
 # Synthèse transverse — Budget cumulé
 
-| Phase | Montant | Statut |
-|---|---|---|
-| Phase 1 — Cadrage (M0) | 25 000 € | Consommé |
-| Phase 2 — Collecte & Stockage (M1) | 45 000 € | Consommé |
-| Phase 3 — Entrepôt OMEGA BI (M2) | 55 000 € | Consommé |
-| Phase 4 — Data Lake OMEGA LAKE (M3) | 55 000 € | Consommé |
-| **Total** | **180 000 €** | **Aucun dépassement** |
+<div class="flex flex-col gap-2 mt-6 text-sm">
+<div class="flex items-center gap-3">
+<div style="width: 260px;">Phase 1 — Cadrage (M0)</div>
+<div class="flex-1 bg-gray-400/10 rounded-full h-6 relative"><div class="h-6 rounded-full flex items-center justify-end pr-2 text-white text-xs font-bold" style="width:45%; background:#1c7ed6;">25 000 €</div></div>
+<span class="inline-flex items-center gap-1 text-xs text-green-700" style="width:110px;"><b>✓</b> Consommé</span>
+</div>
+<div class="flex items-center gap-3">
+<div style="width: 260px;">Phase 2 — Collecte & Stockage (M1)</div>
+<div class="flex-1 bg-gray-400/10 rounded-full h-6 relative"><div class="h-6 rounded-full flex items-center justify-end pr-2 text-white text-xs font-bold" style="width:82%; background:#1c7ed6;">45 000 €</div></div>
+<span class="inline-flex items-center gap-1 text-xs text-green-700" style="width:110px;"><b>✓</b> Consommé</span>
+</div>
+<div class="flex items-center gap-3">
+<div style="width: 260px;">Phase 3 — Entrepôt OMEGA BI (M2)</div>
+<div class="flex-1 bg-gray-400/10 rounded-full h-6 relative"><div class="h-6 rounded-full flex items-center justify-end pr-2 text-white text-xs font-bold" style="width:100%; background:#1c7ed6;">55 000 €</div></div>
+<span class="inline-flex items-center gap-1 text-xs text-green-700" style="width:110px;"><b>✓</b> Consommé</span>
+</div>
+<div class="flex items-center gap-3">
+<div style="width: 260px;">Phase 4 — Data Lake OMEGA LAKE (M3)</div>
+<div class="flex-1 bg-gray-400/10 rounded-full h-6 relative"><div class="h-6 rounded-full flex items-center justify-end pr-2 text-white text-xs font-bold" style="width:100%; background:#1c7ed6;">55 000 €</div></div>
+<span class="inline-flex items-center gap-1 text-xs text-green-700" style="width:110px;"><b>✓</b> Consommé</span>
+</div>
+<div class="flex items-center gap-3 mt-2 pt-2 border-t-2 border-gray-400/30 font-bold">
+<div style="width: 260px;">Total</div>
+<div class="flex-1 text-lg">180 000 €</div>
+<span class="inline-flex items-center gap-1 text-xs text-green-700" style="width:110px;">Aucun dépassement</span>
+</div>
+</div>
 
 <div class="mt-4 text-sm opacity-70">
 Jalons transverses (M4, M5, M6) : staffing interne uniquement, outils
@@ -1065,13 +1106,34 @@ layout: default
 
 # Synthèse transverse — Qualité : évolution des tests
 
-| Jalon | Fonctions de test | Évolution |
-|---|---|---|
-| M0 — Cadrage & Setup | 13 | — |
-| M1 — Collecte & Stockage | 67 | ×5,2 |
-| M2 — Entrepôt OMEGA BI | 96 | +43 % |
-| M3 — Data Lake OMEGA LAKE | 143 | +49 % |
-| M4 — Restitution BI | 174 (176 cas pytest) | +22 % |
+<div class="flex flex-col gap-2 mt-6 text-sm">
+<div class="flex items-center gap-3">
+<div style="width: 190px;">M0 — Cadrage & Setup</div>
+<div class="flex-1 bg-gray-400/10 rounded-full h-6"><div class="h-6 rounded-full flex items-center justify-end pr-2 text-white text-xs font-bold" style="width:7%; background:#0ca678;">13</div></div>
+<span class="text-xs opacity-60" style="width:70px;">—</span>
+</div>
+<div class="flex items-center gap-3">
+<div style="width: 190px;">M1 — Collecte & Stockage</div>
+<div class="flex-1 bg-gray-400/10 rounded-full h-6"><div class="h-6 rounded-full flex items-center justify-end pr-2 text-white text-xs font-bold" style="width:38%; background:#0ca678;">67</div></div>
+<span class="text-xs text-green-700" style="width:70px;">▲ ×5,2</span>
+</div>
+<div class="flex items-center gap-3">
+<div style="width: 190px;">M2 — Entrepôt OMEGA BI</div>
+<div class="flex-1 bg-gray-400/10 rounded-full h-6"><div class="h-6 rounded-full flex items-center justify-end pr-2 text-white text-xs font-bold" style="width:55%; background:#0ca678;">96</div></div>
+<span class="text-xs text-green-700" style="width:70px;">▲ +43 %</span>
+</div>
+<div class="flex items-center gap-3">
+<div style="width: 190px;">M3 — Data Lake OMEGA LAKE</div>
+<div class="flex-1 bg-gray-400/10 rounded-full h-6"><div class="h-6 rounded-full flex items-center justify-end pr-2 text-white text-xs font-bold" style="width:82%; background:#0ca678;">143</div></div>
+<span class="text-xs text-green-700" style="width:70px;">▲ +49 %</span>
+</div>
+<div class="flex items-center gap-3">
+<div style="width: 190px;">M4 — Restitution BI</div>
+<div class="flex-1 bg-gray-400/10 rounded-full h-6"><div class="h-6 rounded-full flex items-center justify-end pr-2 text-white text-xs font-bold" style="width:100%; background:#0ca678;">174</div></div>
+<span class="text-xs text-green-700" style="width:70px;">▲ +22 %</span>
+</div>
+</div>
+<div class="text-xs opacity-60 mt-1">174 fonctions de test (176 cas <code>pytest</code>, voir chapitre 1 du rapport)</div>
 
 <div class="mt-4 text-sm opacity-70">
 Croissance non linéaire avec le volume de code : les blocs 2 et 3
@@ -1132,13 +1194,38 @@ layout: default
 
 # Limites connues
 
-- **Aucune interaction réelle avec un système tiers externe** — toutes
-  les sources sont simulées par `api-mock` (limite structurelle du pack pédagogique)
-- Rapprochement `clients.nom` ↔ `historique_expeditions.client` non garanti par contrainte formelle
-- Aucun ordonnanceur actif (sauvegardes, purge RGPD) — scripts documentés, exécution manuelle/cron
-- Stabilité de la clé de pseudonymisation entre exécutions non surveillée
-- Prestataire SupervIT jamais mobilisé — écart budgétaire/organisationnel assumé
-- Observabilité partielle par choix (pas de Loki/ELK, pas de tracing distribué)
+<div class="text-sm" style="columns: 2; column-gap: 24px;">
+<ul class="space-y-1">
+<li><b>Aucune interaction réelle avec un système tiers externe</b> — toutes les sources sont simulées par <code>api-mock</code></li>
+<li>Rapprochement <code>clients.nom</code> ↔ <code>historique_expeditions.client</code> non garanti par contrainte formelle</li>
+<li>Aucun ordonnanceur actif (sauvegardes, purge RGPD) — exécution manuelle/cron</li>
+<li>Stabilité de la clé de pseudonymisation entre exécutions non surveillée</li>
+<li>Prestataire SupervIT jamais mobilisé — écart assumé</li>
+<li>Observabilité partielle par choix (pas de Loki/ELK, pas de tracing)</li>
+</ul>
+</div>
+
+<div class="flex items-center gap-3 mt-6">
+<div class="p-2 rounded border-2 border-green-500/50 text-xs text-center" style="width:200px">
+<code>api-mock</code><br/><span class="opacity-70">FluxPro, TransFlow, portail, capteurs</span>
+</div>
+<div style="flex:1; border-top: 3px solid #2f9e44; position:relative;">
+<span style="position:absolute; right:-10px; top:-7px; width:0; height:0; border-top:7px solid transparent; border-bottom:7px solid transparent; border-left:10px solid #2f9e44;"></span>
+</div>
+<div class="p-2 rounded border-2 border-green-500/50 bg-green-500/5 text-xs text-center font-bold" style="width:140px">Pipeline<br/>DATA CORE</div>
+<span class="text-xs text-green-700 ml-1">câblé, testé</span>
+</div>
+<div class="flex items-center gap-3 mt-2">
+<div class="p-2 rounded border-2 border-gray-400/40 text-xs text-center opacity-60" style="width:200px">
+Systèmes réels<br/><span class="opacity-70">ERP, TMS, portail, capteurs physiques</span>
+</div>
+<div style="flex:1; border-top: 3px dashed #adb5bd; position:relative;">
+<span style="position:absolute; right:-10px; top:-7px; width:0; height:0; border-top:7px solid transparent; border-bottom:7px solid transparent; border-left:10px solid #adb5bd;"></span>
+</div>
+<div class="p-2 rounded border-2 border-gray-400/40 text-xs text-center opacity-60" style="width:140px">Pipeline<br/>DATA CORE</div>
+<span class="text-xs opacity-50 ml-1">jamais connecté</span>
+</div>
+<div class="text-xs text-center opacity-60 mt-2">Même interface des deux côtés — reconfigurer <code>*_API_URL</code>/<code>API_KEY</code> suffirait, rien n'est codé en dur</div>
 
 ---
 layout: default
