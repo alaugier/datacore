@@ -230,10 +230,10 @@ layout: default
 <li>Stratégie RGESN (éco-conception) et RGAA (accessibilité)</li>
 </ul>
 </div>
-<img src="/illustrations/building-blocks.svg" class="w-full">
+<img src="/illustrations/building-blocks.svg" style="max-height: 200px; width: auto; margin: 0 auto; display: block;">
 </div>
 
-<div class="mt-6 p-4 rounded bg-blue-500/10 border border-blue-500/30 flex items-center gap-4">
+<div class="mt-5 p-3 rounded bg-blue-500/10 border border-blue-500/30 flex items-center gap-4">
 <img src="/logos/minio.svg" class="h-10 flex-shrink-0">
 <div><b>Décision structurante :</b> MinIO plutôt que Microsoft Fabric pour le
 futur data lake — fonctionnement local sans compte cloud, coût,
@@ -274,7 +274,7 @@ layout: default
 
 # C5 — Planifier la réalisation
 
-<div class="grid grid-cols-[36%_64%] gap-6 items-center mt-4">
+<div class="grid grid-cols-[31%_69%] gap-4 items-center mt-4">
 <div>
 <p class="text-sm"><code>docs/architecture/feuille_de_route.md</code></p>
 <ul class="text-sm mt-3 space-y-1">
@@ -284,7 +284,7 @@ layout: default
 <li>Gantt / PERT en <b>Mermaid</b> (texte versionné)</li>
 <li>Suivi : GitHub Projects</li>
 </ul>
-<img src="/illustrations/five-year-plan.svg" class="mt-4" style="max-height: 110px;">
+<img src="/illustrations/five-year-plan.svg" class="mt-4" style="max-height: 100px;">
 </div>
 <div>
 <img src="/images/feuille_de_route_gantt.png" class="w-full rounded">
@@ -955,19 +955,37 @@ layout: default
 <code class="text-sm">docker compose -f infra/docker/docker-compose.yml --env-file .env up -d</code>
 </div>
 
-| Service | Port | Accès |
-|---|---|---|
-| PostgreSQL (staging + entrepôt) | 5432 | `psql` ou client SQL |
-| API Omega Data (FastAPI) | 8000 | `localhost:8000/docs` |
-| MinIO (console web) | 9001 | `localhost:9001` |
-| Grafana | 3000 | `localhost:3000` |
-| MailHog (boîte de réception des alertes) | 8025 | `localhost:8025` |
-
-<div class="flex items-center gap-6 mt-4">
-<img src="/logos/postgresql.svg" class="h-8">
-<img src="/logos/fastapi.svg" class="h-8">
-<img src="/logos/minio.svg" class="h-8">
-<img src="/logos/grafana.svg" class="h-8">
+<div class="flex flex-col gap-1 mt-2 text-sm">
+<div class="flex items-center gap-3 p-2 rounded border-b border-gray-400/20">
+<img src="/logos/postgresql.svg" class="h-7" style="width:28px;">
+<div style="width: 260px;">PostgreSQL (staging + entrepôt)</div>
+<div style="width: 60px;" class="opacity-70">5432</div>
+<code class="text-xs">psql ou client SQL</code>
+</div>
+<div class="flex items-center gap-3 p-2 rounded border-b border-gray-400/20">
+<img src="/logos/fastapi.svg" class="h-7" style="width:28px;">
+<div style="width: 260px;">API Omega Data (FastAPI)</div>
+<div style="width: 60px;" class="opacity-70">8000</div>
+<code class="text-xs">localhost:8000/docs</code>
+</div>
+<div class="flex items-center gap-3 p-2 rounded border-b border-gray-400/20">
+<img src="/logos/minio.svg" class="h-7" style="width:28px;">
+<div style="width: 260px;">MinIO (console web)</div>
+<div style="width: 60px;" class="opacity-70">9001</div>
+<code class="text-xs">localhost:9001</code>
+</div>
+<div class="flex items-center gap-3 p-2 rounded border-b border-gray-400/20">
+<img src="/logos/grafana.svg" class="h-7" style="width:28px;">
+<div style="width: 260px;">Grafana</div>
+<div style="width: 60px;" class="opacity-70">3000</div>
+<code class="text-xs">localhost:3000</code>
+</div>
+<div class="flex items-center gap-3 p-2 rounded">
+<img src="/icons/mail.svg" class="h-7" style="width:28px;">
+<div style="width: 260px;">MailHog (boîte des alertes)</div>
+<div style="width: 60px;" class="opacity-70">8025</div>
+<code class="text-xs">localhost:8025</code>
+</div>
 </div>
 
 <div class="mt-4 text-sm opacity-70">
@@ -987,8 +1005,8 @@ layout: default
 <p class="text-sm">Dashboard Grafana connecté en lecture seule (<code>bi_reader</code>)</p>
 <ul class="text-sm mt-3 space-y-2">
 <li>Taux de service par client : <b>FreshMarket 90,6 %</b>, <b>NordDrive 87,5 %</b>, <b>MedioTex 87,3 %</b></li>
-<li>Délai moyen de livraison par transporteur</li>
-<li>Quantité expédiée par entrepôt (Lyon, Lille, Marseille)</li>
+<li>Délai moyen de livraison par transporteur : <b>2,0 j</b> (RapidFret) à <b>2,4 j</b> (EcoRoute)</li>
+<li>Stock disponible par entrepôt : <b>11 190</b> (Lyon) à <b>13 757</b> (Marseille) unités, 30 références chacun</li>
 </ul>
 </div>
 <div>
@@ -1040,14 +1058,16 @@ layout: default
 
 <div class="flex flex-col gap-3 mt-4">
 <div class="flex items-center gap-4 p-3 rounded border border-gray-400/30">
-<div class="text-sm font-bold" style="width: 220px;">SSE capteurs<br/><code class="text-xs font-normal">flux_sse_capteurs</code></div>
+<img src="/illustrations/server-status.svg" style="height: 70px; width: auto;" class="flex-shrink-0">
+<div class="text-sm font-bold" style="width: 190px;">SSE capteurs<br/><code class="text-xs font-normal">flux_sse_capteurs</code></div>
 <div class="flex gap-2 flex-wrap">
 <span class="inline-flex items-center gap-1 text-sm px-2 py-1 rounded-full bg-green-500/15 text-green-700"><b>✓</b> Fraîcheur/volumétrie</span>
 <span class="inline-flex items-center gap-1 text-sm px-2 py-1 rounded-full bg-red-500/10" style="color:#c92a2a"><b>✕</b> Débit / latence / déconnexion</span>
 </div>
 </div>
 <div class="flex items-center gap-4 p-3 rounded border border-gray-400/30">
-<div class="text-sm font-bold" style="width: 220px;">Scraping portail transporteur</div>
+<img src="/illustrations/web-search.svg" style="height: 70px; width: auto;" class="flex-shrink-0">
+<div class="text-sm font-bold" style="width: 190px;">Scraping portail transporteur</div>
 <div class="flex gap-2 flex-wrap">
 <span class="inline-flex items-center gap-1 text-sm px-2 py-1 rounded-full bg-red-500/10" style="color:#c92a2a"><b>✕</b> Aucun suivi persisté — <code class="text-xs">print()</code> console uniquement</span>
 </div>
