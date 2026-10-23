@@ -680,12 +680,12 @@ layout: default
   <code>commandes_clients</code> (2NF, dépendance partielle → décomposée en-tête/lignes)</li>
 <li>Clé de rapprochement <code>tracking_number</code> (livraisons ↔ expéditions), <b>sans FK formelle</b> — systèmes sources distincts</li>
 </ul>
-<div class="mt-3 p-2 rounded bg-gray-400/10 border border-gray-400/20 text-xs">
+<div class="mt-2 p-2 rounded bg-gray-400/10 border border-gray-400/20 text-xs leading-tight">
 <b>Clé métier</b>, pas une FK : un identifiant qui a un sens métier (<code>sku</code>,
-<code>tracking_number</code>) sert à rapprocher des données, mais sans
-contrainte <b>FK</b> SGBD quand la table référencée vit dans un système
-externe (FluxPro, TransFlow) — à l'inverse de <code>commande_client_id</code>,
-FK classique entre deux tables du <i>même</i> schéma interne.
+<code>tracking_number</code>) sert à rapprocher des données — mais une <b>FK</b>
+SGBD exige que la colonne visée soit PK ou UNIQUE (ce n'est pas le cas ici) —
+à l'inverse de <code>commande_client_id</code>, FK classique vers une PK du
+<i>même</i> schéma.
 </div>
 </div>
 <div class="flex justify-center">
@@ -696,7 +696,43 @@ FK classique entre deux tables du <i>même</i> schéma interne.
 <!--
 - Méthode MERISE, versionnée via Alembic — pas modélisée "dans la tête", tracée
 - tracking_number : expliquer pourquoi pas de FK formelle (deux systèmes sources distincts, FluxPro et TransFlow)
-- Si le jury (ou la relecture) bute sur "clé métier" : un identifiant métier (ex. sku, commande_id FluxPro) rapproche des données entre systèmes mais n'est pas déclaré FK en base quand la table référencée est externe — commande_client_id reste une FK classique car interne au même schéma
+
+PENSE-BÊTE "clé métier" (si le jury creuse le vocabulaire) :
+
+- Définition : un identifiant qui a un sens dans le métier/le monde réel
+  (ex. un SKU, un numéro de tracking), par opposition à une clé technique
+  /de substitution (un entier auto-incrémenté sans signification métier,
+  ex. commandes_clients.id). En anglais : "natural key" / "business key".
+- PAS une simple convention : une contrainte FOREIGN KEY SGBD exige que
+  la colonne référencée soit PK ou UNIQUE. Deux cas réels dans ce projet,
+  deux raisons différentes :
+  1. tracking_number (expeditions ↔ livraisons) : FluxPro et TransFlow
+     sont deux systèmes distincts — aucune FK inter-base n'est possible.
+     Vérif. SQL réelle (modelisation_merise.md §4.1) :
+     SELECT count(*) FROM livraisons l JOIN expeditions e
+       ON e.tracking_number = l.tracking_number; -- -> 1100 = 1100, 100%
+  2. lignes_commande_clients.sku ↔ produits.sku : MÊME base de staging,
+     mais produits.sku n'est pas contraint UNIQUE dans le schéma FluxPro
+     fourni (seul produits.id est PK) -> Postgres refuse une FK dessus,
+     même si la table est locale. Vérif. empirique : 0 ligne orpheline
+     sur 3593 lignes importées (modelisation_merise.md §3.4). SQL réel
+     utilisé en prod (src/datacore/api/repository.py) :
+     JOIN produits p ON p.sku = lcc.sku
+  - Contre-exemple : commandes_clients.commande_id n'est PAS une clé de
+    rapprochement du tout — identifiant propre au client (ref_commande/
+    id_commande_client/numero_cde), sans correspondance connue avec
+    commandes.id FluxPro (deux processus métier distincts) ; modélisée
+    comme entité indépendante, pas jointe (modelisation_merise.md §4.2).
+  - commande_client_id (dans lignes_commande_clients), lui, EST une FK
+    classique : il référence commandes_clients.id, une PK du même schéma.
+- Origine / références si demandées : vocabulaire standard de modélisation
+  relationnelle (candidate key, C.J. Date, "An Introduction to Database
+  Systems"), popularisé en data warehousing par Kimball & Ross, "The Data
+  Warehouse Toolkit" (clé naturelle/"business key" vs clé de substitution
+  "surrogate key" — c'est tout l'argument derrière Dim_Client en C17,
+  SCD2). Équivalent français : "clé entreprise"/clé naturelle, ex. Éditions
+  ENI, "Modélisation BI et OLAP". Pas un terme MERISE officiel au sens
+  strict — MERISE parle d'identifiant naturel vs technique, même notion.
 
 PENSE-BÊTE détaillé des 2 violations (si le jury creuse) :
 
