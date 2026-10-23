@@ -613,7 +613,7 @@ layout: default
 
 # C10 — Règles d'agrégation : le bon grain compte
 
-<div class="grid grid-cols-[66%_34%] gap-4 items-start">
+<div class="grid grid-cols-[55%_45%] gap-4 items-center">
 <div>
 
 ```python
@@ -622,32 +622,30 @@ true_dups = {k: v for k, v in grain_counts.items() if v > 1}
 ```
 
 </div>
-<div class="flex flex-col items-center">
-<img src="/illustrations/spreadsheets.svg" style="max-height: 105px; width: auto;">
-<div class="text-xs mt-1 opacity-50 text-center italic" style="max-width: 230px; font-size: 0.65rem;">illustration symbolique, sans lien avec les données ci-dessous</div>
-<div class="text-xs mt-1 opacity-60 text-center" style="max-width: 230px;">↓ exemple réel — <code style="font-size:0.85em;">norddrive_commandes.csv</code></div>
-<div class="flex flex-col items-center text-xs mt-1">
-<div class="p-1.5 rounded border-2 border-gray-400/40">ND-000402</div>
-<div style="width:1px; height:8px; background:#adb5bd;"></div>
-<div class="flex items-start" style="width: 230px;">
-<div style="flex:1; border-top:2px solid #adb5bd; border-right:2px solid #adb5bd; height:10px;"></div>
-<div style="flex:1; border-top:2px solid #adb5bd; border-left:2px solid #adb5bd; height:10px;"></div>
+<div class="flex justify-center">
+<img src="/illustrations/spreadsheets.svg" style="max-height: 150px; width: auto;">
 </div>
-<div class="flex gap-3">
-<div class="flex flex-col items-center">
-<div class="p-1.5 rounded border-2 border-green-500/40 bg-green-500/5 text-center">SKU-10009<br/><span class="opacity-70" style="font-size:0.85em;">Rétroviseur</span></div>
-<span class="opacity-60" style="font-size: 0.65rem;">couple distinct</span>
 </div>
-<div class="flex flex-col items-center">
-<div class="p-1.5 rounded border-2 border-green-500/40 bg-green-500/5 text-center">SKU-10003<br/><span class="opacity-70" style="font-size:0.85em;">Filtre à huile</span></div>
-<span class="opacity-60" style="font-size: 0.65rem;">couple distinct</span>
+
+<div class="mt-5">
+<div class="text-xs opacity-60 text-center">Exemple réel — <code>norddrive_commandes.csv</code>, 2 lignes avec même <code>ref_commande</code></div>
+<div class="flex justify-center items-center gap-6 mt-2">
+<div class="p-2 rounded border-2 border-gray-400/40 text-sm">ND-000402</div>
+<div class="flex flex-col gap-2 text-xs" style="position:relative;">
+<div style="position:absolute; left:-24px; top:8px; width:24px; height:34px; border-top:2px solid #adb5bd; border-bottom:2px solid #adb5bd; border-left:2px solid #adb5bd; border-radius: 8px 0 0 8px;"></div>
+<div class="flex items-center gap-2">
+<div class="p-1.5 rounded border-2 border-green-500/40 bg-green-500/5">SKU-10009 · Rétroviseur</div>
+<span class="opacity-60">couple distinct</span>
 </div>
+<div class="flex items-center gap-2">
+<div class="p-1.5 rounded border-2 border-green-500/40 bg-green-500/5">SKU-10003 · Filtre à huile</div>
+<span class="opacity-60">couple distinct</span>
 </div>
 </div>
 </div>
 </div>
 
-<div class="grid grid-cols-2 gap-4 mt-2">
+<div class="grid grid-cols-2 gap-4 mt-4">
 <div class="p-2.5 rounded bg-red-500/10 border border-red-500/30 leading-tight">
 <b>Grain « commande » seul</b><br/>
 55 à 68 % de doublons — chiffre trompeur (mesure le nombre moyen de
@@ -664,7 +662,7 @@ produits par commande)
 - LE moment clé de la présentation : annoncer d'abord le chiffre trompeur (55-68 %) avant de révéler le vrai (13-17 %)
 - Expliquer la confusion : grain "commande" seul confond commandes multi-produits et vrais doublons
 - Citer deduplicate() comme l'implémentation réelle, pas juste un calcul théorique
-- Si question sur l'illustration (écran avec colonnes A/B/C/D) : c'est une image décorative (undraw), elle ne représente aucune donnée réelle du projet — l'exemple vérifiable est l'arbre juste en dessous (ND-000402)
+- Si question sur l'illustration (écran avec colonnes A/B/C/D) : c'est une image décorative (undraw), elle ne représente aucune donnée réelle du projet — l'exemple vérifiable est le bloc ND-000402 plus bas, séparé de l'illustration
 -->
 
 ---
