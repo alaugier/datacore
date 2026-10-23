@@ -559,13 +559,14 @@ layout: default
 
 # C9 — Requêtes SQL d'extraction
 
-<div class="abs-tr mr-10 mt-2 flex items-center gap-3 text-xs text-center">
-<div class="flex flex-col items-center gap-1"><img src="/icons/clock-blue.svg" class="h-10"><span>prévue</span></div>
-<span class="opacity-40">≠</span>
-<div class="flex flex-col items-center gap-1"><img src="/icons/clock-orange.svg" class="h-10"><span>réelle</span></div>
+<div class="flex items-center gap-3 mb-1">
+<div class="flex items-center gap-2 text-xs text-center flex-shrink-0">
+<div class="flex flex-col items-center gap-0.5"><img src="/icons/clock-blue.svg" class="h-8"><span>prévue</span></div>
+<span class="opacity-40 text-sm">≠</span>
+<div class="flex flex-col items-center gap-0.5"><img src="/icons/clock-orange.svg" class="h-8"><span>réelle</span></div>
 </div>
-
-<p class="text-xs mb-1" style="max-width: 68%;"><code>docs/architecture/requetes_sql_extraction.md</code> — 5 requêtes documentées avec leurs résultats réels</p>
+<p class="text-xs"><code>docs/architecture/requetes_sql_extraction.md</code> — 5 requêtes documentées avec leurs résultats réels</p>
+</div>
 
 <div style="font-size: 0.72em;">
 
@@ -621,35 +622,35 @@ true_dups = {k: v for k, v in grain_counts.items() if v > 1}
 
 </div>
 <div class="flex flex-col items-center">
-<img src="/illustrations/spreadsheets.svg" style="max-height: 100px; width: auto;">
-<div class="flex flex-col items-center text-xs mt-1">
+<img src="/illustrations/spreadsheets.svg" style="max-height: 185px; width: auto;">
+<div class="flex flex-col items-center text-sm mt-1">
 <div class="p-1.5 rounded border-2 border-gray-400/40">Commande #123</div>
 <div style="width:1px; height:8px; background:#adb5bd;"></div>
-<div class="flex items-start" style="width: 150px;">
+<div class="flex items-start" style="width: 190px;">
 <div style="flex:1; border-top:2px solid #adb5bd; border-right:2px solid #adb5bd; height:10px;"></div>
 <div style="flex:1; border-top:2px solid #adb5bd; border-left:2px solid #adb5bd; height:10px;"></div>
 </div>
 <div class="flex gap-4">
 <div class="flex flex-col items-center">
 <div class="p-1.5 rounded border-2 border-green-500/40 bg-green-500/5">Produit A</div>
-<span class="opacity-60" style="font-size: 0.6rem;">couple distinct</span>
+<span class="opacity-60" style="font-size: 0.7rem;">couple distinct</span>
 </div>
 <div class="flex flex-col items-center">
 <div class="p-1.5 rounded border-2 border-green-500/40 bg-green-500/5">Produit B</div>
-<span class="opacity-60" style="font-size: 0.6rem;">couple distinct</span>
+<span class="opacity-60" style="font-size: 0.7rem;">couple distinct</span>
 </div>
 </div>
 </div>
 </div>
 </div>
 
-<div class="grid grid-cols-2 gap-4 mt-4">
-<div class="p-4 rounded bg-red-500/10 border border-red-500/30">
+<div class="grid grid-cols-2 gap-4 mt-3">
+<div class="p-3 rounded bg-red-500/10 border border-red-500/30">
 <b>Grain « commande » seul</b><br/>
 55 à 68 % de doublons — chiffre trompeur (mesure le nombre moyen de
 produits par commande)
 </div>
-<div class="p-4 rounded bg-green-500/10 border border-green-500/30">
+<div class="p-3 rounded bg-green-500/10 border border-green-500/30">
 <b>Grain (commande, produit)</b><br/>
 13 à 17 % selon le client — taux réel, retenu et implémenté
 (<code>deduplicate()</code>)
@@ -677,6 +678,13 @@ layout: default
   <code>commandes_clients</code> (2NF, dépendance partielle → décomposée en-tête/lignes)</li>
 <li>Clé de rapprochement <code>tracking_number</code> (livraisons ↔ expéditions), <b>sans FK formelle</b> — systèmes sources distincts</li>
 </ul>
+<div class="mt-3 p-2 rounded bg-gray-400/10 border border-gray-400/20 text-xs">
+<b>Clé métier</b>, pas une FK : un identifiant qui a un sens métier (<code>sku</code>,
+<code>tracking_number</code>) sert à rapprocher des données, mais sans
+contrainte <b>FK</b> SGBD quand la table référencée vit dans un système
+externe (FluxPro, TransFlow) — à l'inverse de <code>commande_client_id</code>,
+FK classique entre deux tables du <i>même</i> schéma interne.
+</div>
 </div>
 <div class="flex justify-center">
 <img src="/images/modelisation_merise_mcd.png" class="rounded" style="max-height: 420px; width: auto; max-width: 100%;">
@@ -686,6 +694,7 @@ layout: default
 <!--
 - Méthode MERISE, versionnée via Alembic — pas modélisée "dans la tête", tracée
 - tracking_number : expliquer pourquoi pas de FK formelle (deux systèmes sources distincts, FluxPro et TransFlow)
+- Si le jury (ou la relecture) bute sur "clé métier" : un identifiant métier (ex. sku, commande_id FluxPro) rapproche des données entre systèmes mais n'est pas déclaré FK en base quand la table référencée est externe — commande_client_id reste une FK classique car interne au même schéma
 
 PENSE-BÊTE détaillé des 2 violations (si le jury creuse) :
 
@@ -1098,8 +1107,8 @@ schema-on-write (staging/entrepôt). Flux IoT en ingestion directe,
 l'entrepôt.
 </div>
 
-<div class="mt-4">
-<img src="/images/architecture_omega_lake_trois_couches.png" class="w-full rounded">
+<div class="mt-8 flex justify-center">
+<img src="/images/architecture_omega_lake_trois_couches.png" class="rounded" style="width: 108%; max-width: 108%; margin-left: -4%;">
 </div>
 
 <!--
