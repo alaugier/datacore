@@ -47,12 +47,12 @@ layout: default
 | Section | Durée visée |
 |---|---|
 | [Contexte Omega Logistics / DATA CORE](3) | ~5' |
-| [Bloc 1 — Cadrage (C1-C7)](5) | ~30-35' |
-| [Bloc 2 — Collecte & Stockage (C8-C12), avec démonstration](15) | ~15' |
-| [Bloc 3 — Entrepôt OMEGA BI (C13-C17), avec temps d'échange dédié](24) | ~15-20' |
-| [Bloc 4 — Data Lake OMEGA LAKE (C18-C21)](32) | ~10' |
-| [M4 (Grafana) + synthèse transverse + conclusion](39) | ~10-15' |
-| [Questions & échanges avec le jury](51) | ~10' |
+| [Bloc 1 — Cadrage (C1-C7)](6) | ~30-35' |
+| [Bloc 2 — Collecte & Stockage (C8-C12), avec démonstration](16) | ~15' |
+| [Bloc 3 — Entrepôt OMEGA BI (C13-C17), avec temps d'échange dédié](25) | ~15-20' |
+| [Bloc 4 — Data Lake OMEGA LAKE (C18-C21)](34) | ~10' |
+| [M4 (Grafana) + synthèse transverse + conclusion](41) | ~10-15' |
+| [Questions & échanges avec le jury](53) | ~10' |
 
 <!--
 - Annoncer le minutage par section une seule fois ici, pas à répéter ensuite
@@ -157,6 +157,61 @@ Score RICE par chantier
 - Dire dès maintenant que l'objectif 3 a nécessité un détour (vues SQL/notebook → Grafana M4) — anticiper plutôt que laisser découvrir
 - Sigles SMART/RICE en note de bas de page : les lire seulement si le jury le demande
 - Insister sur le schéma : c'est RICE qui a arbitré le séquencement des 4 blocs, pas un choix arbitraire
+-->
+
+---
+layout: default
+---
+
+# Score RICE par chantier
+
+<p class="text-xs opacity-60">Score = (Reach × Impact × Confidence) / Effort — <code>etude_faisabilite.md</code> §6</p>
+
+<div class="flex flex-col gap-2 mt-5 text-sm" style="font-variant-numeric: tabular-nums;">
+<div class="flex items-center gap-3">
+<div style="width: 230px;">FluxPro + fichiers clients</div>
+<div class="flex-1 bg-gray-400/10 rounded-full h-6"><div class="h-6 rounded-full flex items-center justify-end pr-2 text-white text-xs font-bold" style="width:100%; background:#1c7ed6;">13,5</div></div>
+<span class="text-xs opacity-60" style="width:60px;">Prio. 1</span>
+</div>
+<div class="flex items-center gap-3">
+<div style="width: 230px;">Registre RGPD / pseudonymisation</div>
+<div class="flex-1 bg-gray-400/10 rounded-full h-6"><div class="h-6 rounded-full flex items-center justify-end pr-2 text-white text-xs font-bold" style="width:67%; background:#1c7ed6;">9,0</div></div>
+<span class="text-xs opacity-60" style="width:60px;">Prio. 2<sup>*</sup></span>
+</div>
+<div class="flex items-center gap-3">
+<div style="width: 230px;">API REST consolidée</div>
+<div class="flex-1 bg-gray-400/10 rounded-full h-6"><div class="h-6 rounded-full flex items-center justify-end pr-2 text-white text-xs font-bold" style="width:53%; background:#1c7ed6;">7,2</div></div>
+<span class="text-xs opacity-60" style="width:60px;">Prio. 2</span>
+</div>
+<div class="flex items-center gap-3">
+<div style="width: 230px;">Portail transporteur (scraping)</div>
+<div class="flex-1 bg-gray-400/10 rounded-full h-6"><div class="h-6 rounded-full flex items-center justify-end pr-2 text-white text-xs font-bold" style="width:36%; background:#1c7ed6;">4,8</div></div>
+<span class="text-xs opacity-60" style="width:60px;">Prio. 4</span>
+</div>
+<div class="flex items-center gap-3">
+<div style="width: 230px;">Entrepôt OMEGA BI</div>
+<div class="flex-1 bg-gray-400/10 rounded-full h-6"><div class="h-6 rounded-full flex items-center justify-end pr-2 text-white text-xs font-bold" style="width:35%; background:#1c7ed6;">4,7</div></div>
+<span class="text-xs opacity-60" style="width:60px;">Prio. 3</span>
+</div>
+<div class="flex items-center gap-3">
+<div style="width: 230px;">Catalogue & gouvernance</div>
+<div class="flex-1 bg-gray-400/10 rounded-full h-6"><div class="h-6 rounded-full flex items-center justify-end pr-2 text-white text-xs font-bold" style="width:15%; background:#1c7ed6;">2,0</div></div>
+<span class="text-xs opacity-60" style="width:60px;">Prio. 5</span>
+</div>
+<div class="flex items-center gap-3">
+<div style="width: 230px;">Data lake OMEGA LAKE</div>
+<div class="flex-1 bg-gray-400/10 rounded-full h-6"><div class="h-6 rounded-full flex items-center justify-end pr-2 text-white text-xs font-bold" style="width:9%; background:#1c7ed6;">1,2</div></div>
+<span class="text-xs opacity-60" style="width:60px;">Prio. 5</span>
+</div>
+</div>
+
+<div class="text-xs opacity-60 mt-3"><sup>*</sup> transverse, non séquençable — traité en continu sur les 4 blocs</div>
+
+<!--
+- Score RICE = (Reach × Impact × Confidence) / Effort — chiffres réels de l'étude de faisabilité §6, pas d'ordre de grandeur inventé
+- FluxPro/clients en tête car Reach=10, Confidence=0,9, Effort=2 : gros volume, quasi-certain, peu coûteux
+- Data lake en dernier car Confidence=0,5 (flux temps réel jamais fait) et Effort=5 (le plus lourd) — cohérent avec le choix de le traiter en bloc 4
+- RGPD priorité 2 mais marqué transverse : pas séquencé comme les autres, traité en continu
 -->
 
 ---
@@ -278,12 +333,18 @@ layout: default
 
 <div class="grid grid-cols-2 gap-4 mt-4">
 <div class="p-3 rounded bg-blue-500/10 border border-blue-500/30 text-sm">
-<b>Technique</b> — DataOps / ETL<br/>
-<span class="opacity-80">Ex. : Airflow/Dagster/Prefect comparés face à des scripts Python + cron — disproportionné pour le volume du programme</span>
+<b>Technique</b> — DataOps / ETL
+<div class="mt-2 pl-2 border-l-2 border-blue-500/50">
+<span class="text-xs font-bold uppercase tracking-wide opacity-70">Exemple concret</span><br/>
+<span class="opacity-80">Airflow/Dagster/Prefect comparés face à des scripts Python + cron — disproportionné pour le volume du programme</span>
+</div>
 </div>
 <div class="p-3 rounded bg-orange-500/10 border border-orange-500/30 text-sm">
-<b>Réglementaire</b> — RGPD / RGAA<br/>
-<span class="opacity-80">Ex. : recommandations CNIL sur la géolocalisation de flotte — confirme le niveau de risque RGPD retenu dès l'étude de faisabilité</span>
+<b>Réglementaire</b> — RGPD / RGAA
+<div class="mt-2 pl-2 border-l-2 border-orange-500/50">
+<span class="text-xs font-bold uppercase tracking-wide opacity-70">Exemple concret</span><br/>
+<span class="opacity-80">Recommandations CNIL sur la géolocalisation de flotte — confirme le niveau de risque RGPD retenu dès l'étude de faisabilité</span>
+</div>
 </div>
 </div>
 
@@ -498,13 +559,18 @@ layout: default
 
 # C9 — Requêtes SQL d'extraction
 
-<img src="/illustrations/alarm-clock.svg" class="abs-tr mr-16 mt-2 h-28">
+<div class="abs-tr mr-10 mt-2 flex items-center gap-3 text-xs text-center">
+<div class="flex flex-col items-center gap-1"><img src="/icons/clock-blue.svg" class="h-10"><span>prévue</span></div>
+<span class="opacity-40">≠</span>
+<div class="flex flex-col items-center gap-1"><img src="/icons/clock-orange.svg" class="h-10"><span>réelle</span></div>
+</div>
 
-<p class="text-sm" style="max-width: 78%;"><code>docs/architecture/requetes_sql_extraction.md</code> — 5 requêtes documentées avec leurs résultats réels</p>
+<p class="text-xs mb-1" style="max-width: 68%;"><code>docs/architecture/requetes_sql_extraction.md</code> — 5 requêtes documentées avec leurs résultats réels</p>
+
+<div style="font-size: 0.72em;">
 
 ```sql
--- Expéditions en retard : alimente directement l'indicateur
--- « taux de service » attendu par la Direction des Opérations
+-- Expéditions en retard : alimente l'indicateur « taux de service » (Direction des Opérations)
 SELECT exp.tracking_number, exp.transporteur, c.nom AS client,
        exp.date_livraison_prevue, exp.date_livraison_reelle,
        (exp.date_livraison_reelle - exp.date_livraison_prevue) AS jours_retard
@@ -515,10 +581,22 @@ WHERE exp.date_livraison_reelle > exp.date_livraison_prevue
 ORDER BY jours_retard DESC;
 ```
 
-<div class="mt-4 p-3 rounded bg-blue-500/10 border border-blue-500/30 text-sm">
-Historique chargé dans la base de staging PostgreSQL existante, pas dans
-un outil « big data » séparé : au volume réel (25 000 lignes), disproportionné —
-choix de sobriété numérique (RGESN), pas de principe.
+</div>
+
+<div class="mt-1 text-xs leading-tight">
+↳ produit (extrait réel) :
+
+| tracking_number | transporteur | client | date_livraison_prevue | date_livraison_reelle | jours_retard |
+|---|---|---|---|---|---|
+| OMG0001333 | EcoRoute | NordDrive | 2025-08-30 | 2025-09-02 | 3 |
+| OMG0000527 | RapidFret | MedioTex | 2025-07-30 | 2025-08-02 | 3 |
+
+</div>
+
+<div class="mt-1 p-1.5 rounded bg-blue-500/10 border border-blue-500/30 text-xs leading-tight">
+Historique chargé dans la base de staging PostgreSQL existante, pas dans un outil
+« big data » séparé : au volume réel (25 000 lignes), disproportionné — choix de
+sobriété numérique (RGESN), pas de principe.
 </div>
 
 <!--
@@ -542,7 +620,27 @@ true_dups = {k: v for k, v in grain_counts.items() if v > 1}
 ```
 
 </div>
-<img src="/illustrations/spreadsheets.svg" style="max-height: 160px; width: auto; margin: 0 auto; display: block;">
+<div class="flex flex-col items-center">
+<img src="/illustrations/spreadsheets.svg" style="max-height: 100px; width: auto;">
+<div class="flex flex-col items-center text-xs mt-1">
+<div class="p-1.5 rounded border-2 border-gray-400/40">Commande #123</div>
+<div style="width:1px; height:8px; background:#adb5bd;"></div>
+<div class="flex items-start" style="width: 150px;">
+<div style="flex:1; border-top:2px solid #adb5bd; border-right:2px solid #adb5bd; height:10px;"></div>
+<div style="flex:1; border-top:2px solid #adb5bd; border-left:2px solid #adb5bd; height:10px;"></div>
+</div>
+<div class="flex gap-4">
+<div class="flex flex-col items-center">
+<div class="p-1.5 rounded border-2 border-green-500/40 bg-green-500/5">Produit A</div>
+<span class="opacity-60" style="font-size: 0.6rem;">couple distinct</span>
+</div>
+<div class="flex flex-col items-center">
+<div class="p-1.5 rounded border-2 border-green-500/40 bg-green-500/5">Produit B</div>
+<span class="opacity-60" style="font-size: 0.6rem;">couple distinct</span>
+</div>
+</div>
+</div>
+</div>
 </div>
 
 <div class="grid grid-cols-2 gap-4 mt-4">
@@ -587,8 +685,22 @@ layout: default
 
 <!--
 - Méthode MERISE, versionnée via Alembic — pas modélisée "dans la tête", tracée
-- Citer les 2 violations trouvées et comment elles ont été corrigées (vue SQL / décomposition en-tête-lignes)
 - tracking_number : expliquer pourquoi pas de FK formelle (deux systèmes sources distincts, FluxPro et TransFlow)
+
+PENSE-BÊTE détaillé des 2 violations (si le jury creuse) :
+
+1. livraisons.statut — violation de 3NF (dépendance transitive entre deux attributs non-clés)
+   - Hypothèse testée : statut est-il redondant avec heure_reelle ?
+   - Vérifié sur les 1100 livraisons : heure_reelle renseignée → statut TOUJOURS "Livree" ; heure_reelle vide → TOUJOURS "En cours"
+   - Corrélation 100 %, sans exception → statut est déterminé par heure_reelle, pas par la clé
+   - Corrigé par une VUE SQL (livraisons_avec_statut), pas une colonne stockée : élimine la redondance physique, pas juste le risque d'incohérence
+
+2. commandes_clients — violation de 2NF (dépendance partielle sur une clé composite)
+   - Table plate initiale, clé naturelle (client, commande_id, sku)
+   - Testé : libelle_produit, poids_kg, chaine_froid_requise dépendent de sku SEUL (pas besoin de client+commande_id) — 0 exception sur 30 sku
+   - Testé : date_commande, entrepot dépendent de (client, commande_id) SEUL (pas besoin de sku) — 0 exception sur 1396 commandes
+   - Bonus trouvé en vérifiant : ces attributs étaient aussi entièrement redondants avec produits.libelle/poids_kg/temperature_dirigee côté FluxPro (0 écart)
+   - Corrigé par décomposition en-tête (commandes_clients) / lignes (lignes_commande_clients), même principe que FluxPro
 -->
 
 ---
@@ -756,6 +868,49 @@ jointure fait-à-fait à chaque requête.
 - Kimball bottom-up, par datamart — pas un modèle monolithique unique
 - Citer les 2 datamarts explicitement : Exploitation (expédition + stock) et Commercial (commande)
 - LE point à expliquer : pourquoi pas de Fait_Livraison séparée — cardinalité 1:1 vérifiée empiriquement sur 1100 expéditions
+-->
+
+---
+layout: default
+---
+
+# C13 — Méthode Kimball (bottom-up)
+
+<p class="text-xs opacity-60"><code>modelisation_omega_bi.md</code> §1 — chaque datamart est livrable et utile seul, l'ensemble converge vers un entrepôt cohérent</p>
+
+<div class="mt-5">
+<div class="flex items-center gap-2 text-xs text-center">
+<div class="p-2 rounded border-2 border-blue-500/40 bg-blue-500/5" style="width:150px">OLTP<br/><span class="opacity-70">FluxPro, TransFlow</span></div>
+<div style="flex:1; border-top: 3px solid #1c7ed6; position:relative;"><span style="position:absolute; right:-9px; top:-7px; width:0; height:0; border-top:7px solid transparent; border-bottom:7px solid transparent; border-left:9px solid #1c7ed6;"></span></div>
+<div class="p-2 rounded border-2 border-blue-500/40 bg-blue-500/5" style="width:120px">ETL<br/><span class="opacity-70">pipelines C15</span></div>
+<div style="flex:1; border-top: 3px solid #1c7ed6; position:relative;"><span style="position:absolute; right:-9px; top:-7px; width:0; height:0; border-top:7px solid transparent; border-bottom:7px solid transparent; border-left:9px solid #1c7ed6;"></span></div>
+<div class="p-2 rounded border-2 border-blue-500/40 bg-blue-500/5" style="width:160px">Datamarts<br/><span class="opacity-70">Exploitation, Commercial</span></div>
+<div style="flex:1; border-top: 3px solid #1c7ed6; position:relative;"><span style="position:absolute; right:-9px; top:-7px; width:0; height:0; border-top:7px solid transparent; border-bottom:7px solid transparent; border-left:9px solid #1c7ed6;"></span></div>
+<div class="p-2 rounded border-2 border-blue-500/50 bg-blue-500/10 font-bold" style="width:140px">Entrepôt<br/>OMEGA BI</div>
+</div>
+<div class="flex items-center gap-2 text-xs text-center mt-3">
+<div class="p-2 rounded border-2 border-gray-400/40 opacity-70" style="width:150px">Capteurs IoT<br/><span class="opacity-70">batch + streaming</span></div>
+<div style="flex:1; border-top: 3px dashed #adb5bd; position:relative;"><span style="position:absolute; right:-9px; top:-7px; width:0; height:0; border-top:7px solid transparent; border-bottom:7px solid transparent; border-left:9px solid #adb5bd;"></span></div>
+<div class="p-2 rounded border-2 border-gray-400/40 opacity-70 font-bold" style="width:430px">Data Lake OMEGA LAKE — zones raw / staging / curated</div>
+</div>
+<div class="text-xs opacity-50 mt-1">Deux pipelines distincts : le data lake ne descend pas de l'entrepôt (sources, zones et finalité différentes — bloc 4)</div>
+</div>
+
+<div class="mt-5 p-3 rounded bg-orange-500/5 border border-orange-500/30">
+<p class="text-xs font-bold uppercase tracking-wide opacity-70 mb-2">Exemple bottom-up : du besoin métier au datamart</p>
+<div class="flex items-center gap-2 text-xs text-center">
+<div class="p-2 rounded border border-orange-500/40" style="width:280px">Question métier (Direction des Opérations)<br/><span class="opacity-80">« Quel taux de service par client ? »</span></div>
+<div class="text-sm opacity-40">→</div>
+<div class="p-2 rounded border border-orange-500/40" style="width:260px">Requête BI formulée<br/><span class="opacity-80"><code>Fait_Expedition ⋈ Dim_Client ⋈ Dim_Temps</code></span></div>
+<div class="text-sm opacity-40">→</div>
+<div class="p-2 rounded border border-orange-500/50 bg-orange-500/10" style="width:220px">Datamart construit<br/><span class="opacity-80">Exploitation, <code>Dim_Client</code> conformée</span></div>
+</div>
+</div>
+
+<!--
+- Bottom-up Kimball : on ne part pas d'un modèle décisionnel monolithique, on part du besoin métier et on construit datamart par datamart
+- Le schéma du haut distingue bien les deux pipelines : entrepôt (OLTP→ETL→datamarts) et data lake (IoT→zones) ne sont PAS la même chaîne
+- L'exemple du bas est le même que celui déjà cité en C14/synthèse : taux de service par client — dimension conformée Dim_Client réutilisée entre Exploitation et Commercial
 -->
 
 ---
@@ -959,13 +1114,13 @@ layout: default
 
 # C18 — Zones raw / staging / curated
 
-<div class="grid grid-cols-[32%_68%] gap-4 items-center mt-4">
-<div class="text-sm">
-<p><code class="break-all">docs/architecture/architecture_omega_lake.md</code></p>
+<div class="grid grid-cols-[20%_80%] gap-4 items-center mt-4">
+<div class="text-xs">
+<p><code>architecture_omega_lake.md</code></p>
 <p class="mt-2">Clés naturelles de jointure vérifiées dans les données, jamais supposées.</p>
 </div>
 <div class="flex justify-center">
-<img src="/images/architecture_omega_lake_zones.png" class="rounded" style="max-height: 420px; width: auto; max-width: 100%;">
+<img src="/images/architecture_omega_lake_zones.png" class="rounded" style="max-height: 480px; width: auto; max-width: 100%;">
 </div>
 </div>
 
@@ -1475,13 +1630,13 @@ layout: default
 # Limites connues
 
 <div class="text-sm" style="columns: 2; column-gap: 24px;">
-<ul class="space-y-1">
-<li><b>Aucune interaction réelle avec un système tiers externe</b> — toutes les sources sont simulées par <code>api-mock</code></li>
-<li>Rapprochement <code>clients.nom</code> ↔ <code>historique_expeditions.client</code> non garanti par contrainte formelle</li>
-<li>Aucun ordonnanceur actif (sauvegardes, purge RGPD) — exécution manuelle/cron</li>
-<li>Stabilité de la clé de pseudonymisation entre exécutions non surveillée</li>
-<li>Prestataire SupervIT jamais mobilisé — écart assumé</li>
-<li>Observabilité partielle par choix (pas de Loki/ELK, pas de tracing)</li>
+<ul class="space-y-1" style="list-style-position: outside;">
+<li style="break-inside: avoid;"><b>Aucune interaction réelle avec un système tiers externe</b> — toutes les sources sont simulées par <code>api-mock</code></li>
+<li style="break-inside: avoid;">Rapprochement <code>clients.nom</code> ↔ <code>historique_expeditions.client</code> non garanti par contrainte formelle</li>
+<li style="break-inside: avoid;">Aucun ordonnanceur actif (sauvegardes, purge RGPD) — exécution manuelle/cron</li>
+<li style="break-inside: avoid;">Stabilité de la clé de pseudonymisation entre exécutions non surveillée</li>
+<li style="break-inside: avoid;">Prestataire SupervIT jamais mobilisé — écart assumé</li>
+<li style="break-inside: avoid;">Observabilité partielle par choix (pas de Loki/ELK, pas de tracing)</li>
 </ul>
 </div>
 
