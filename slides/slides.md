@@ -623,9 +623,10 @@ true_dups = {k: v for k, v in grain_counts.items() if v > 1}
 
 </div>
 <div class="flex flex-col items-center">
-<img src="/illustrations/spreadsheets.svg" style="max-height: 130px; width: auto;">
-<div class="text-xs mt-1 opacity-60 text-center" style="max-width: 230px;">2 lignes réelles, même <code style="font-size:0.85em;">ref_commande</code> — <code style="font-size:0.85em;">norddrive_commandes.csv</code></div>
-<div class="flex flex-col items-center text-xs mt-1.5">
+<img src="/illustrations/spreadsheets.svg" style="max-height: 105px; width: auto;">
+<div class="text-xs mt-1 opacity-50 text-center italic" style="max-width: 230px; font-size: 0.65rem;">illustration symbolique, sans lien avec les données ci-dessous</div>
+<div class="text-xs mt-1 opacity-60 text-center" style="max-width: 230px;">↓ exemple réel — <code style="font-size:0.85em;">norddrive_commandes.csv</code></div>
+<div class="flex flex-col items-center text-xs mt-1">
 <div class="p-1.5 rounded border-2 border-gray-400/40">ND-000402</div>
 <div style="width:1px; height:8px; background:#adb5bd;"></div>
 <div class="flex items-start" style="width: 230px;">
@@ -646,13 +647,13 @@ true_dups = {k: v for k, v in grain_counts.items() if v > 1}
 </div>
 </div>
 
-<div class="grid grid-cols-2 gap-4 mt-3">
-<div class="p-3 rounded bg-red-500/10 border border-red-500/30">
+<div class="grid grid-cols-2 gap-4 mt-2">
+<div class="p-2.5 rounded bg-red-500/10 border border-red-500/30 leading-tight">
 <b>Grain « commande » seul</b><br/>
 55 à 68 % de doublons — chiffre trompeur (mesure le nombre moyen de
 produits par commande)
 </div>
-<div class="p-3 rounded bg-green-500/10 border border-green-500/30">
+<div class="p-2.5 rounded bg-green-500/10 border border-green-500/30 leading-tight">
 <b>Grain (commande, produit)</b><br/>
 13 à 17 % selon le client — taux réel, retenu et implémenté
 (<code>deduplicate()</code>)
@@ -663,6 +664,7 @@ produits par commande)
 - LE moment clé de la présentation : annoncer d'abord le chiffre trompeur (55-68 %) avant de révéler le vrai (13-17 %)
 - Expliquer la confusion : grain "commande" seul confond commandes multi-produits et vrais doublons
 - Citer deduplicate() comme l'implémentation réelle, pas juste un calcul théorique
+- Si question sur l'illustration (écran avec colonnes A/B/C/D) : c'est une image décorative (undraw), elle ne représente aucune donnée réelle du projet — l'exemple vérifiable est l'arbre juste en dessous (ND-000402)
 -->
 
 ---
