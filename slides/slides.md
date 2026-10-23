@@ -19,8 +19,6 @@ mdc: true
 
 <img src="/illustrations/logistics.svg" class="abs-tr mt-12 mr-8 h-56" style="filter: brightness(0) invert(1); opacity: 0.18;">
 
-<div class="absolute left-0 right-0 top-0 h-2" style="background: linear-gradient(90deg, #1c7ed6, #22b8cf, #1c7ed6);"></div>
-
 # DATA CORE
 
 Refonte de l'infrastructure data d'Omega Logistics
@@ -520,6 +518,7 @@ Un référent client externe n'est pas <i>rejeté</i> s'il demande un autre
 client — il est <i>silencieusement ramené</i> à son propre périmètre.
 Vérifié en conditions réelles.
 </div>
+<img src="/illustrations/secure-login.svg" class="mt-4 mx-auto" style="max-height: 130px;">
 </div>
 <div>
 <img src="/images/diagrammes_techniques_api_sequence_autorisation.png" class="w-full rounded">
@@ -558,12 +557,15 @@ layout: default
 </div>
 </div>
 
-<div class="mt-10 text-sm">
+<div class="grid grid-cols-[62%_38%] gap-4 items-center mt-10">
+<div class="text-sm">
 Rapprochement <b>cohérent sur le jeu de données actuel</b>, mais
 <b>non garanti par une contrainte formelle</b> — pas de clé étrangère
 possible entre deux libellés texte de systèmes sources distincts.
 Signalé explicitement pour traitement lors de la modélisation de
 l'entrepôt (Bloc 3).
+</div>
+<img src="/illustrations/connection.svg" class="w-full">
 </div>
 
 ---
