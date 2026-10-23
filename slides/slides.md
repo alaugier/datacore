@@ -156,7 +156,7 @@ layout: section
 # Bloc 1 — Cadrage
 ## C1-C7 — ~30-35'
 
-<img src="/illustrations/meeting.svg" class="mx-auto mt-6 h-40">
+<img src="/illustrations/route-planning.svg" class="mx-auto mt-6 h-40">
 
 <!-- Clos le 25/08/2026 (M0). Calibré sur E1 (5') + E2 (20') + E3 (10'). -->
 
@@ -562,7 +562,7 @@ layout: section
 # Bloc 3 — Entrepôt OMEGA BI
 ## C13-C17 — ~15-20' (avec temps d'échange)
 
-<img src="/illustrations/data-processing.svg" class="mx-auto mt-6 h-40">
+<img src="/illustrations/database-tables.svg" class="mx-auto mt-6 h-40">
 
 <!-- Clos le 21/09/2026 (M2). Calibré sur E5 (10') + E6 (5-10', échange). -->
 
@@ -888,7 +888,7 @@ layout: section
 # M4 — Restitution BI (Grafana)
 ## + synthèse transverse + conclusion — ~10-15'
 
-<img src="/illustrations/monitor.svg" class="mx-auto mt-6 h-40">
+<img src="/illustrations/growth-analytics.svg" class="mx-auto mt-6 h-40">
 
 ---
 layout: default
