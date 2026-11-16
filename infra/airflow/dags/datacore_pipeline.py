@@ -48,6 +48,14 @@ with DAG(
 ) as dag:
 
     with TaskGroup(group_id="staging_c8_c11") as staging:
+        # load_staging n'est pas idempotent (import one-shot, voir son
+        # docstring) -- ce reset le rend rejouable a l'identique, sans
+        # toucher aux tables FluxPro/historique (donnees "donnees", pas
+        # reecrites par le pipeline -- voir reset_staging.py).
+        reset = BashOperator(
+            task_id="reset_staging",
+            bash_command=f"{WORKDIR} python3 -m datacore.storage.staging.reset_staging",
+        )
         extraction = BashOperator(
             task_id="run_extraction",  # C8 : 5 sources -> data/interim/
             bash_command=f"{WORKDIR} python3 -m datacore.ingestion.run_extraction",
@@ -64,7 +72,7 @@ with DAG(
             task_id="load_staging",
             bash_command=f"{WORKDIR} python3 -m datacore.storage.staging.load_staging",
         )
-        extraction >> cleaning >> migrate_staging >> load_staging
+        reset >> extraction >> cleaning >> migrate_staging >> load_staging
 
     with TaskGroup(group_id="entrepot_omega_bi_c13_c15") as entrepot:
         migrate_omega_bi = BashOperator(

@@ -224,11 +224,24 @@ services:
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-datacore_lake}
       OMEGA_LAKE_BUCKET: ${OMEGA_LAKE_BUCKET:-omega-lake}
       LAKE_PSEUDONYM_KEY: ${LAKE_PSEUDONYM_KEY:?LAKE_PSEUDONYM_KEY doit etre definie dans .env (voir .env.example) -- requise par curated_bi (C21bis)}
+      # Protection si la base de metadonnees est un jour recreee vierge
+      # (ex. volume d'etat supprime manuellement) : le DAG serait sinon
+      # importe en pause par defaut, bloquant tout declenchement manuel
+      # tant qu'on ne va pas le depauser a la main dans l'UI.
+      AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: "False"
+      # Base SQLite + mot de passe "Simple auth manager" deplaces dans
+      # /opt/airflow/state (voir airflow.Dockerfile) : seul ce sous-dossier
+      # est persiste (volume plus bas), jamais dags/ -- sinon le conteneur
+      # continue de servir une version perimee du DAG apres reconstruction
+      # de l'image (verifie empiriquement). Benefice : l'utilisateur admin
+      # et son mot de passe survivent desormais aux redemarrages.
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: sqlite:////opt/airflow/state/airflow.db
+      AIRFLOW__CORE__SIMPLE_AUTH_MANAGER_PASSWORDS_FILE: /opt/airflow/state/simple_auth_manager_passwords.json.generated
     command: standalone
     ports:
       - "${AIRFLOW_PORT:-8080}:8080"
     volumes:
-      - datacore-airflow-data:/opt/airflow
+      - datacore-airflow-state:/opt/airflow/state
     healthcheck:
       test: ["CMD", "curl", "--fail", "http://localhost:8080/api/v2/version"]
       interval: 10s
@@ -240,4 +253,4 @@ volumes:
   datacore-staging-data:
   datacore-omega-lake-data:
   datacore-grafana-data:
-  datacore-airflow-data:
+  datacore-airflow-state:

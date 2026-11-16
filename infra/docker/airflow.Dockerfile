@@ -36,3 +36,9 @@ RUN pip install --no-cache-dir -r airflow-requirements.txt && pip install --no-c
 COPY --chown=airflow:root infra/airflow/dags/ /opt/airflow/dags/
 
 ENV AIRFLOW__CORE__LOAD_EXAMPLES=False
+
+# Sous-dossier dedie a l'etat persistant (base SQLite + mot de passe
+# "Simple auth manager" genere) -- separe de dags/ expres : un volume
+# monte ici (voir docker-compose.yml) ne masque jamais dags/, qui reste
+# toujours lu depuis l'image a chaque reconstruction/redemarrage.
+RUN mkdir -p /opt/airflow/state && chown airflow:root /opt/airflow/state
