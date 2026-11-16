@@ -1,0 +1,11 @@
+/* Masque la barre de navigation Slidev (plein écran, précédent/suivant,
+   "Show slide overview" -- le panneau "Goto" qui permet de sauter à
+   n'importe quelle slide) en mode présentation normale. Visible au
+   survol de la souris par défaut (opacity-0 / hover:opacity-100) --
+   masquée ici explicitement pour ne jamais risquer de l'afficher
+   devant le jury par un mouvement de souris accidentel (checklist
+   pré-soutenance, issue #99). Le mode présentateur (/presenter) a ses
+   propres contrôles, sur un écran séparé, non affectés par cette règle. */
+.slidev-slide-container > .absolute.bottom-0.left-0 {
+  display: none !important;
+}
