@@ -229,8 +229,9 @@ suivante : ouverture du Bloc 4 (data lake OMEGA LAKE).
 **Exemple — CoSu du 16/11/2026 (dernière semaine avant soutenance).**
 
 - **Avancement** : date de soutenance confirmée par la formatrice —
-  vendredi 20/11/2026 (incertitude du CoSu précédent levée, plus de
-  marge que craint). Issue #96 (Q&A jury) et issue #100 (DAG Airflow,
+  jeudi 19/11/2026 à 9h30 (incertitude du CoSu précédent levée ; date
+  d'abord comprise comme le 20/11, corrigée le jour même). Issue #96
+  (Q&A jury) et issue #100 (DAG Airflow,
   stretch goal optionnel) terminées ; issue #97 (slides Slidev) en fin
   de relecture (PR #106, 3 tours effectués). Issues #98 (script de
   démo minuté) et #99 (checklist technique pré-soutenance) restent à
@@ -257,10 +258,11 @@ suivante : ouverture du Bloc 4 (data lake OMEGA LAKE).
   pas de risque budgétaire — M6 reste hors périmètre budgété initial
   (§2.2).
 - **Risques** : calendrier désormais confirmé plutôt qu'approximatif
-  (3 jours ouvrés restants, 17-19/11, avant le passage du 20/11) —
-  risque calendaire du CoSu précédent levé. Reste à boucler : finaliser
-  #97, traiter #98/#99, merger #106/#107/#108 vers `dev` puis la
-  release `dev` → `main` de clôture de M6.
+  (2 jours ouvrés pleins restants, 17-18/11, puis la matinée du 19/11
+  avant le passage à 9h30) — risque calendaire du CoSu précédent levé,
+  mais fenêtre plus courte qu'initialement comprise. Reste à boucler :
+  finaliser #97, traiter #98/#99/#104, merger #106/#107/#108/#109 vers
+  `dev` puis la release `dev` → `main` de clôture de M6.
 
 ---
 
