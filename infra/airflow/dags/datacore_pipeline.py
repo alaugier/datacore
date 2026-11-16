@@ -31,8 +31,7 @@ l'interieur d'un conteneur).
 from datetime import timedelta
 
 from airflow.providers.standard.operators.bash import BashOperator
-from airflow.sdk import DAG
-from airflow.sdk import TaskGroup
+from airflow.sdk import DAG, TaskGroup
 
 WORKDIR = "cd /opt/datacore &&"
 
@@ -96,7 +95,7 @@ with DAG(
             bash_command=f"{WORKDIR} python3 -m datacore.storage.lake.catalogue",
         )
         curated_bi = BashOperator(
-            task_id="curated_bi",  # C21 : export pseudonymise, jointure aux dimensions conformees de l'entrepot
+            task_id="curated_bi",  # C21 : export pseudonymise, jointure aux dims conformees
             bash_command=f"{WORKDIR} python3 -m datacore.storage.lake.curated_bi",
         )
         ingestion_batch >> transform >> catalogue >> curated_bi
