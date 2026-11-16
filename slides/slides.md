@@ -794,12 +794,12 @@ layout: default
 
 <div class="mt-1 text-xs text-center opacity-60"><code>localhost:8000/docs</code> — spécification OpenAPI générée automatiquement par FastAPI, testable directement dans le navigateur</div>
 
-<div class="mt-1 text-sm text-center opacity-70">→ Démo live à ce point (script minuté : docs/architecture/script_demo_soutenance.md)</div>
+<div class="mt-1 text-sm text-center opacity-70">→ Démo live à ce point</div>
 
 <!--
 - Montrer l'URL à l'écran : localhost:8000/docs
 - Dire que c'est généré automatiquement par FastAPI, pas écrit/maintenu à la main
-- Démo live ici : bouton Authorize, coller omega-data-analyst-2026, puis Try it out sur GET /kpis/taux-service, Execute -- montrer le JSON retourné
+- Démo live ici (détail complet : docs/architecture/script_demo_soutenance.md) : bouton Authorize, coller omega-data-analyst-2026, puis Try it out sur GET /kpis/taux-service, Execute -- montrer le JSON retourné
 - Repli : capture déjà affichée ci-dessus si l'API ne répond pas
 -->
 
@@ -1240,10 +1240,10 @@ layout: default
 
 <div class="mt-2 text-xs text-center opacity-60">4 zones visibles comme de vrais préfixes S3 : <code>raw/</code>, <code>staging/</code>, <code>curated/</code>, <code>curated_bi/</code> (export pseudonymisé, C21)</div>
 
-<div class="mt-2 text-sm text-center opacity-70">→ Démo live à ce point (script minuté : docs/architecture/script_demo_soutenance.md)</div>
+<div class="mt-2 text-sm text-center opacity-70">→ Démo live à ce point</div>
 
 <!--
-- Démo live ici : console MinIO réelle, montrer les 4 préfixes (raw/staging/curated/curated_bi) -- repli sur la capture ci-dessus si injoignable
+- Démo live ici (détail complet : docs/architecture/script_demo_soutenance.md) : console MinIO réelle, montrer les 4 préfixes (raw/staging/curated/curated_bi) -- repli sur la capture ci-dessus si injoignable
 - 4 zones visibles comme de vrais préfixes S3 — pas une maquette, l'infrastructure réelle
 -->
 
@@ -1314,7 +1314,7 @@ def pseudonyme(vehicule_id: str, cle: str | None = LAKE_PSEUDONYM_KEY) -> str:
 4. Repli codé en dur trouvé lors d'un **second contrôle** → garde-fou `verifier_cle_configuree()`
 5. Risque résiduel assumé (stabilité de la clé entre exécutions) — documenté, pas masqué
 
-<div class="mt-2 text-sm text-center opacity-70">→ Démo live à ce point, après les 5 étapes (script minuté : docs/architecture/script_demo_soutenance.md)</div>
+<div class="mt-2 text-sm text-center opacity-70">→ Démo live à ce point, après les 5 étapes</div>
 
 <!--
 - C'est le récit le plus riche de la présentation — prendre le temps, ne pas le précipiter
@@ -1322,7 +1322,7 @@ def pseudonyme(vehicule_id: str, cle: str | None = LAKE_PSEUDONYM_KEY) -> str:
 - Bien insister sur l'étape 2 (première analyse incomplète, réintroduite après vérification) — montre la rigueur de la démarche, pas une erreur à minimiser
 - HMAC vs hash simple : expliquer pourquoi (15 véhicules seulement → recalculable par force brute sans clé)
 - Étape 4 (repli codé en dur trouvé) : bon exemple concret si le jury demande "une difficulté rencontrée"
-- Démo live après avoir déroulé les 5 étapes : requête DuckDB (commande exacte dans le script) montrant vehicule_id pseudonymisé dans curated_bi/ -- repli : comparer juste aux valeurs affichées sur la slide si le temps manque
+- Démo live après avoir déroulé les 5 étapes (commande exacte : docs/architecture/script_demo_soutenance.md) : requête DuckDB montrant vehicule_id pseudonymisé dans curated_bi/ -- repli : comparer juste aux valeurs affichées sur la slide si le temps manque
 -->
 
 ---
@@ -1454,10 +1454,10 @@ layout: default
 </div>
 </div>
 
-<div class="mt-2 text-sm text-center opacity-70">→ Démo live à ce point (script minuté : docs/architecture/script_demo_soutenance.md)</div>
+<div class="mt-2 text-sm text-center opacity-70">→ Démo live à ce point</div>
 
 <!--
-- Démo live ici : vrai dashboard Grafana (localhost:3000), citer les 3 chiffres affichés -- repli sur la capture ci-dessus si injoignable
+- Démo live ici (détail complet : docs/architecture/script_demo_soutenance.md) : vrai dashboard Grafana (localhost:3000), citer les 3 chiffres affichés -- repli sur la capture ci-dessus si injoignable
 - bi_reader = rôle lecture seule, pas d'accès en écriture au dashboard
 -->
 
@@ -1528,11 +1528,11 @@ layout: default
 
 <div class="mt-1 text-xs opacity-70 text-center">Capture d'un run réel — déclenchement en direct ci-dessous</div>
 
-<div class="mt-2 text-sm text-center opacity-70">→ Démo live à ce point : déclenchement du DAG (script minuté : docs/architecture/script_demo_soutenance.md)</div>
+<div class="mt-2 text-sm text-center opacity-70">→ Démo live à ce point : déclenchement du DAG</div>
 
 <!--
 - Bien dire "optionnel, un plus" en ouverture — ne pas laisser croire que c'était exigé ou que ça remet en cause le choix de sobriété du cœur du programme (chapitre 5 du rapport)
-- Démo live ici (et seulement ici, pas plus tôt dans le deck) : onglet Airflow déjà ouvert (localhost:8080), bouton Trigger sur datacore_pipeline -- 12 tâches, ~20-25s réel, commenter les 3 groupes qui passent au vert pendant l'exécution. Repli : la capture ci-dessus si Airflow est injoignable, puis basculer sur les commandes manuelles du chapitre 5 §6.5
+- Démo live ici (et seulement ici, pas plus tôt dans le deck -- détail complet : docs/architecture/script_demo_soutenance.md) : onglet Airflow déjà ouvert (localhost:8080), bouton Trigger sur datacore_pipeline -- 12 tâches, ~20-25s réel, commenter les 3 groupes qui passent au vert pendant l'exécution. Repli : la capture ci-dessus si Airflow est injoignable, puis basculer sur les commandes manuelles du chapitre 5 §6.5
 - Staging passe à 5 tâches (reset_staging en tête) : load_staging n'est pas idempotent par conception (import one-shot) — reset_staging vide uniquement les 5 tables réécrites par le pipeline à chaque run, jamais les données FluxPro/historique chargées une fois pour toutes. Vérifié par deux déclenchements consécutifs du DAG complet, 12/12 tâches en succès les deux fois.
 - sse_consumer (C19, flux temps réel) volontairement exclu du DAG : processus continu (while True), pas une tâche batch qui se termine — un scheduler orchestre des exécutions qui se terminent
 - Retries configurés (2, 15s) et vérifiés sur un vrai échec avant correction — pas juste déclarés dans le code, testés
