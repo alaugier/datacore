@@ -131,6 +131,27 @@ même principe de sobriété que le choix, déjà justifié ailleurs
 (chapitre~\ref{chap:bloc2} §C9), de ne pas déployer d'outil « big
 data » séparé pour 25~000 lignes.
 
+\textbf{Granularité réelle du monitorage} : le schéma
+\texttt{monitoring} couvre le data lake (chapitre~\ref{chap:bloc4}),
+flux temps réel SSE inclus -- sa fraîcheur et sa volumétrie sont
+relevées comme n'importe quel autre flux IoT (\texttt{flux\_sse\_capteurs}
+dans le catalogue, chapitre~\ref{chap:bloc4} §C20), visibles dans le
+dashboard Grafana « OMEGA LAKE --- Monitoring ». Ce relevé reste un
+suivi de fraîcheur (dernière donnée reçue), pas une métrique de
+performance du flux en continu (pas de débit d'événements par
+seconde, pas de latence, pas de détection de déconnexion en direct --
+seul le test de coupure brutale \texttt{kill -9} du
+chapitre~\ref{chap:bloc4} §C19 vérifie la résilience, sans observer le
+flux en continu). Le scraping du portail transporteur
+(chapitre~\ref{chap:bloc2} §C8), lui, n'a \textbf{aucun} suivi
+persisté : seul un résumé imprimé en console au moment de
+l'exécution, rien d'interrogeable après coup -- le monitorage
+(\texttt{monitoring}, C20bis) a été construit spécifiquement pour
+répondre à l'exigence C20 du data lake (Bloc 4), le Bloc 2 n'a jamais
+eu d'équivalent. Écart assumé, identifié en relisant le code plutôt
+que découvert par le jury : à traiter si le temps le permet avant la
+soutenance, sans quoi cette réponse factuelle suffit.
+
 \section{Rejouer le remplissage des données et les pipelines}
 
 Une fois les services lancés (section précédente), les trois briques
@@ -213,11 +234,14 @@ except psycopg2.errors.UniqueViolation as exc:
 
 \subsection{Visualiser les pipelines}
 
-Aucun orchestrateur à interface graphique (pas d'Airflow, pas de
-Dagster) : chaque pipeline est un script Python invoqué directement,
-choix de sobriété cohérent avec l'échelle du programme (même principe
-que pour C9 ci-dessus). Trois façons concrètes de « voir » un pipeline
-malgré tout :
+Aucun orchestrateur à interface graphique n'est utilisé pour le
+programme lui-même (pas d'Airflow, pas de Dagster) : chaque pipeline
+est un script Python invoqué directement, choix de sobriété cohérent
+avec l'échelle du programme (même principe que pour C9 ci-dessus) -- un
+DAG Airflow optionnel a toutefois été ajouté en fin de programme à
+titre de démonstration, voir plus loin « Pourquoi pas un
+orchestrateur ». Trois façons concrètes de « voir » un pipeline malgré
+tout, hors démonstration Airflow :
 \begin{itemize}
   \item \textbf{La topologie}, statique : la vue d'ensemble
     staging/entrepôt/lake (figure~\ref{fig:vue-ensemble-trois-couches},
@@ -232,10 +256,11 @@ malgré tout :
     dashboard « OMEGA LAKE --- Monitoring » (C20bis, section
     précédente) trace la dernière ingestion par flux.
 \end{itemize}
-Aucun outil ne montre un graphe d'exécution animé en temps réel (type
-DAG Airflow) -- absent du référentiel de compétences et disproportionné
-pour des pipelines de quelques minutes exécutés à la demande, pas en
-continu.
+Aucun outil de ce type n'est utilisé pour le programme lui-même --
+absent du référentiel de compétences et disproportionné pour des
+pipelines de quelques minutes exécutés à la demande, pas en continu.
+Le DAG Airflow optionnel ajouté en fin de programme (ci-dessous) en
+offre un malgré tout, à titre de démonstration.
 
 \textbf{Pourquoi pas un orchestrateur (Airflow, Dagster)} : question
 posée explicitement au formateur plutôt que tranchée seule -- réponse
@@ -251,6 +276,31 @@ du programme ne s'exécute aujourd'hui selon une cadence récurrente
 réelle à orchestrer -- chacun est invoqué à la demande sur un jeu de
 données statique. Un orchestrateur ajouté maintenant répondrait à un
 besoin plus démonstratif qu'opérationnel.
+
+\textbf{Mise à jour -- un DAG ajouté à titre de démonstration.} C'est
+précisément ce qui a été fait dans la dernière semaine du programme :
+un DAG Airflow (\filepath{infra/airflow/dags/datacore_pipeline.py})
+orchestre les étapes batch déjà listées plus haut (« Rejouer le
+remplissage des données et les pipelines » : staging $\rightarrow$
+entrepôt OMEGA BI $\rightarrow$ data lake), par simple appel des
+scripts existants -- aucune logique métier réécrite. 12 tâches au
+total : 5 pour le groupe staging (dont \texttt{reset\_staging}, ajoutée
+pour rendre le groupe rejouable à l'identique -- \texttt{load\_staging}
+n'est pas idempotent par conception, voir son docstring -- sans jamais
+toucher aux données FluxPro/historique chargées une seule fois en
+amont), 3 pour l'entrepôt OMEGA BI, 4 pour le data lake. Il ne change
+rien aux trois raisons ci-dessus, qui restent la position retenue pour
+le programme lui-même : le service est placé sous un profil Docker
+Compose dédié (\texttt{airflow}), jamais démarré par un
+\texttt{docker compose up -d} normal, et \texttt{sse\_consumer.py}
+(le seul processus réellement continu du programme) en reste exclu
+pour la même raison qu'avant -- un scheduler à tâches orchestre des
+exécutions qui se terminent, pas un flux déjà continu en lui-même.
+Ajouté pour pouvoir montrer planification et reprise sur erreur en
+démonstration (retries configurés, vérifiés sur un échec réel avant
+correction, et rejouabilité vérifiée par deux déclenchements
+consécutifs du DAG complet), pas parce que le besoin opérationnel
+aurait changé.
 
 \section{Portée budgétaire}
 

@@ -79,7 +79,172 @@ suffixe `_v2` si une version `_v2` existe.**
 
 ---
 
-## 3. Ce qui n'a pas été retenu
+## 3. Anticipation Q&A jury — points sensibles
+
+Issue #96 (milestone M6). Format : question probable, réponse
+synthétique prête à dire à voix haute (pas à lire), renvoi au livrable
+preuve. Les questions purement techniques pointant vers un objet de
+code précis sont dans
+[`index_code_par_competence.md`](index_code_par_competence.md) -- ici,
+des choix d'architecture ou des écarts qui demandent une réponse
+argumentée plutôt qu'un extrait de code.
+
+**« Pourquoi SCD2 sur `Dim_Client` et pas SCD1 (écraser l'ancienne
+valeur) ? »**
+Parce que les faits déjà chargés (`Fait_Expedition`, `Fait_Commande`)
+référencent la `client_key` qui était courante au moment de leur
+chargement -- en SCD1, un changement de secteur client réécrirait
+silencieusement l'historique analytique (une commande passée l'an
+dernier semblerait avoir été passée par le nouveau secteur). SCD2 crée
+une nouvelle ligne/nouvelle clé plutôt que d'écraser, donc les faits
+historiques restent exacts pour la période où ils ont eu lieu. Testé
+par 4 tests dédiés (chapitre 3 §C17 du rapport,
+[`index_code_par_competence.md`](index_code_par_competence.md) pour le
+fichier exact).
+
+**« Pourquoi HMAC pour pseudonymiser `vehicule_id`, pas un hash
+simple ou un chiffrement réversible ? »**
+Un hash simple (sans clé) aurait été recalculable par force brute --
+seulement 15 véhicules dans le jeu de données, un attaquant essaierait
+les 15 identifiants connus en quelques secondes. HMAC à clé secrète
+rend ce recalcul impossible sans la clé. Chiffrement réversible
+écarté à dessein : le but n'est pas de pouvoir retrouver
+`vehicule_id` depuis `curated_bi/`, c'est d'empêcher `lake_reader` de
+le faire -- un pseudonyme stable (même entrée → même sortie, toujours)
+suffit pour les besoins d'analyse BI (regrouper par véhicule) sans
+jamais avoir besoin de revenir en arrière. Garde-fou testé par 8 tests
+négatifs dédiés (chapitre 4 §C21 du rapport).
+
+**« Pourquoi Grafana plutôt que Power BI ou Databricks pour la
+restitution BI ? »**
+Power BI écarté : l'usage réel passe par le Power BI Service (cloud
+Microsoft), hors du stack 100 % local du programme, et les fichiers
+`.pbix` ne se versionnent pas proprement dans Git. Databricks
+SQL/Lakeview écarté : nécessite un workspace Databricks dédié, sans
+lien avec le reste de l'infrastructure (Postgres + MinIO en local).
+Grafana est auto-hébergé, open source, ajouté au `docker-compose.yml`
+existant sans nouveau compte ni service cloud -- cohérent avec la
+stratégie de sobriété retenue dès C3
+([`gestion_operationnelle_omega_bi.md` §3.5](gestion_operationnelle_omega_bi.md#35-outil-de-restitution-de-production--grafana),
+chapitre 5 du rapport).
+
+**« Pourquoi pas d'orchestrateur (Airflow, Dagster) pour les
+pipelines ? »**
+Question posée explicitement au formateur plutôt que tranchée seul :
+pas exigé pour valider la compétence, mais constitue un plus. Nuance
+importante, à ne pas généraliser à tort : les pipelines batch
+(extraction FluxPro/fichiers clients/historique, scraping du portail
+transporteur, chargement staging, ETL entrepôt) sont bien invoqués à
+la demande sur des fichiers CSV statiques -- mais le consommateur du
+flux capteurs (`sse_consumer.py`) est, lui, un **processus réellement
+continu** (`while True`), cohérent avec le flux SSE
+`/api/stream/capteurs` d'`api-mock` qui génère un événement toutes les
+2 secondes indéfiniment. Trois raisons au choix de ne pas intégrer
+d'orchestrateur malgré tout : le référentiel (C8/C15/C19) n'exige
+aucun outil d'orchestration précis ; le coût est concret, pas
+hypothétique (un orchestrateur ajoute au minimum trois services --
+initialisation, ordonnanceur, interface web -- plus sa propre base de
+métadonnées, sur une infrastructure qui en compte déjà huit) ; et
+surtout un orchestrateur sert à **planifier des exécutions
+périodiques/batch**, pas à superviser un processus déjà continu en
+lui-même -- le consommateur SSE n'a justement pas ce besoin
+(chapitre 5 du rapport, « Pourquoi pas un orchestrateur »).
+
+**Mise à jour (issue #100, dernière semaine)** : un DAG Airflow a
+finalement été ajouté, à titre de démonstration (« constitue un plus »,
+pas une nécessité) -- `infra/airflow/dags/datacore_pipeline.py` orchestre
+les mêmes scripts existants, sans réécriture de logique métier, derrière
+un profil Docker Compose dédié (`airflow`) jamais démarré par défaut.
+12 tâches, 3 groupes (staging : 5, dont `reset_staging` -- ajoutée pour
+que le groupe soit rejouable à l'identique, `load_staging` n'étant pas
+idempotent par conception ; entrepôt OMEGA BI : 3 ; data lake : 4).
+Les trois raisons ci-dessus restent valables pour le programme lui-même :
+ce DAG ne remplace rien, il permet seulement de montrer planification et
+reprise sur erreur (retries) en direct si le jury le demande. Rejouabilité
+vérifiée par deux déclenchements consécutifs du DAG complet (12/12 tâches
+en succès les deux fois). `sse_consumer.py` en reste exclu pour la raison
+déjà donnée : un scheduler orchestre des tâches qui se terminent, pas un
+flux déjà continu en lui-même.
+
+**« Le flux capteurs temps réel interagit-il avec de vrais capteurs ou
+transporteurs ? »**
+Non, et c'est une limite assumée du programme à dire clairement plutôt
+qu'à laisser deviner : **aucune interaction réelle avec un système
+tiers externe** n'existe dans ce projet. Le flux SSE
+(`api-mock/app.py::stream_capteurs()`) génère des valeurs aléatoires
+simulées (`random.gauss`/`random.uniform`), pas de vraies mesures de
+capteurs physiques ; le scraping du portail transporteur
+(`portail_scraping.py`) interroge `TRANSFLOW_API_URL`, qui pointe par
+défaut sur `api-mock` local, jamais un vrai site transporteur externe
+-- `TRANSFLOW_API_URL`/`API_KEY` seraient à reconfigurer vers un vrai
+système en conditions réelles, rien dans le code ne le suppose codé en
+dur. Les fichiers CSV (FluxPro, fichiers clients, historique) sont un
+instantané statique fourni pour le programme, pas une connexion à un
+système source vivant. Cette limite est structurelle au pack
+pédagogique fourni pour la certification, pas un choix technique du
+programme -- à assumer directement si la question se pose, plutôt que
+de laisser le jury la découvrir en posant la question suivante.
+
+**« Avez-vous des métriques de suivi pour le flux SSE et le scraping
+du portail transporteur ? »**
+Question posée par l'utilisateur en relecture, vérifiée dans le code
+avant de répondre plutôt que supposée -- réponse différenciée, pas
+uniforme :
+- **Flux SSE** : partiellement. `flux_sse_capteurs` est un flux nommé
+  à part entière dans le catalogue du lake
+  (`src/datacore/storage/lake/catalogue.py`), sa fraîcheur et sa
+  volumétrie sont relevées par `monitoring.enregistrer_catalogue()`
+  comme n'importe quel autre flux IoT, visibles dans le dashboard
+  Grafana « OMEGA LAKE --- Monitoring ». Mais c'est un suivi de
+  fraîcheur (dernière donnée reçue), pas une métrique de performance
+  du flux en continu -- pas de débit d'événements/seconde, pas de
+  latence, pas de détection de déconnexion en direct.
+- **Scraping du portail** : non, aucun suivi persisté.
+  `run_extraction.py` imprime un résumé en console au moment de
+  l'exécution, rien n'est enregistré ni interrogeable après coup. Le
+  monitorage (`monitoring`, C20bis) a été construit spécifiquement
+  pour répondre à l'exigence C20 du data lake (Bloc 4) -- le Bloc 2
+  (collecte, C8-C12, où vit le scraping) n'a jamais eu d'équivalent,
+  rien dans son référentiel ne l'exige.
+
+Écart assumé entre les deux blocs, pas une négligence incohérente --
+documenté aussi au chapitre 6 §« Granularité réelle du monitorage » du
+rapport. À traiter si le temps le permet avant la soutenance, sinon
+cette réponse factuelle suffit à l'oral.
+
+**« Quels écarts avez-vous eus par rapport au cahier des charges ? »**
+Six écarts réels sur l'ensemble du programme, tous décidés avant
+codage ou documentés au moment où ils ont été trouvés, jamais
+découverts a posteriori en relisant le cahier des charges après coup :
+- **C17** (M2) : attributs historisés (`nom`/`secteur`) différents de
+  ceux prévus dans l'issue initiale (`adresse`/`contrat`, absents du
+  jeu de données pédagogique) -- décidé avec l'utilisateur avant
+  codage.
+- **C20** (M3) : périmètre élargi pour construire le contenu réel de
+  `staging/`/`curated/`, pas seulement cataloguer `raw/` comme le
+  texte initial de l'issue le suggérait.
+- **C21/RGPD** (M3) : la pseudonymisation, d'abord écartée sur une
+  analyse incomplète, a été réintroduite après relecture externe.
+- **M4** (jalon transverse) : pas prévu dans la planification
+  initiale -- ajouté après un retour de formateur établissant que les
+  vues SQL + notebook ne suffisaient pas comme preuve de restitution,
+  confirmé depuis par la lecture littérale du référentiel (C16
+  activité 6 exige un « tableau de bord »).
+- **Bibliographie** (M5) : ajoutée hors séquencement initial, à la
+  demande de l'utilisateur.
+- **Découpage en PR de M5** : 3 issues séquencées, livrées en pratique
+  sur une seule PR -- `dev` ne portait pas encore l'infrastructure
+  LaTeX tant que la première n'était pas mergée.
+
+Aucun écart n'a modifié le périmètre fonctionnel livré ; tous les
+écarts touchent soit des détails d'attributs/d'implémentation, soit
+l'organisation du travail, jamais une compétence manquante ou un
+livrable non conforme (détail complet dans chaque
+`docs/comptes_rendus/MN.md` §4).
+
+---
+
+## 4. Ce qui n'a pas été retenu
 
 Tout ce qui, dans `docs-scripts/`, décrit correctement et sans ajout
 utile un comportement déjà couvert par le rapport LaTeX (clé

@@ -188,6 +188,82 @@ suivante : ouverture du Bloc 4 (data lake OMEGA LAKE).
   (son port est exposé sur l'hôte) — aucun n'a affecté le calendrier,
   la relecture faisait partie du cycle normal avant merge.
 
+**Exemple — CoSu du 21/10/2026 (clôture de M5, ouverture de M6).**
+
+- **Avancement** : jalon transverse M5 (Rapport LaTeX) clos — les 3
+  issues (#90, #91, #92) livrées sur une seule PR (#93, 37 pages),
+  compte rendu de clôture mergé via la PR #94, release vers `main`
+  via la PR #95. Le programme (M0-M5) est désormais fonctionnellement
+  et documentairement complet. Jalon M6 (Présentation orale) ouvert le
+  jour même : séquencement décidé avant tout contenu
+  ([`sequencement_m6.md`](sequencement_m6.md)), 5 issues créées
+  (#96-#100). Compte rendu complet :
+  [`comptes_rendus/M5.md`](../comptes_rendus/M5.md).
+- **Décisions actées depuis le dernier point** : découpage en issues
+  du rapport non respecté à la lettre par rapport au séquencement
+  initial (3 issues prévues sur 3 PR distinctes, livrées en pratique
+  sur une seule branche/PR) — `dev` ne portait pas encore
+  l'infrastructure LaTeX tant que la première issue n'était pas
+  mergée, démarrer une branche séparée depuis `dev` pour les suivantes
+  aurait dupliqué cette infrastructure plutôt que de la réutiliser ;
+  écart assumé et expliqué dans la PR, pas découvert a posteriori. Une
+  bibliographie (chapitre 8) a été ajoutée hors périmètre initial, à
+  la demande de l'utilisateur. Attribution Claude retirée après coup
+  de 11 commits de la branche du rapport (`git filter-branch` +
+  force-push, PR encore ouverte à ce moment -- aucun impact sur le
+  contenu, vérifié par diff identique avant/après).
+- **Point d'attention à faire remonter à Éléonore RAKOTO** : aucun,
+  pas de risque budgétaire ou calendaire identifié pour M5 ni pour
+  l'ouverture de M6.
+- **Budget** : voir §2.2 ci-dessous — toujours aucun dépassement, M5
+  et M6 restent hors du périmètre budgété initial (staffing interne).
+- **Risques** : aucun risque bloquant. Point de vigilance calendaire
+  signalé par l'utilisateur : soutenance orale prévue mi-novembre
+  2026 (date précise non encore communiquée), 2 jours ouvrés restants
+  cette semaine (22-23/10) puis une pause jusqu'à la semaine de la
+  soutenance (3 jours ouvrés prévus avant le passage) — à anticiper
+  dans le séquencement des 5 issues de M6, Q&A jury (issue #96)
+  délibérément traitée en premier pour ne pas la sacrifier si le temps
+  venait à manquer.
+
+**Exemple — CoSu du 16/11/2026 (dernière semaine avant soutenance).**
+
+- **Avancement** : date de soutenance confirmée par la formatrice —
+  jeudi 19/11/2026 à 9h30 (incertitude du CoSu précédent levée ; date
+  d'abord comprise comme le 20/11, corrigée le jour même). Issue #96
+  (Q&A jury) et issue #100 (DAG Airflow,
+  stretch goal optionnel) terminées ; issue #97 (slides Slidev) en fin
+  de relecture (PR #106, 3 tours effectués). Issues #98 (script de
+  démo minuté) et #99 (checklist technique pré-soutenance) restent à
+  faire.
+- **Décision actée depuis le dernier point** : issue #100 traitée sur
+  confirmation explicite de la formatrice que l'orchestration Airflow
+  reste faisable « sans casser le workflow actuel » — implémentée
+  comme service Docker Compose sous profil dédié, jamais démarré par
+  défaut (PR #107), rapport/synthèse Q&A mis à jour en conséquence
+  (PR #108). Trois bugs réels trouvés et corrigés en testant pour de
+  vrai (conflit `flask`, hôte Postgres en dur, plafond `duckdb`
+  absent) plutôt qu'en relisant seulement le code.
+- **Incident et correction, en toute transparence** : la première
+  version du correctif d'idempotence a tronqué par erreur 8 tables de
+  données de référence qui n'auraient jamais dû l'être (portée trop
+  large, pas les 5 tables réellement réécrites par le pipeline),
+  corrompant silencieusement l'entrepôt et le data lake en aval.
+  Détecté en préparant le correctif définitif (pas par l'utilisateur),
+  entièrement réparé (restauration depuis `data/raw/`, volumes
+  revérifiés), puis corrigé correctement et re-testé par deux
+  déclenchements consécutifs du DAG (12/12 tâches en succès les deux
+  fois, données de référence inchangées) avant livraison.
+- **Point d'attention à faire remonter à Éléonore RAKOTO** : aucun,
+  pas de risque budgétaire — M6 reste hors périmètre budgété initial
+  (§2.2).
+- **Risques** : calendrier désormais confirmé plutôt qu'approximatif
+  (2 jours ouvrés pleins restants, 17-18/11, puis la matinée du 19/11
+  avant le passage à 9h30) — risque calendaire du CoSu précédent levé,
+  mais fenêtre plus courte qu'initialement comprise. Reste à boucler :
+  finaliser #97, traiter #98/#99/#104, merger #106/#107/#108/#109 vers
+  `dev` puis la release `dev` → `main` de clôture de M6.
+
 ---
 
 ## 2. Tableau de suivi budgétaire
@@ -306,17 +382,27 @@ flowchart LR
     BRANCH -->|"ouverture"| PR1["Pull Request<br/>vers dev"]
     PR1 --> CI{"CI : ruff + mypy<br/>+ pytest (176 tests)"}
     CI -->|"échec"| BRANCH
+    style ISSUE fill:#e7f5ff,stroke:#1c7ed6,color:#1c1c1c
+    style BRANCH fill:#e7f5ff,stroke:#1c7ed6,color:#1c1c1c
+    style PR1 fill:#e7f5ff,stroke:#1c7ed6,color:#1c1c1c
+    style CI fill:#fff4e6,stroke:#e8590c,color:#1c1c1c
 ```
 
 Étape 2 — revue et intégration, jusqu'à la release :
 
 ```mermaid
 flowchart LR
-    CI2{"CI : succès"} --> REVIEW["Revue humaine"]
+    CI2{"CI : succès"} --> REVIEW["Revue"]
     REVIEW -->|"approuvée"| MERGE["Merge dans dev"]
     MERGE -->|"dernier issue<br/>du milestone"| RELEASE["PR de release<br/>dev vers main"]
     RELEASE --> MAINB["main (protégée)"]
     MERGE -.->|"sinon"| NEXT["Issue suivante"]
+    style CI2 fill:#fff4e6,stroke:#e8590c,color:#1c1c1c
+    style REVIEW fill:#e7f5ff,stroke:#1c7ed6,color:#1c1c1c
+    style MERGE fill:#e7f5ff,stroke:#1c7ed6,color:#1c1c1c
+    style RELEASE fill:#e7f5ff,stroke:#1c7ed6,color:#1c1c1c
+    style MAINB fill:#ebfbee,stroke:#2f9e44,color:#1c1c1c
+    style NEXT fill:#f1f3f5,stroke:#868e96,color:#1c1c1c
 ```
 
 Le statut Kanban du Project #3 (6 états : `Backlog` → `À faire

@@ -16,3 +16,27 @@ docs/latex/*.out
 docs/latex/*.toc
 docs/latex/chapitres/*.aux
 docs/latex/annexes/*.aux
+
+# Supports de formation Simplon (droits de redistribution non
+# confirmés) -- jamais versionnés, gardés en local uniquement.
+# Le référentiel RNCP (Referentiel_Activites_Competences_Evaluation_DE.pdf)
+# reste versionné : document public France Compétences (art. L6113-1
+# du Code de l'éducation, RNCP37638), pas un support Simplon restreint.
+# (crochets échappés : [ ] sont des métacaractères gitignore)
+docs/reference/\[DE\] Notes sur la certification.pdf
+docs/reference/Cahier_des_charges_DATA_CORE.docx
+
+# Trame de présentation Slidev (M6) -- dépendances et exports générés,
+# pas les sources (slides.md, package.json versionnés).
+slides/node_modules/
+slides/dist/
+slides/.slidev/
+slides/*.pdf
+slides/*.pptx
+
+# Logo Simplon.co (slides/public/images/simplon_logo.png) -- même
+# traitement que les documents Simplon ci-dessus : extrait du PDF de
+# certification gardé en local uniquement, jamais versionné sur le
+# dépôt public. Utilisé localement pour la soutenance (slides.md le
+# référence), pas commité.
+slides/public/images/simplon_logo.png
