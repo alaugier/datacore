@@ -273,6 +273,24 @@ réelle à orchestrer -- chacun est invoqué à la demande sur un jeu de
 données statique. Un orchestrateur ajouté maintenant répondrait à un
 besoin plus démonstratif qu'opérationnel.
 
+\textbf{Mise à jour -- un DAG ajouté à titre de démonstration.} C'est
+précisément ce qui a été fait dans la dernière semaine du programme :
+un DAG Airflow (\filepath{infra/airflow/dags/datacore_pipeline.py})
+orchestre les 11 étapes batch déjà listées plus haut (« Rejouer le
+remplissage des données et les pipelines » : staging $\rightarrow$
+entrepôt OMEGA BI $\rightarrow$ data lake), par simple appel des
+scripts existants -- aucune logique métier réécrite. Il ne change rien aux
+trois raisons ci-dessus, qui restent la position retenue pour le
+programme lui-même : le service est placé sous un profil Docker
+Compose dédié (\texttt{airflow}), jamais démarré par un
+\texttt{docker compose up -d} normal, et \texttt{sse\_consumer.py}
+(le seul processus réellement continu du programme) en reste exclu
+pour la même raison qu'avant -- un scheduler à tâches orchestre des
+exécutions qui se terminent, pas un flux déjà continu en lui-même.
+Ajouté pour pouvoir montrer planification et reprise sur erreur en
+démonstration (retries configurés, vérifiés sur un échec réel avant
+correction), pas parce que le besoin opérationnel aurait changé.
+
 \section{Portée budgétaire}
 
 Comme les jalons transverses de rédaction du rapport et de préparation

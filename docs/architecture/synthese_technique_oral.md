@@ -150,6 +150,18 @@ périodiques/batch**, pas à superviser un processus déjà continu en
 lui-même -- le consommateur SSE n'a justement pas ce besoin
 (chapitre 5 du rapport, « Pourquoi pas un orchestrateur »).
 
+**Mise à jour (issue #100, dernière semaine)** : un DAG Airflow a
+finalement été ajouté, à titre de démonstration (« constitue un plus »,
+pas une nécessité) -- `infra/airflow/dags/datacore_pipeline.py` orchestre
+les mêmes scripts existants, sans réécriture de logique métier, derrière
+un profil Docker Compose dédié (`airflow`) jamais démarré par défaut.
+Les trois raisons ci-dessus restent valables pour le programme lui-même :
+ce DAG ne remplace rien, il permet seulement de montrer planification et
+reprise sur erreur (retries) en direct si le jury le demande.
+`sse_consumer.py` en reste exclu pour la raison déjà donnée : un
+scheduler orchestre des tâches qui se terminent, pas un flux déjà
+continu en lui-même.
+
 **« Le flux capteurs temps réel interagit-il avec de vrais capteurs ou
 transporteurs ? »**
 Non, et c'est une limite assumée du programme à dire clairement plutôt
