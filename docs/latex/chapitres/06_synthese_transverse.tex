@@ -130,8 +130,10 @@ pas comme une section à part mais comme un critère invoqué à chaque
 choix d'infrastructure du programme : pas d'outil « big data » séparé
 pour 25~000 lignes (chapitre~\ref{chap:bloc2} §C9), entrepôt sur la
 même instance Postgres que le staging plutôt qu'un second conteneur
-(chapitre~\ref{chap:bloc3} §C14), pas d'orchestrateur de pipelines
-(chapitre~\ref{chap:m4} §« Pourquoi pas un orchestrateur »), outils de
+(chapitre~\ref{chap:bloc3} §C14), pas d'orchestrateur de pipelines pour
+le programme lui-même (chapitre~\ref{chap:m4} §« Pourquoi pas un
+orchestrateur » ; DAG optionnel ajouté en fin de programme à titre de
+démonstration, jamais démarré par défaut), outils de
 restitution auto-hébergés plutôt que des services cloud payants
 (Grafana, MinIO -- chapitres~\ref{chap:bloc4} et~\ref{chap:m4}).
 

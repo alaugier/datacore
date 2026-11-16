@@ -31,6 +31,13 @@ POSTGRES_USER = os.environ.get("POSTGRES_USER", "datacore")
 POSTGRES_PASSWORD = os.environ.get("POSTGRES_PASSWORD", "datacore")
 POSTGRES_DB = os.environ.get("POSTGRES_DB", "datacore_staging")
 POSTGRES_PORT = os.environ.get("POSTGRES_PORT", "5432")
+# Hôte Postgres brut, surchargeable séparément des DSN complets
+# ci-dessous -- nécessaire à storage/lake/transform.py (C18), qui
+# n'utilise pas STAGING_DB_DSN/OMEGA_BI_DB_DSN mais reconstruit sa
+# propre chaîne de connexion DuckDB ATTACH à partir des morceaux
+# POSTGRES_* (issue #100 : exécuté depuis un conteneur Airflow, où
+# "localhost" désigne le conteneur lui-même, pas le service "db").
+POSTGRES_HOST = os.environ.get("POSTGRES_HOST", "localhost")
 STAGING_DB_DSN = os.environ.get(
     "STAGING_DB_DSN",
     f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@localhost:{POSTGRES_PORT}/{POSTGRES_DB}",
