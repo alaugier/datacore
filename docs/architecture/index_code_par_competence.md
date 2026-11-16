@@ -119,6 +119,21 @@ Chaîne d'alerte : [`src/datacore/alerting/webhook.py`](../../src/datacore/alert
 
 ---
 
+## Jalon transverse M6 — DAG Airflow (issue #100, optionnel/démo)
+
+**DAG** : [`infra/airflow/dags/datacore_pipeline.py`](../../infra/airflow/dags/datacore_pipeline.py) — 12 tâches, 3 `TaskGroup` (staging C8-C11, entrepôt OMEGA BI C13-C15, data lake OMEGA LAKE C18-C21), ordre = dépendance réelle des données. Appel direct des scripts déjà cités plus haut dans ce document, aucune logique métier réécrite ici.
+
+**Idempotence** : [`src/datacore/storage/staging/reset_staging.py`](../../src/datacore/storage/staging/reset_staging.py) — `main()` tronque uniquement les 5 tables de `metadata.tables` ([`models.py`](../../src/datacore/storage/staging/models.py)), jamais les données FluxPro/historique. Tâche `reset_staging`, première du groupe staging.
+
+**À montrer** : interface Airflow (`http://localhost:8080`, profil Docker Compose `airflow` — voir `.env.example` pour le mot de passe) plutôt que le code si la question porte sur l'exécution ; le fichier DAG si elle porte sur l'implémentation.
+
+**Questions pièges probables** :
+- **« Pourquoi pas Airflow pour tout le programme ? »** — réponse déjà actée, [`synthese_technique_oral.md` §« Pourquoi pas d'orchestrateur »](synthese_technique_oral.md).
+- **« Le DAG est-il idempotent ? »** — oui, vérifié par deux déclenchements consécutifs réels (pas simulé), 12/12 tâches en succès les deux fois, tables de référence inchangées.
+- **« Pourquoi un `TaskGroup` par bloc plutôt qu'un DAG plat ? »** — lisibilité dans l'UI (3 groupes visuellement distincts) et dépendance explicite inter-groupes (`staging >> entrepot >> lake`) sans dépendance inutile intra-groupe entre blocs différents.
+
+---
+
 ## Configuration
 
 [`src/datacore/config.py`](../../src/datacore/config.py) — point d'entrée unique de toute la
