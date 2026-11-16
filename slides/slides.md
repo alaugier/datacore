@@ -52,7 +52,7 @@ layout: default
 | [Bloc 3 — Entrepôt OMEGA BI (C13-C17), avec temps d'échange dédié](25) | ~15-20' |
 | [Bloc 4 — Data Lake OMEGA LAKE (C18-C21)](34) | ~10' |
 | [M4 (Grafana) + synthèse transverse + conclusion](41) | ~10-15' |
-| [Questions & échanges avec le jury](53) | ~10' |
+| [Questions & échanges avec le jury](54) | ~10' |
 
 <!--
 - Annoncer le minutage par section une seule fois ici, pas à répéter ensuite
@@ -1493,6 +1493,40 @@ active en ~30s → e-mail reçu dans MailHog. Remise en service → alerte réso
 <!--
 - Point technique important si demandé : verifier_sante_infrastructure() ne lève jamais d'exception — l'échec EST le résultat à enregistrer, pas un bug à cacher
 - Raconter le test réel dans l'ordre : coupure MinIO → relevé en échec → alerte Grafana active en ~30s → e-mail reçu dans MailHog → remise en service → alerte résolue
+-->
+
+---
+layout: default
+---
+
+# Airflow — orchestration (stretch goal)
+
+<div class="flex items-center gap-2 mb-2">
+<span class="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full bg-orange-500/10" style="color:#d9480f"><b>Issue #100</b> — optionnel, un plus</span>
+<p class="text-xs opacity-60">Profil Docker Compose dédié (<code>airflow</code>), jamais démarré par un <code>docker compose up -d</code> normal</p>
+</div>
+
+<div class="flex items-center gap-2 text-xs text-center mt-3">
+<div class="p-2 rounded border-2 border-blue-500/40 bg-blue-500/5" style="width:170px">Staging<br/><span class="opacity-70">C8-C11, 5 tâches</span></div>
+<div style="flex:1; border-top: 3px solid #1c7ed6; position:relative;"><span style="position:absolute; right:-9px; top:-7px; width:0; height:0; border-top:7px solid transparent; border-bottom:7px solid transparent; border-left:9px solid #1c7ed6;"></span></div>
+<div class="p-2 rounded border-2 border-blue-500/40 bg-blue-500/5" style="width:170px">Entrepôt OMEGA BI<br/><span class="opacity-70">C13-C15, 3 tâches</span></div>
+<div style="flex:1; border-top: 3px solid #1c7ed6; position:relative;"><span style="position:absolute; right:-9px; top:-7px; width:0; height:0; border-top:7px solid transparent; border-bottom:7px solid transparent; border-left:9px solid #1c7ed6;"></span></div>
+<div class="p-2 rounded border-2 border-blue-500/50 bg-blue-500/10 font-bold" style="width:170px">Data lake OMEGA LAKE<br/><span class="opacity-70 font-normal">C18-C21, 4 tâches</span></div>
+</div>
+<p class="text-xs opacity-60 mt-1">12 tâches, appel direct des scripts déjà existants — aucune logique métier réécrite</p>
+
+<div class="mt-2 flex justify-center">
+<img src="/images/airflow_dag_run_success.png" class="rounded border border-gray-300" style="max-height: 230px; width: auto;">
+</div>
+
+<div class="mt-1 text-xs opacity-70 text-center">Run réel, déclenché manuellement — 12/12 tâches en succès</div>
+
+<!--
+- Bien dire "optionnel, un plus" en ouverture — ne pas laisser croire que c'était exigé ou que ça remet en cause le choix de sobriété du cœur du programme (chapitre 5 du rapport)
+- Staging passe à 5 tâches (reset_staging en tête) : load_staging n'est pas idempotent par conception (import one-shot) — reset_staging vide uniquement les 5 tables réécrites par le pipeline à chaque run, jamais les données FluxPro/historique chargées une fois pour toutes. Vérifié par deux déclenchements consécutifs du DAG complet, 12/12 tâches en succès les deux fois.
+- sse_consumer (C19, flux temps réel) volontairement exclu du DAG : processus continu (while True), pas une tâche batch qui se termine — un scheduler orchestre des exécutions qui se terminent
+- Retries configurés (2, 15s) et vérifiés sur un vrai échec avant correction — pas juste déclarés dans le code, testés
+- Si le jury demande "pourquoi pas Airflow partout" : renvoyer à la réponse déjà actée (C7bis / synthese_technique_oral.md) — coût d'intégration concret, aucun pipeline du programme ne tourne sur une cadence récurrente réelle à orchestrer
 -->
 
 ---
