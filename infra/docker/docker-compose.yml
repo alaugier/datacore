@@ -224,8 +224,6 @@ services:
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-datacore_lake}
       OMEGA_LAKE_BUCKET: ${OMEGA_LAKE_BUCKET:-omega-lake}
       LAKE_PSEUDONYM_KEY: ${LAKE_PSEUDONYM_KEY:?LAKE_PSEUDONYM_KEY doit etre definie dans .env (voir .env.example) -- requise par curated_bi (C21bis)}
-      _AIRFLOW_WWW_USER_USERNAME: ${AIRFLOW_ADMIN_USER:-admin}
-      _AIRFLOW_WWW_USER_PASSWORD: ${AIRFLOW_ADMIN_PASSWORD:-changez-moi-avec-une-vraie-cle-aleatoire}
     command: standalone
     ports:
       - "${AIRFLOW_PORT:-8080}:8080"
