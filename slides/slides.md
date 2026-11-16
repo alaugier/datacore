@@ -545,18 +545,10 @@ hétérogènes · Historique volumineux
 <img src="/images/diagrammes_techniques_ingestion_c8.png" class="rounded" style="max-height: 360px; width: auto;">
 </div>
 
-<div class="mt-2 text-sm opacity-70">→ Démo live à ce point (~3min30, script minuté)</div>
-
 <!--
 - 5 connecteurs, 31 tests — citer le chiffre
 - Ne pas décrire chaque connecteur un par un, renvoyer au schéma affiché
-- Démo live ici (~3min30, script minuté complet dans docs/architecture/script_demo_soutenance.md) :
-  1. Déclencher le DAG Airflow (localhost:8080, bouton Trigger) -- 12 taches, ~20-25s
-  2. Swagger (localhost:8000/docs) -- Authorize avec omega-data-analyst-2026, GET /kpis/taux-service
-  3. Grafana (localhost:3000) -- dashboard SLA OMEGA BI, a jour avec le run
-  4. MinIO (localhost:9001) -- bucket omega-lake, prefixes raw/staging/curated/curated_bi
-  5. Requete DuckDB pseudonymisee en direct (commande exacte dans le script) -- vehicule_id = hash, pas l'identifiant reel
-- Plan de repli complet (captures d'ecran + commandes manuelles chapitre 5) dans le script si un outil est injoignable
+- Pas de démo live ici : la démo du pipeline complet est repoussée à la slide Airflow (bien plus tard dans le deck), pour que le déclenchement et l'explication de l'orchestration restent au même endroit -- script minuté complet dans docs/architecture/script_demo_soutenance.md (démo répartie sur 5 slides : C12 Swagger, C16bis Grafana, C19 MinIO, C21 pseudonymisation, Airflow)
 -->
 
 ---
@@ -796,16 +788,19 @@ layout: default
 
 # C12 — Documentation interactive (Swagger)
 
-<div class="flex justify-center mt-4">
-<img src="/images/swagger_omega_data_api.png" class="rounded border border-gray-300" style="max-height: 450px; width: auto;">
+<div class="flex justify-center mt-2">
+<img src="/images/swagger_omega_data_api.png" class="rounded border border-gray-300" style="max-height: 380px; width: auto;">
 </div>
 
-<div class="mt-2 text-xs text-center opacity-60"><code>localhost:8000/docs</code> — spécification OpenAPI générée automatiquement par FastAPI, testable directement dans le navigateur</div>
+<div class="mt-1 text-xs text-center opacity-60"><code>localhost:8000/docs</code> — spécification OpenAPI générée automatiquement par FastAPI, testable directement dans le navigateur</div>
+
+<div class="mt-1 text-sm text-center opacity-70">→ Démo live à ce point</div>
 
 <!--
 - Montrer l'URL à l'écran : localhost:8000/docs
 - Dire que c'est généré automatiquement par FastAPI, pas écrit/maintenu à la main
-- Si le temps le permet : ouvrir un endpoint en direct pour montrer l'auto-génération
+- Démo live ici (détail complet : docs/architecture/script_demo_soutenance.md) : bouton Authorize, coller omega-data-analyst-2026, puis Try it out sur GET /kpis/taux-service, Execute -- montrer le JSON retourné
+- Repli : capture déjà affichée ci-dessus si l'API ne répond pas
 -->
 
 ---
@@ -1245,8 +1240,10 @@ layout: default
 
 <div class="mt-2 text-xs text-center opacity-60">4 zones visibles comme de vrais préfixes S3 : <code>raw/</code>, <code>staging/</code>, <code>curated/</code>, <code>curated_bi/</code> (export pseudonymisé, C21)</div>
 
+<div class="mt-2 text-sm text-center opacity-70">→ Démo live à ce point</div>
+
 <!--
-- Montrer la vraie console en direct si le temps/la connexion le permet, sinon la capture suffit
+- Démo live ici (détail complet : docs/architecture/script_demo_soutenance.md) : console MinIO réelle, montrer les 4 préfixes (raw/staging/curated/curated_bi) -- repli sur la capture ci-dessus si injoignable
 - 4 zones visibles comme de vrais préfixes S3 — pas une maquette, l'infrastructure réelle
 -->
 
@@ -1317,12 +1314,15 @@ def pseudonyme(vehicule_id: str, cle: str | None = LAKE_PSEUDONYM_KEY) -> str:
 4. Repli codé en dur trouvé lors d'un **second contrôle** → garde-fou `verifier_cle_configuree()`
 5. Risque résiduel assumé (stabilité de la clé entre exécutions) — documenté, pas masqué
 
+<div class="mt-2 text-sm text-center opacity-70">→ Démo live à ce point, après les 5 étapes</div>
+
 <!--
 - C'est le récit le plus riche de la présentation — prendre le temps, ne pas le précipiter
 - Dérouler les 5 étapes dans l'ordre affiché, sans en sauter une
 - Bien insister sur l'étape 2 (première analyse incomplète, réintroduite après vérification) — montre la rigueur de la démarche, pas une erreur à minimiser
 - HMAC vs hash simple : expliquer pourquoi (15 véhicules seulement → recalculable par force brute sans clé)
 - Étape 4 (repli codé en dur trouvé) : bon exemple concret si le jury demande "une difficulté rencontrée"
+- Démo live après avoir déroulé les 5 étapes (commande exacte : docs/architecture/script_demo_soutenance.md) : requête DuckDB montrant vehicule_id pseudonymisé dans curated_bi/ -- repli : comparer juste aux valeurs affichées sur la slide si le temps manque
 -->
 
 ---
@@ -1454,8 +1454,10 @@ layout: default
 </div>
 </div>
 
+<div class="mt-2 text-sm text-center opacity-70">→ Démo live à ce point</div>
+
 <!--
-- Montrer le dashboard, citer les 3 chiffres affichés (taux de service, délai moyen, stock disponible)
+- Démo live ici (détail complet : docs/architecture/script_demo_soutenance.md) : vrai dashboard Grafana (localhost:3000), citer les 3 chiffres affichés -- repli sur la capture ci-dessus si injoignable
 - bi_reader = rôle lecture seule, pas d'accès en écriture au dashboard
 -->
 
@@ -1524,10 +1526,13 @@ layout: default
 <img src="/images/airflow_dag_run_success.png" class="rounded border border-gray-300" style="max-height: 230px; width: auto;">
 </div>
 
-<div class="mt-1 text-xs opacity-70 text-center">Run réel, déclenché manuellement — 12/12 tâches en succès</div>
+<div class="mt-1 text-xs opacity-70 text-center">Capture d'un run réel — déclenchement en direct ci-dessous</div>
+
+<div class="mt-2 text-sm text-center opacity-70">→ Démo live à ce point : déclenchement du DAG</div>
 
 <!--
 - Bien dire "optionnel, un plus" en ouverture — ne pas laisser croire que c'était exigé ou que ça remet en cause le choix de sobriété du cœur du programme (chapitre 5 du rapport)
+- Démo live ici (et seulement ici, pas plus tôt dans le deck -- détail complet : docs/architecture/script_demo_soutenance.md) : onglet Airflow déjà ouvert (localhost:8080), bouton Trigger sur datacore_pipeline -- 12 tâches, ~20-25s réel, commenter les 3 groupes qui passent au vert pendant l'exécution. Repli : la capture ci-dessus si Airflow est injoignable, puis basculer sur les commandes manuelles du chapitre 5 §6.5
 - Staging passe à 5 tâches (reset_staging en tête) : load_staging n'est pas idempotent par conception (import one-shot) — reset_staging vide uniquement les 5 tables réécrites par le pipeline à chaque run, jamais les données FluxPro/historique chargées une fois pour toutes. Vérifié par deux déclenchements consécutifs du DAG complet, 12/12 tâches en succès les deux fois.
 - sse_consumer (C19, flux temps réel) volontairement exclu du DAG : processus continu (while True), pas une tâche batch qui se termine — un scheduler orchestre des exécutions qui se terminent
 - Retries configurés (2, 15s) et vérifiés sur un vrai échec avant correction — pas juste déclarés dans le code, testés
