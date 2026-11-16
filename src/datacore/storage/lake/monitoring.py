@@ -19,6 +19,10 @@ dernier état :
 - **Matériel** : `verifier_sante_infrastructure()` (MinIO accessible,
   capacité utilisée) — c'est le volet que le premier design de C20bis
   ne couvrait pas, corrigé après relecture du référentiel.
+- **Débit du flux SSE temps réel** : `enregistrer_evenements_fenetre()`
+  (nombre d'évènements reçus par fenêtre de dépôt, appelé par
+  `sse_consumer.main()`) — avant cette fonction, seule la fraîcheur
+  globale du flux était suivie, pas son débit réel (issue #104).
 """
 import datetime
 
@@ -76,6 +80,38 @@ def enregistrer_purge(resultat_purge: dict[str, list[str]], dsn: str = OMEGA_BI_
             VALUES (%s, %s, %s)
             """,
             [(flux, len(cles), execute_le) for flux, cles in resultat_purge.items()],
+        )
+
+
+def enregistrer_evenements_fenetre(
+    flux: str, nb_evenements: int, releve_le: datetime.datetime, dsn: str = OMEGA_BI_DB_DSN
+) -> None:
+    """Enregistre le débit d'une fenêtre du flux SSE dans `monitoring.catalogue_lake` (issue #104).
+
+    Réutilise la table existante plutôt qu'un nouveau mécanisme — même
+    structure que `enregistrer_catalogue()` (flux/zone/nb_lignes/releve_le).
+    `zone="raw"` : c'est le flux brut qui est compté à chaque dépôt, pas
+    une zone transformée. Appelé par `sse_consumer.consommer()` via son
+    callback `sur_depot` à chaque fenêtre, pas seulement à la fin d'une
+    connexion — c'est ce qui donne à Grafana un débit réel (évènements
+    par fenêtre), pas seulement un volume cumulé après coup.
+
+    Args:
+        flux: nom du flux (`sse_consumer.FLUX`, toujours
+            `"flux_sse_capteurs"` en pratique).
+        nb_evenements: nombre d'évènements reçus pendant cette fenêtre.
+        releve_le: horodatage du dépôt (même valeur que le nom de fichier
+            S3 déposé par `_deverser()`).
+        dsn: chaîne de connexion vers l'entrepôt.
+    """
+    with psycopg2.connect(dsn) as conn, conn.cursor() as cur:
+        cur.execute(
+            """
+            INSERT INTO monitoring.catalogue_lake
+                (flux, zone, nb_lignes, derniere_modification, releve_le)
+            VALUES (%s, 'raw', %s, %s, %s)
+            """,
+            (flux, nb_evenements, releve_le, releve_le),
         )
 
 

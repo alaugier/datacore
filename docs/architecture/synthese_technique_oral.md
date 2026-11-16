@@ -188,29 +188,29 @@ de laisser le jury la découvrir en posant la question suivante.
 **« Avez-vous des métriques de suivi pour le flux SSE et le scraping
 du portail transporteur ? »**
 Question posée par l'utilisateur en relecture, vérifiée dans le code
-avant de répondre plutôt que supposée -- réponse différenciée, pas
-uniforme :
-- **Flux SSE** : partiellement. `flux_sse_capteurs` est un flux nommé
-  à part entière dans le catalogue du lake
-  (`src/datacore/storage/lake/catalogue.py`), sa fraîcheur et sa
-  volumétrie sont relevées par `monitoring.enregistrer_catalogue()`
-  comme n'importe quel autre flux IoT, visibles dans le dashboard
-  Grafana « OMEGA LAKE --- Monitoring ». Mais c'est un suivi de
-  fraîcheur (dernière donnée reçue), pas une métrique de performance
-  du flux en continu -- pas de débit d'événements/seconde, pas de
-  latence, pas de détection de déconnexion en direct.
-- **Scraping du portail** : non, aucun suivi persisté.
-  `run_extraction.py` imprime un résumé en console au moment de
-  l'exécution, rien n'est enregistré ni interrogeable après coup. Le
-  monitorage (`monitoring`, C20bis) a été construit spécifiquement
-  pour répondre à l'exigence C20 du data lake (Bloc 4) -- le Bloc 2
-  (collecte, C8-C12, où vit le scraping) n'a jamais eu d'équivalent,
-  rien dans son référentiel ne l'exige.
+avant de répondre plutôt que supposée. **Mise à jour (issue #104,
+traitée après M6)** : les deux lacunes identifiées ont été comblées,
+en réutilisant les mécanismes existants plutôt qu'un nouveau système :
+- **Flux SSE** : `sse_consumer.consommer()` journalise désormais le
+  débit réel par fenêtre (`monitoring.enregistrer_evenements_fenetre()`,
+  réutilise `monitoring.catalogue_lake`, zone `"raw"`) -- un
+  évènement/seconde devient mesurable dans Grafana, pas seulement la
+  fraîcheur de la dernière donnée. La détection de déconnexion
+  s'appuie sur un timeout de lecture (`TIMEOUT_LECTURE_SECONDES = 30`,
+  largement au-dessus de la cadence réelle de 2s) qui déclenche la
+  reconnexion déjà existante -- un flux silencieux sans coupure TCP
+  franche est désormais détecté, pas seulement une coupure réseau
+  explicite.
+- **Scraping du portail** : `run_extraction.extract_portail()`
+  journalise désormais chaque exécution dans
+  `gouvernance.journal_operations` (réutilise le mécanisme de C16) --
+  nombre de colis scrapés, nombre d'erreurs HTTP, durée. Les colis en
+  échec (404) sont comptés sans interrompre le scraping des suivants.
 
-Écart assumé entre les deux blocs, pas une négligence incohérente --
-documenté aussi au chapitre 6 §« Granularité réelle du monitorage » du
-rapport. À traiter si le temps le permet avant la soutenance, sinon
-cette réponse factuelle suffit à l'oral.
+Vérifié en conditions réelles, pas simulé : requête réelle sur le flux
+SSE mock (fenêtres de 3 et 2 évènements observées), scraping réel des
+40 colis du portail (0 erreur) -- lignes insérées relues directement
+en base après coup, pas seulement un code qui compile.
 
 **« Quels écarts avez-vous eus par rapport au cahier des charges ? »**
 Six écarts réels sur l'ensemble du programme, tous décidés avant

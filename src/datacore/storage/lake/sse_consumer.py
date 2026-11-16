@@ -35,9 +35,20 @@ from datacore.config import (
     TRANSFLOW_API_URL,
 )
 from datacore.storage.lake.ingestion_batch import client
+from datacore.storage.lake.monitoring import enregistrer_evenements_fenetre
 
 FLUX = "flux_sse_capteurs"
 INTERVALLE_PAR_DEFAUT = datetime.timedelta(minutes=5)
+
+# Détection d'arrêt du flux (issue #104) : la source émet un évènement
+# toutes les 2s en conditions réelles (voir api-mock/app.py) -- largement
+# au-delà de cette marge, un silence signale un flux arrêté côté source,
+# pas seulement une coupure réseau franche (déjà gérée par la reconnexion
+# sur `requests.RequestException`). `requests.exceptions.ReadTimeout` est
+# une sous-classe de `RequestException` : la reconnexion existante
+# s'applique sans changement, seul le message affiché distingue les deux
+# cas pour l'opérateur.
+TIMEOUT_LECTURE_SECONDES = 30
 
 
 def evenements_depuis_lignes(lignes: Iterable[bytes | str]) -> Iterator[dict[str, Any]]:
@@ -91,6 +102,7 @@ def consommer(
     intervalle: datetime.timedelta = INTERVALLE_PAR_DEFAUT,
     horloge=datetime.datetime.now,
     duree_max: datetime.timedelta | None = None,
+    sur_depot=None,
 ) -> list[str]:
     """Consomme un flux SSE et dépose des fichiers NDJSON par fenêtre dans raw/.
 
@@ -105,6 +117,11 @@ def consommer(
         duree_max: arrête la consommation après cette durée écoulée
             (utilisé en test/démonstration ; `None` = tourne jusqu'à
             épuisement du flux, cas réel avec un flux non borné).
+        sur_depot: callback optionnel `(cle, nb_evenements, horodatage)`
+            appelé après chaque dépôt (issue #104) -- `None` par défaut,
+            ignoré ici, utilisé par `main()` pour journaliser le débit
+            réel du flux sans coupler cette fonction pure à une
+            connexion base de données (testabilité inchangée).
 
     Returns:
         La liste des clés S3 déposées, dans l'ordre.
@@ -118,14 +135,21 @@ def consommer(
         tampon.append(evenement)
         maintenant = horloge()
         if maintenant - dernier_depot >= intervalle:
-            cles.append(_deverser(tampon, s3, bucket, maintenant))
+            cle = _deverser(tampon, s3, bucket, maintenant)
+            cles.append(cle)
+            if sur_depot is not None:
+                sur_depot(cle, len(tampon), maintenant)
             tampon = []
             dernier_depot = maintenant
         if duree_max is not None and maintenant - debut >= duree_max:
             break
 
     if tampon:
-        cles.append(_deverser(tampon, s3, bucket, horloge()))
+        maintenant = horloge()
+        cle = _deverser(tampon, s3, bucket, maintenant)
+        cles.append(cle)
+        if sur_depot is not None:
+            sur_depot(cle, len(tampon), maintenant)
 
     return cles
 
@@ -140,16 +164,34 @@ def main() -> None:
     le docstring du module. Ce processus est longue durée et non borné ;
     son orchestration en production (relance automatique si le processus
     lui-même s'arrête) est hors périmètre de ce livrable.
+
+    Détecte aussi un flux silencieux (issue #104) via un timeout de
+    lecture (`TIMEOUT_LECTURE_SECONDES`) -- sans lui, un flux qui
+    s'arrête sans fermer la connexion TCP bloquerait indéfiniment sur
+    `iter_lines()`, sans jamais déclencher la reconnexion existante.
     """
     url = f"{TRANSFLOW_API_URL}/api/stream/capteurs"
     while True:
         try:
             with requests.get(
-                url, headers={"X-API-Key": TRANSFLOW_API_KEY}, stream=True, timeout=None
+                url,
+                headers={"X-API-Key": TRANSFLOW_API_KEY},
+                stream=True,
+                timeout=(5, TIMEOUT_LECTURE_SECONDES),
             ) as reponse:
                 reponse.raise_for_status()
-                cles = consommer(reponse.iter_lines(), client())
+                cles = consommer(
+                    reponse.iter_lines(),
+                    client(),
+                    sur_depot=lambda cle, n, t: enregistrer_evenements_fenetre(FLUX, n, t),
+                )
                 print(f"{len(cles)} fichiers déposés dans {OMEGA_LAKE_BUCKET}/raw/{FLUX}/")
+        except requests.exceptions.Timeout:
+            print(
+                f"Aucun évènement reçu depuis {TIMEOUT_LECTURE_SECONDES}s "
+                f"(flux silencieux), reconnexion dans 5s..."
+            )
+            time.sleep(5)
         except requests.RequestException as exc:
             print(f"Connexion au flux perdue ({exc}), reconnexion dans 5s...")
             time.sleep(5)

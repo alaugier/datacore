@@ -11,6 +11,7 @@ import pytest
 
 from datacore.storage.lake.monitoring import (
     enregistrer_catalogue,
+    enregistrer_evenements_fenetre,
     enregistrer_purge,
     verifier_sante_infrastructure,
 )
@@ -131,6 +132,32 @@ def test_enregistrer_purge_une_ligne_par_flux_meme_si_rien_purge(monkeypatch):
     assert "INSERT INTO monitoring.purges_lake" in sql
     valeurs = {(flux, n) for flux, n, _ in records}
     assert valeurs == {("geoloc_flotte", 1), ("flux_sse_capteurs", 0)}
+
+
+def test_enregistrer_evenements_fenetre_insere_zone_raw_avec_le_bon_compte(monkeypatch):
+    """Le débit d'une fenêtre SSE est inséré dans monitoring.catalogue_lake avec zone='raw'
+    et le nombre d'évènements de la fenêtre -- pas un nouveau mécanisme (issue #104)."""
+    conn = FakeConnection()
+    monkeypatch.setattr("datacore.storage.lake.monitoring.psycopg2.connect", lambda dsn: conn)
+    releve_le = datetime.datetime(2026, 11, 17, 10, 5, 0)
+
+    enregistrer_evenements_fenetre("flux_sse_capteurs", 42, releve_le, dsn="postgresql://fake")
+
+    sql, params = conn.cursor_obj.execute_calls[0]
+    assert "INSERT INTO monitoring.catalogue_lake" in sql
+    assert params == ("flux_sse_capteurs", 42, releve_le, releve_le)
+
+
+def test_enregistrer_evenements_fenetre_panne_postgres_nest_pas_avalee(monkeypatch):
+    """Même principe que les autres relevés : une panne Postgres remonte telle quelle."""
+    monkeypatch.setattr(
+        "datacore.storage.lake.monitoring.psycopg2.connect", _psycopg2_connect_leve_toujours
+    )
+
+    with pytest.raises(FakeConnectError):
+        enregistrer_evenements_fenetre(
+            "flux_sse_capteurs", 1, datetime.datetime.now(), dsn="postgresql://fake"
+        )
 
 
 def test_verifier_sante_infrastructure_accessible_somme_les_tailles_du_bon_bucket(monkeypatch):
