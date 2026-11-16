@@ -226,6 +226,42 @@ suivante : ouverture du Bloc 4 (data lake OMEGA LAKE).
   délibérément traitée en premier pour ne pas la sacrifier si le temps
   venait à manquer.
 
+**Exemple — CoSu du 16/11/2026 (dernière semaine avant soutenance).**
+
+- **Avancement** : date de soutenance confirmée par la formatrice —
+  vendredi 20/11/2026 (incertitude du CoSu précédent levée, plus de
+  marge que craint). Issue #96 (Q&A jury) et issue #100 (DAG Airflow,
+  stretch goal optionnel) terminées ; issue #97 (slides Slidev) en fin
+  de relecture (PR #106, 3 tours effectués). Issues #98 (script de
+  démo minuté) et #99 (checklist technique pré-soutenance) restent à
+  faire.
+- **Décision actée depuis le dernier point** : issue #100 traitée sur
+  confirmation explicite de la formatrice que l'orchestration Airflow
+  reste faisable « sans casser le workflow actuel » — implémentée
+  comme service Docker Compose sous profil dédié, jamais démarré par
+  défaut (PR #107), rapport/synthèse Q&A mis à jour en conséquence
+  (PR #108). Trois bugs réels trouvés et corrigés en testant pour de
+  vrai (conflit `flask`, hôte Postgres en dur, plafond `duckdb`
+  absent) plutôt qu'en relisant seulement le code.
+- **Incident et correction, en toute transparence** : la première
+  version du correctif d'idempotence a tronqué par erreur 8 tables de
+  données de référence qui n'auraient jamais dû l'être (portée trop
+  large, pas les 5 tables réellement réécrites par le pipeline),
+  corrompant silencieusement l'entrepôt et le data lake en aval.
+  Détecté en préparant le correctif définitif (pas par l'utilisateur),
+  entièrement réparé (restauration depuis `data/raw/`, volumes
+  revérifiés), puis corrigé correctement et re-testé par deux
+  déclenchements consécutifs du DAG (12/12 tâches en succès les deux
+  fois, données de référence inchangées) avant livraison.
+- **Point d'attention à faire remonter à Éléonore RAKOTO** : aucun,
+  pas de risque budgétaire — M6 reste hors périmètre budgété initial
+  (§2.2).
+- **Risques** : calendrier désormais confirmé plutôt qu'approximatif
+  (3 jours ouvrés restants, 17-19/11, avant le passage du 20/11) —
+  risque calendaire du CoSu précédent levé. Reste à boucler : finaliser
+  #97, traiter #98/#99, merger #106/#107/#108 vers `dev` puis la
+  release `dev` → `main` de clôture de M6.
+
 ---
 
 ## 2. Tableau de suivi budgétaire
