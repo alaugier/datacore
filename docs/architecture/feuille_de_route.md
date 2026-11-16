@@ -137,8 +137,8 @@ gantt
     Gouvernance des donnees (C21)      :        p4d, after p4c, 7d
     section Transverse
     Restitution BI Grafana (M4)        :done, m4bi, 2026-09-24, 2026-10-19
-    Rapport LaTeX (M5, continu)        :        m5, 2026-08-10, 98d
-    Preparation soutenance (M6)        :        m6, 2026-11-16, 10d
+    Rapport LaTeX (M5, continu)        :done, m5, 2026-08-10, 98d
+    Preparation soutenance (M6)        :active, m6, 2026-11-16, 10d
 ```
 
 ### 4.2 Roadmap / dépendances (PERT simplifié)
