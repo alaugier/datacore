@@ -541,17 +541,22 @@ transporteur · Requêtes SQL directes (FluxPro) · Fichiers clients
 hétérogènes · Historique volumineux
 </div>
 
-<div class="mt-4 flex justify-center">
-<img src="/images/diagrammes_techniques_ingestion_c8.png" class="rounded" style="max-height: 390px; width: auto;">
+<div class="mt-3 flex justify-center">
+<img src="/images/diagrammes_techniques_ingestion_c8.png" class="rounded" style="max-height: 360px; width: auto;">
 </div>
 
-<div class="mt-2 text-sm opacity-70">→ Démo live à ce point (voir issue #98)</div>
+<div class="mt-2 text-sm opacity-70">→ Démo live à ce point (~3min30, script minuté)</div>
 
 <!--
 - 5 connecteurs, 31 tests — citer le chiffre
 - Ne pas décrire chaque connecteur un par un, renvoyer au schéma affiché
-- Lancer la démo live ici si le script est prêt (issue #98), sinon l'annoncer pour plus tard
-- URLs utiles pour la démo : localhost:5050/portail-transporteur/colis (scraping, api-mock) et localhost:8000/docs (API Omega Data, FastAPI) — les deux sont listées sur la slide "Infrastructure"
+- Démo live ici (~3min30, script minuté complet dans docs/architecture/script_demo_soutenance.md) :
+  1. Déclencher le DAG Airflow (localhost:8080, bouton Trigger) -- 12 taches, ~20-25s
+  2. Swagger (localhost:8000/docs) -- Authorize avec omega-data-analyst-2026, GET /kpis/taux-service
+  3. Grafana (localhost:3000) -- dashboard SLA OMEGA BI, a jour avec le run
+  4. MinIO (localhost:9001) -- bucket omega-lake, prefixes raw/staging/curated/curated_bi
+  5. Requete DuckDB pseudonymisee en direct (commande exacte dans le script) -- vehicule_id = hash, pas l'identifiant reel
+- Plan de repli complet (captures d'ecran + commandes manuelles chapitre 5) dans le script si un outil est injoignable
 -->
 
 ---
