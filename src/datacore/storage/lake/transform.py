@@ -27,6 +27,7 @@ from datacore.config import (
     OMEGA_LAKE_BUCKET,
     OMEGA_LAKE_S3_ENDPOINT,
     POSTGRES_DB,
+    POSTGRES_HOST,
     POSTGRES_PASSWORD,
     POSTGRES_PORT,
     POSTGRES_USER,
@@ -122,12 +123,12 @@ def connexion() -> duckdb.DuckDBPyConnection:
         SET s3_url_style='path';
     """)
     con.sql(f"""
-        ATTACH 'host=localhost port={POSTGRES_PORT} dbname={POSTGRES_DB}
+        ATTACH 'host={POSTGRES_HOST} port={POSTGRES_PORT} dbname={POSTGRES_DB}
                 user={POSTGRES_USER} password={POSTGRES_PASSWORD}'
         AS staging (TYPE postgres, READ_ONLY)
     """)
     con.sql(f"""
-        ATTACH 'host=localhost port={POSTGRES_PORT} dbname={OMEGA_BI_DB}
+        ATTACH 'host={POSTGRES_HOST} port={POSTGRES_PORT} dbname={OMEGA_BI_DB}
                 user={POSTGRES_USER} password={POSTGRES_PASSWORD}'
         AS entrepot (TYPE postgres, READ_ONLY)
     """)

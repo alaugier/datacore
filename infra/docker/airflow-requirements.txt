@@ -1,0 +1,29 @@
+# Sous-ensemble de requirements.txt installe dans l'image Airflow
+# (issue #100) -- volontairement PAS requirements.txt en entier.
+#
+# flask>=3.0 (requirements.txt) entre en conflit avec
+# apache-airflow-providers-fab, qui exige flask<2.3 -- deja installee
+# par l'image de base apache/airflow pour son interface web. flask
+# n'est de toute facon utilisee par aucun des scripts orchestres par ce
+# DAG (seulement par src/datacore/alerting/webhook.py et api-mock/,
+# deux services qui tournent dans leurs propres conteneurs, jamais
+# invoques par ce DAG) -- verifie par grep des imports reels avant de
+# choisir ce sous-ensemble plutot que de forcer requirements.txt en
+# entier et casser l'authentification de l'interface Airflow.
+#
+# A tenir manuellement a jour si les imports des scripts orchestres
+# (voir infra/airflow/dags/datacore_pipeline.py) changent.
+requests>=2.31
+beautifulsoup4>=4.12
+psycopg2-binary>=2.9
+python-dotenv>=1.0
+sqlalchemy>=2.0
+alembic>=1.13
+# duckdb : requirements.txt dit ">=1.1" sans plafond -- pip a resolu
+# 2.0.0 ici (premiere image construite apres sa sortie), qui a retire
+# Relation.fetchone() (storage/lake/catalogue.py en depend) -- casse
+# aussi en dehors d'Airflow des qu'un venv est recree aujourd'hui.
+# Fixe ici a la version reellement utilisee/testee dans ce projet
+# (verifiee dans .venv : `pip show duckdb`), pas a la derniere publiee.
+duckdb==1.5.5
+boto3>=1.34
