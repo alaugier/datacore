@@ -120,6 +120,42 @@ def test_consommer_respecte_duree_max():
     assert total_lignes_deposees < 100
 
 
+def test_consommer_appelle_sur_depot_avec_le_nombre_devenements_de_la_fenetre():
+    """`sur_depot` reçoit (clé, nb_évènements, horodatage) à chaque dépôt réel, dans l'ordre --
+    pas seulement à la fin (issue #104, débit réel du flux par fenêtre)."""
+    depart = datetime.datetime(2026, 9, 22, 10, 0, 0)
+    horloge = HorlogeFactice(depart, datetime.timedelta(seconds=1))
+    lignes = [_evenement() for _ in range(5)]
+    s3 = FakeS3Client()
+    appels = []
+
+    cles = consommer(
+        lignes,
+        s3,
+        bucket="omega-lake",
+        intervalle=datetime.timedelta(seconds=2),
+        horloge=horloge,
+        sur_depot=lambda cle, n, t: appels.append((cle, n, t)),
+    )
+
+    assert [cle for cle, _, _ in appels] == cles
+    assert sum(n for _, n, _ in appels) == 5
+
+
+def test_consommer_sans_sur_depot_ne_leve_pas():
+    """`sur_depot=None` (valeur par défaut) ne change rien au comportement existant."""
+    depart = datetime.datetime(2026, 9, 22, 10, 0, 0)
+    horloge = HorlogeFactice(depart, datetime.timedelta(seconds=1))
+    lignes = [_evenement() for _ in range(3)]
+    s3 = FakeS3Client()
+
+    cles = consommer(
+        lignes, s3, bucket="omega-lake", intervalle=datetime.timedelta(seconds=10), horloge=horloge
+    )
+
+    assert len(cles) == 1
+
+
 def test_deverser_ecrit_du_ndjson_valide():
     """Chaque ligne du contenu déposé est un JSON valide et fidèle à l'évènement d'origine."""
     depart = datetime.datetime(2026, 9, 22, 10, 0, 0)

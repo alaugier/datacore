@@ -1543,7 +1543,7 @@ layout: default
 layout: default
 ---
 
-# Limite assumée : granularité réelle du monitorage
+# Granularité du monitorage — lacune trouvée, puis comblée
 
 <div class="flex flex-col gap-3 mt-4">
 <div class="flex items-center gap-4 p-3 rounded border border-gray-400/30">
@@ -1551,29 +1551,30 @@ layout: default
 <div class="text-sm font-bold" style="width: 190px;">SSE capteurs<br/><code class="text-xs font-normal">flux_sse_capteurs</code></div>
 <div class="flex gap-2 flex-wrap">
 <span class="inline-flex items-center gap-1 text-sm px-2 py-1 rounded-full bg-green-500/15 text-green-700"><b>✓</b> Fraîcheur/volumétrie</span>
-<span class="inline-flex items-center gap-1 text-sm px-2 py-1 rounded-full bg-red-500/10" style="color:#c92a2a"><b>✕</b> Débit / latence / déconnexion</span>
+<span class="inline-flex items-center gap-1 text-sm px-2 py-1 rounded-full bg-green-500/15 text-green-700"><b>✓</b> Débit par fenêtre / détection de déconnexion</span>
 </div>
 </div>
 <div class="flex items-center gap-4 p-3 rounded border border-gray-400/30">
 <img src="/illustrations/web-search.svg" style="height: 70px; width: auto;" class="flex-shrink-0">
 <div class="text-sm font-bold" style="width: 190px;">Scraping portail transporteur</div>
 <div class="flex gap-2 flex-wrap">
-<span class="inline-flex items-center gap-1 text-sm px-2 py-1 rounded-full bg-red-500/10" style="color:#c92a2a"><b>✕</b> Aucun suivi persisté — <code class="text-xs">print()</code> console uniquement</span>
+<span class="inline-flex items-center gap-1 text-sm px-2 py-1 rounded-full bg-green-500/15 text-green-700"><b>✓</b> Suivi persisté — <code class="text-xs">gouvernance.journal_operations</code></span>
 </div>
 </div>
 </div>
 
 <div class="mt-6 text-sm opacity-70">
-Le monitorage (<code>monitoring</code>, C20bis) a été construit
-spécifiquement pour C20 (data lake, Bloc 4) — le Bloc 2 n'a jamais eu
-d'équivalent. Documenté au chapitre 6 du rapport, suivi par l'issue #104
-(backlog, à traiter si le temps le permet).
+Lacune identifiée en relisant le code (issue #104) : le monitorage
+(<code>monitoring</code>, C20bis) avait été construit spécifiquement
+pour C20 (data lake, Bloc 4) — le Bloc 2 n'avait jamais eu d'équivalent.
+Comblée après la clôture de M6 en réutilisant les mécanismes existants
+(pas un nouveau système) — vérifié en conditions réelles, pas simulé.
 </div>
 
 <!--
-- Assumer directement, ne pas attendre la question : SSE partiellement suivi, scraping pas du tout
-- Expliquer pourquoi : le monitorage a été construit spécifiquement pour C20 (Bloc 4), jamais étendu au Bloc 2
-- Mentionner l'issue #104 (backlog) — montre que c'est tracé et assumé, pas oublié
+- Assumer directement, ne pas attendre la question : les deux volets sont désormais couverts
+- Bien insister sur "réutilise les mécanismes existants" si le jury demande le détail technique -- monitoring.catalogue_lake pour le débit SSE, gouvernance.journal_operations pour le scraping (même principe que C16)
+- Mentionner l'issue #104 (fermée) — montre que la lacune a été tracée puis réellement traitée, pas juste repérée
 -->
 
 ---

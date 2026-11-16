@@ -9,7 +9,10 @@ Prérequis : l'API mock TransFlow doit être lancée (voir README), et la
 base de staging PostgreSQL doit contenir les données FluxPro (voir
 `scripts/init_staging_db.sh`, issue #7) pour l'extraction FluxPro.
 """
+import requests
+
 from datacore.config import INTERIM_DIR
+from datacore.governance.journal import journaliser
 from datacore.ingestion import clients_files, fluxpro, historique, portail_scraping, transflow
 from datacore.ingestion.landing import write_records
 
@@ -22,10 +25,26 @@ def extract_transflow() -> None:
 
 
 def extract_portail() -> None:
-    """Scrape le portail transporteur (liste + détail de chaque colis) vers `data/interim/`."""
-    tracking_numbers = portail_scraping.scrape_colis_list()
-    details = [portail_scraping.scrape_colis_detail(tn) for tn in tracking_numbers]
-    write_records(details, INTERIM_DIR / "portail_colis.json")
+    """Scrape le portail transporteur (liste + détail de chaque colis) vers `data/interim/`.
+
+    Journalise un relevé minimal dans `gouvernance.journal_operations`
+    (réutilise le mécanisme existant de C16, issue #104) : nombre de
+    colis scrapés avec succès, nombre d'erreurs HTTP (404 notamment),
+    durée (début/fin déjà suivis par `journaliser()`). Avant ce relevé,
+    aucun suivi du scraping ne survivait à l'exécution (voir
+    `synthese_technique_oral.md`).
+    """
+    with journaliser("extraction_portail_scraping") as contexte:
+        tracking_numbers = portail_scraping.scrape_colis_list()
+        details = []
+        erreurs = 0
+        for tn in tracking_numbers:
+            try:
+                details.append(portail_scraping.scrape_colis_detail(tn))
+            except requests.HTTPError:
+                erreurs += 1
+        write_records(details, INTERIM_DIR / "portail_colis.json")
+        contexte["details"] = f"{len(details)} colis scrapés, {erreurs} erreur(s) HTTP"
 
 
 def extract_fluxpro() -> None:

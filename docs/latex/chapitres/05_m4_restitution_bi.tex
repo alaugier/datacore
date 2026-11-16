@@ -136,21 +136,23 @@ data » séparé pour 25~000 lignes.
 flux temps réel SSE inclus -- sa fraîcheur et sa volumétrie sont
 relevées comme n'importe quel autre flux IoT (\texttt{flux\_sse\_capteurs}
 dans le catalogue, chapitre~\ref{chap:bloc4} §C20), visibles dans le
-dashboard Grafana « OMEGA LAKE --- Monitoring ». Ce relevé reste un
-suivi de fraîcheur (dernière donnée reçue), pas une métrique de
-performance du flux en continu (pas de débit d'événements par
-seconde, pas de latence, pas de détection de déconnexion en direct --
-seul le test de coupure brutale \texttt{kill -9} du
-chapitre~\ref{chap:bloc4} §C19 vérifie la résilience, sans observer le
-flux en continu). Le scraping du portail transporteur
-(chapitre~\ref{chap:bloc2} §C8), lui, n'a \textbf{aucun} suivi
-persisté : seul un résumé imprimé en console au moment de
-l'exécution, rien d'interrogeable après coup -- le monitorage
-(\texttt{monitoring}, C20bis) a été construit spécifiquement pour
-répondre à l'exigence C20 du data lake (Bloc 4), le Bloc 2 n'a jamais
-eu d'équivalent. Écart assumé, identifié en relisant le code plutôt
-que découvert par le jury : à traiter si le temps le permet avant la
-soutenance, sans quoi cette réponse factuelle suffit.
+dashboard Grafana « OMEGA LAKE --- Monitoring ».
+
+\textbf{Mise à jour (issue \#104)} : deux lacunes identifiées en
+relisant le code (pas de débit d'événements par seconde ni de
+détection de déconnexion en direct sur le flux SSE ; aucun suivi
+persisté pour le scraping du portail transporteur, chapitre~\ref{chap:bloc2}
+§C8) ont été comblées après la clôture de M6, en réutilisant les
+mécanismes déjà en place plutôt qu'un nouveau système : le débit par
+fenêtre du flux SSE est désormais journalisé
+(\texttt{monitoring.enregistrer\_evenements\_fenetre()}, même table
+\texttt{monitoring.catalogue\_lake}), un timeout de lecture détecte un
+flux silencieux et déclenche la reconnexion déjà existante, et chaque
+exécution du scraping est journalisée dans
+\texttt{gouvernance.journal\_operations} (réutilise le mécanisme de
+C16) -- nombre de colis, erreurs HTTP, durée. Vérifié en conditions
+réelles (requête réelle sur le flux SSE mock, scraping réel des 40
+colis du portail), pas simulé.
 
 \section{Rejouer le remplissage des données et les pipelines}
 
