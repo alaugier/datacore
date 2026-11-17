@@ -37,10 +37,29 @@ Schéma créé par la migration Alembic `a487cd05b8d5` (même mécanisme que
 `gouvernance` reste exclu, ce choix n'est pas révisé ici (voir
 `registre_rgpd_entrepot.md` §4).
 
+**Mise à jour (issue #104)** : deux tables supplémentaires, migration
+`bd4f2d68682a` — hors périmètre strict C20/C20bis pour la seconde, ajoutées ici par pragmatisme (le schéma `monitoring` est le seul que `bi_reader` peut lire) :
+
+| Table | Volet | Alimentée par |
+|---|---|---|
+| `monitoring.debit_flux_sse` | **Applicatif** — débit du flux SSE par fenêtre de dépôt | `enregistrer_evenements_fenetre()`, appelée par `sse_consumer.consommer()` via son callback `sur_depot` |
+| `monitoring.scraping_portail` | *(Bloc 2, C8, pas C20/C20bis)* — nombre de colis scrapés, erreurs HTTP, durée | `enregistrer_scraping_portail()`, appelée par `run_extraction.extract_portail()` |
+
+Deux tables dédiées, pas une réutilisation de `catalogue_lake` ni un
+accès donné à `bi_reader` sur `gouvernance` : voir les docstrings de
+`enregistrer_evenements_fenetre()`/`enregistrer_scraping_portail()`
+(`src/datacore/storage/lake/monitoring.py`) pour le raisonnement
+complet. Le journal d'audit du scraping
+(`gouvernance.journal_operations`) reste la trace de référence,
+inchangé — `monitoring.scraping_portail` ne sert qu'à la visualisation.
+
 Dashboard Grafana : « OMEGA LAKE — Monitoring (C20bis) »
 (`infra/grafana/dashboards/monitoring_lake.json`), réutilise le
 datasource `omega_bi_reader` déjà provisionné pour C16bis — même
-principe de sobriété.
+principe de sobriété. 6 panels au total depuis l'issue #104 (4
+initiaux + débit SSE en série temporelle + scraping en table), vérifiés
+via `/api/ds/query` avec les identifiants `bi_reader` réels, pas
+seulement un JSON qui charge sans erreur.
 
 ---
 

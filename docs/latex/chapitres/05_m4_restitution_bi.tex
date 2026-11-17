@@ -142,17 +142,25 @@ dashboard Grafana « OMEGA LAKE --- Monitoring ».
 relisant le code (pas de débit d'événements par seconde ni de
 détection de déconnexion en direct sur le flux SSE ; aucun suivi
 persisté pour le scraping du portail transporteur, chapitre~\ref{chap:bloc2}
-§C8) ont été comblées après la clôture de M6, en réutilisant les
-mécanismes déjà en place plutôt qu'un nouveau système : le débit par
-fenêtre du flux SSE est désormais journalisé
-(\texttt{monitoring.enregistrer\_evenements\_fenetre()}, même table
-\texttt{monitoring.catalogue\_lake}), un timeout de lecture détecte un
-flux silencieux et déclenche la reconnexion déjà existante, et chaque
-exécution du scraping est journalisée dans
+§C8) ont été comblées après la clôture de M6. Le débit par fenêtre du
+flux SSE est journalisé dans une table dédiée
+(\texttt{monitoring.debit\_flux\_sse} -- pas \texttt{catalogue\_lake},
+qui aurait mélangé deux significations différentes sous la même clé
+flux/zone, trouvé en vérifiant le dashboard Grafana) et un timeout de
+lecture détecte un flux silencieux, déclenchant la reconnexion déjà
+existante. Chaque exécution du scraping reste journalisée dans
 \texttt{gouvernance.journal\_operations} (réutilise le mécanisme de
-C16) -- nombre de colis, erreurs HTTP, durée. Vérifié en conditions
-réelles (requête réelle sur le flux SSE mock, scraping réel des 40
-colis du portail), pas simulé.
+C16, trace d'audit de référence) -- nombre de colis, erreurs HTTP,
+durée. \texttt{bi\_reader} (rôle utilisé par Grafana) n'ayant
+délibérément pas accès à \texttt{gouvernance}, un second relevé
+minimal est dupliqué dans \texttt{monitoring.scraping\_portail} pour
+rendre ce suivi visible dans Grafana. Les deux nouveaux panels
+(\texttt{infra/grafana/dashboards/monitoring\_lake.json}) ont été
+interrogés via l'API \texttt{/api/ds/query} avec les identifiants
+\texttt{bi\_reader} réels -- données réelles retournées, pas seulement
+un tableau de bord qui s'affiche sans erreur. Vérifié en conditions
+réelles de bout en bout (requête réelle sur le flux SSE mock, scraping
+réel des 40 colis du portail), pas simulé.
 
 \section{Rejouer le remplissage des données et les pipelines}
 

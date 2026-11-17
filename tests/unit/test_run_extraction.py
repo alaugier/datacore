@@ -41,13 +41,23 @@ class FakeConnection:
     def close(self):
         pass
 
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *exc):
+        return False
+
 
 def test_extract_portail_journalise_le_nombre_de_colis_et_les_erreurs_http(monkeypatch):
     """Les colis en échec (404) sont comptés comme erreurs, pas une exception qui
     interromprait le scraping des colis suivants -- et le résumé journalisé reflète
     les deux comptes (succès et erreurs), pas seulement le total brut."""
+    # Un seul mock pour les deux modules : `journal.py` et `monitoring.py` font
+    # tous deux `import psycopg2`, donc `<module>.psycopg2` est le même objet
+    # module dans les deux cas -- patcher séparément écraserait silencieusement
+    # le premier patch par le second (bug trouvé en écrivant ce test).
     conn = FakeConnection()
-    monkeypatch.setattr("datacore.governance.journal.psycopg2.connect", lambda dsn: conn)
+    monkeypatch.setattr("psycopg2.connect", lambda dsn: conn)
     monkeypatch.setattr(
         "datacore.ingestion.run_extraction.portail_scraping.scrape_colis_list",
         lambda: ["ND-001", "ND-002", "ND-003"],
@@ -73,18 +83,23 @@ def test_extract_portail_journalise_le_nombre_de_colis_et_les_erreurs_http(monke
     records, _ = ecrits[0]
     assert records == [{"tracking_number": "ND-001"}, {"tracking_number": "ND-003"}]
 
-    # Journalisation : un INSERT (debut) puis un UPDATE (succes, avec le resume).
+    # 3 requetes dans l'ordre : INSERT (debut journal), UPDATE (succes journal),
+    # puis INSERT monitoring (releve Grafana, distinct du journal d'audit).
     calls = conn.cursor_obj.execute_calls
-    assert len(calls) == 2
+    assert len(calls) == 3
     update_sql, update_params = calls[1]
     assert "succes" in update_sql
     assert "2 colis scrapés, 1 erreur(s) HTTP" in update_params
+
+    mon_sql, mon_params = calls[2]
+    assert "INSERT INTO monitoring.scraping_portail" in mon_sql
+    assert mon_params[:2] == (2, 1)
 
 
 def test_extract_portail_sans_aucune_erreur(monkeypatch):
     """Quand tout réussit, le résumé journalisé indique 0 erreur, pas une omission."""
     conn = FakeConnection()
-    monkeypatch.setattr("datacore.governance.journal.psycopg2.connect", lambda dsn: conn)
+    monkeypatch.setattr("psycopg2.connect", lambda dsn: conn)
     monkeypatch.setattr(
         "datacore.ingestion.run_extraction.portail_scraping.scrape_colis_list",
         lambda: ["ND-010"],
@@ -99,5 +114,9 @@ def test_extract_portail_sans_aucune_erreur(monkeypatch):
 
     run_extraction.extract_portail()
 
-    update_sql, update_params = conn.cursor_obj.execute_calls[1]
+    calls = conn.cursor_obj.execute_calls
+    update_sql, update_params = calls[1]
     assert "1 colis scrapés, 0 erreur(s) HTTP" in update_params
+
+    mon_sql, mon_params = calls[2]
+    assert mon_params[:2] == (1, 0)

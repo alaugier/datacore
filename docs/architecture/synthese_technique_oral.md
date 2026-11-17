@@ -190,11 +190,15 @@ du portail transporteur ? »**
 Question posée par l'utilisateur en relecture, vérifiée dans le code
 avant de répondre plutôt que supposée. **Mise à jour (issue #104,
 traitée après M6)** : les deux lacunes identifiées ont été comblées,
-en réutilisant les mécanismes existants plutôt qu'un nouveau système :
+y compris leur visualisation Grafana (ajoutée le lendemain, après
+avoir constaté que les données étaient écrites mais pas réellement
+observables) :
 - **Flux SSE** : `sse_consumer.consommer()` journalise désormais le
   débit réel par fenêtre (`monitoring.enregistrer_evenements_fenetre()`,
-  réutilise `monitoring.catalogue_lake`, zone `"raw"`) -- un
-  évènement/seconde devient mesurable dans Grafana, pas seulement la
+  table dédiée `monitoring.debit_flux_sse` -- pas `catalogue_lake`,
+  qui aurait mélangé volume cumulé et débit par fenêtre sous la même
+  clé flux/zone, trouvé en vérifiant le dashboard). Visible comme une
+  vraie série temporelle (panel Grafana dédié), pas seulement la
   fraîcheur de la dernière donnée. La détection de déconnexion
   s'appuie sur un timeout de lecture (`TIMEOUT_LECTURE_SECONDES = 30`,
   largement au-dessus de la cadence réelle de 2s) qui déclenche la
@@ -202,15 +206,21 @@ en réutilisant les mécanismes existants plutôt qu'un nouveau système :
   franche est désormais détecté, pas seulement une coupure réseau
   explicite.
 - **Scraping du portail** : `run_extraction.extract_portail()`
-  journalise désormais chaque exécution dans
-  `gouvernance.journal_operations` (réutilise le mécanisme de C16) --
+  journalise chaque exécution dans `gouvernance.journal_operations`
+  (réutilise le mécanisme de C16, trace d'audit de référence) --
   nombre de colis scrapés, nombre d'erreurs HTTP, durée. Les colis en
   échec (404) sont comptés sans interrompre le scraping des suivants.
+  `bi_reader` (le rôle utilisé par Grafana) n'a délibérément pas accès
+  à `gouvernance` (vérifié, `permission denied`) : un second relevé,
+  minimal, est dupliqué dans `monitoring.scraping_portail` pour rendre
+  ça visible dans Grafana sans toucher à cette frontière.
 
 Vérifié en conditions réelles, pas simulé : requête réelle sur le flux
 SSE mock (fenêtres de 3 et 2 évènements observées), scraping réel des
-40 colis du portail (0 erreur) -- lignes insérées relues directement
-en base après coup, pas seulement un code qui compile.
+40 colis du portail (0 erreur), et les deux panels Grafana interrogés
+via `/api/ds/query` avec les identifiants `bi_reader` réels -- renvoient
+des données réelles, pas juste un JSON de dashboard qui charge sans
+erreur.
 
 **« Quels écarts avez-vous eus par rapport au cahier des charges ? »**
 Six écarts réels sur l'ensemble du programme, tous décidés avant
