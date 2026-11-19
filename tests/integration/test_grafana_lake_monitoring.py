@@ -181,7 +181,8 @@ def test_releve_sse_recent_est_bien_dans_la_fenetre_timefilter_de_grafana():
                     "refId": "A",
                     "datasource": {"type": "postgres", "uid": "omega_bi_reader"},
                     "rawSql": (
-                        "SELECT releve_le AS \"time\", nb_evenements FROM monitoring.debit_flux_sse "
+                        "SELECT releve_le AS \"time\", nb_evenements "
+                        "FROM monitoring.debit_flux_sse "
                         f"WHERE flux = '{flux_test}' AND $__timeFilter(releve_le)"
                     ),
                     "format": "time_series",
