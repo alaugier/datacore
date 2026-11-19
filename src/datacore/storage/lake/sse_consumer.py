@@ -35,7 +35,7 @@ from datacore.config import (
     TRANSFLOW_API_URL,
 )
 from datacore.storage.lake.ingestion_batch import client
-from datacore.storage.lake.monitoring import enregistrer_evenements_fenetre
+from datacore.storage.lake.monitoring import _maintenant_utc, enregistrer_evenements_fenetre
 
 FLUX = "flux_sse_capteurs"
 INTERVALLE_PAR_DEFAUT = datetime.timedelta(minutes=5)
@@ -100,7 +100,7 @@ def consommer(
     s3,
     bucket: str = OMEGA_LAKE_BUCKET,
     intervalle: datetime.timedelta = INTERVALLE_PAR_DEFAUT,
-    horloge=datetime.datetime.now,
+    horloge=_maintenant_utc,
     duree_max: datetime.timedelta | None = None,
     sur_depot=None,
 ) -> list[str]:

@@ -61,6 +61,31 @@ initiaux + débit SSE en série temporelle + scraping en table), vérifiés
 via `/api/ds/query` avec les identifiants `bi_reader` réels, pas
 seulement un JSON qui charge sans erreur.
 
+**Bug trouvé en répétition (2026-11-17), corrigé** : le panel « Débit du
+flux SSE par fenêtre » affichait « No data » malgré des lignes bien
+présentes dans `monitoring.debit_flux_sse`. Cause réelle, trouvée en
+interceptant les requêtes réseau du navigateur (pas en relisant
+seulement le JSON) : la colonne `releve_le` est un `TIMESTAMP` Postgres
+sans fuseau horaire, écrite jusqu'ici avec l'heure **locale**
+(`datetime.datetime.now()`, CET = UTC+1 l'hiver), alors que la macro
+Grafana `$__timeFilter` compare en **UTC** — un relevé à 13h36 heure
+locale apparaît comme "13h36 UTC", donc dans le futur par rapport au
+`now` UTC réel, et sort de la fenêtre temporelle demandée. Corrigé à la
+source (`monitoring._maintenant_utc()`, réutilisée par `sse_consumer.py`
+et `run_extraction.py`) plutôt que dans le panel : toutes les colonnes
+`releve_le`/`execute_le` du schéma `monitoring` s'écrivent désormais en
+UTC naïf, cohérent avec `$__timeFilter`. Un second bug, sans lien,
+touchait le panel « Santé infrastructure » : un champ texte
+(`CASE WHEN ... THEN 'Accessible' ...`) réduit par `lastNotNull`
+affichait aussi « No data » malgré une ligne réelle en base (confirmé
+par requête directe et par l'API Grafana) — corrigé en passant à un
+champ numérique (`minio_accessible::int`) avec un mapping de valeurs
+(`1`→Accessible, `0`→Injoignable), le motif standard Grafana pour un
+indicateur booléen, plus robuste qu'une chaîne réduite par `lastNotNull`.
+Plage temporelle par défaut du dashboard élargie de 24h à 7 jours par la
+même occasion, pour rester lisible même si les collecteurs n'ont pas
+tourné juste avant la soutenance.
+
 ---
 
 ## 1bis. Bug trouvé par l'utilisateur : panel "Santé infrastructure" en "No data"

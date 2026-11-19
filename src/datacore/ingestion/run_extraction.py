@@ -9,15 +9,13 @@ Prérequis : l'API mock TransFlow doit être lancée (voir README), et la
 base de staging PostgreSQL doit contenir les données FluxPro (voir
 `scripts/init_staging_db.sh`, issue #7) pour l'extraction FluxPro.
 """
-import datetime
-
 import requests
 
 from datacore.config import INTERIM_DIR
 from datacore.governance.journal import journaliser
 from datacore.ingestion import clients_files, fluxpro, historique, portail_scraping, transflow
 from datacore.ingestion.landing import write_records
-from datacore.storage.lake.monitoring import enregistrer_scraping_portail
+from datacore.storage.lake.monitoring import _maintenant_utc, enregistrer_scraping_portail
 
 
 def extract_transflow() -> None:
@@ -42,7 +40,9 @@ def extract_portail() -> None:
     -- voir le docstring de `monitoring.enregistrer_scraping_portail()`.
     Le journal d'audit ci-dessus reste la trace de référence, inchangée.
     """
-    debut = datetime.datetime.now()
+    # UTC, pas l'heure locale : releve_le alimente monitoring.scraping_portail,
+    # comparé en UTC par $__timeFilter côté Grafana (voir monitoring._maintenant_utc).
+    debut = _maintenant_utc()
     with journaliser("extraction_portail_scraping") as contexte:
         tracking_numbers = portail_scraping.scrape_colis_list()
         details = []
@@ -55,7 +55,7 @@ def extract_portail() -> None:
         write_records(details, INTERIM_DIR / "portail_colis.json")
         contexte["details"] = f"{len(details)} colis scrapés, {erreurs} erreur(s) HTTP"
 
-    fin = datetime.datetime.now()
+    fin = _maintenant_utc()
     duree_ms = int((fin - debut).total_seconds() * 1000)
     enregistrer_scraping_portail(len(details), erreurs, duree_ms, fin)
 

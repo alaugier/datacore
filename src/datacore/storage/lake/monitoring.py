@@ -39,6 +39,21 @@ from datacore.config import OMEGA_BI_DB_DSN, OMEGA_LAKE_BUCKET
 from datacore.storage.lake.catalogue import construire_catalogue
 
 
+def _maintenant_utc() -> datetime.datetime:
+    """Horodatage naïf en UTC (issue #104).
+
+    Les colonnes `releve_le`/`execute_le` du schéma `monitoring` sont des
+    `TIMESTAMP` Postgres sans fuseau horaire. Les panels Grafana qui les
+    filtrent par plage temporelle (macro `$__timeFilter`) comparent en
+    UTC -- un horodatage en heure locale (`datetime.datetime.now()`, CET
+    = UTC+1 en hiver) se retrouve alors perçu comme "dans le futur" par
+    rapport au `now` UTC de Grafana, et le panel affiche "No data" malgré
+    des lignes réellement présentes (constaté en conditions réelles sur
+    `monitoring.debit_flux_sse`, pas une hypothèse).
+    """
+    return datetime.datetime.now(datetime.UTC).replace(tzinfo=None)
+
+
 def enregistrer_catalogue(
     con_lake, s3, dsn: str = OMEGA_BI_DB_DSN, bucket: str = OMEGA_LAKE_BUCKET
 ) -> int:
@@ -54,7 +69,7 @@ def enregistrer_catalogue(
         Le nombre d'entrées de catalogue enregistrées.
     """
     catalogue = construire_catalogue(con_lake, s3, bucket)
-    releve_le = datetime.datetime.now()
+    releve_le = _maintenant_utc()
 
     with psycopg2.connect(dsn) as conn, conn.cursor() as cur:
         cur.executemany(
@@ -79,7 +94,7 @@ def enregistrer_purge(resultat_purge: dict[str, list[str]], dsn: str = OMEGA_BI_
             `purge.purger_geolocalisation()`.
         dsn: chaîne de connexion vers l'entrepôt.
     """
-    execute_le = datetime.datetime.now()
+    execute_le = _maintenant_utc()
     with psycopg2.connect(dsn) as conn, conn.cursor() as cur:
         cur.executemany(
             """
@@ -189,7 +204,7 @@ def verifier_sante_infrastructure(
         accessible = False
         capacite = None
 
-    releve_le = datetime.datetime.now()
+    releve_le = _maintenant_utc()
     with psycopg2.connect(dsn) as conn, conn.cursor() as cur:
         cur.execute(
             """
