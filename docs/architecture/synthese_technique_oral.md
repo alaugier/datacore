@@ -261,3 +261,11 @@ utile un comportement déjà couvert par le rapport LaTeX (clé
 `tracking_number`, SCD2, pseudonymisation HMAC, séparation DuckDB/
 `boto3`, absence de `Fait_Livraison`, transactions/rollback) n'est pas
 repris ici -- redondant avec les chapitres 2 à 6 du rapport.
+
+## 5. Lecture de code dense, si le jury pointe une ligne précise
+
+[`notes_syntaxe_python.md`](notes_syntaxe_python.md) décompose 5
+expressions Python imbriquées réelles du dépôt (`dict(zip(...))`,
+`json.dump(..., default=...)`, `list(csv.DictReader(...))`, et deux
+motifs voisins), chacune avec un mini-exemple autonome vérifié — pas
+seulement une explication abstraite.
