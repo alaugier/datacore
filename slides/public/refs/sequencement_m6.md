@@ -1,0 +1,1 @@
+../../../docs/architecture/sequencement_m6.md

@@ -136,21 +136,31 @@ data » séparé pour 25~000 lignes.
 flux temps réel SSE inclus -- sa fraîcheur et sa volumétrie sont
 relevées comme n'importe quel autre flux IoT (\texttt{flux\_sse\_capteurs}
 dans le catalogue, chapitre~\ref{chap:bloc4} §C20), visibles dans le
-dashboard Grafana « OMEGA LAKE --- Monitoring ». Ce relevé reste un
-suivi de fraîcheur (dernière donnée reçue), pas une métrique de
-performance du flux en continu (pas de débit d'événements par
-seconde, pas de latence, pas de détection de déconnexion en direct --
-seul le test de coupure brutale \texttt{kill -9} du
-chapitre~\ref{chap:bloc4} §C19 vérifie la résilience, sans observer le
-flux en continu). Le scraping du portail transporteur
-(chapitre~\ref{chap:bloc2} §C8), lui, n'a \textbf{aucun} suivi
-persisté : seul un résumé imprimé en console au moment de
-l'exécution, rien d'interrogeable après coup -- le monitorage
-(\texttt{monitoring}, C20bis) a été construit spécifiquement pour
-répondre à l'exigence C20 du data lake (Bloc 4), le Bloc 2 n'a jamais
-eu d'équivalent. Écart assumé, identifié en relisant le code plutôt
-que découvert par le jury : à traiter si le temps le permet avant la
-soutenance, sans quoi cette réponse factuelle suffit.
+dashboard Grafana « OMEGA LAKE --- Monitoring ».
+
+\textbf{Mise à jour (issue \#104)} : deux lacunes identifiées en
+relisant le code (pas de débit d'événements par seconde ni de
+détection de déconnexion en direct sur le flux SSE ; aucun suivi
+persisté pour le scraping du portail transporteur, chapitre~\ref{chap:bloc2}
+§C8) ont été comblées après la clôture de M6. Le débit par fenêtre du
+flux SSE est journalisé dans une table dédiée
+(\texttt{monitoring.debit\_flux\_sse} -- pas \texttt{catalogue\_lake},
+qui aurait mélangé deux significations différentes sous la même clé
+flux/zone, trouvé en vérifiant le dashboard Grafana) et un timeout de
+lecture détecte un flux silencieux, déclenchant la reconnexion déjà
+existante. Chaque exécution du scraping reste journalisée dans
+\texttt{gouvernance.journal\_operations} (réutilise le mécanisme de
+C16, trace d'audit de référence) -- nombre de colis, erreurs HTTP,
+durée. \texttt{bi\_reader} (rôle utilisé par Grafana) n'ayant
+délibérément pas accès à \texttt{gouvernance}, un second relevé
+minimal est dupliqué dans \texttt{monitoring.scraping\_portail} pour
+rendre ce suivi visible dans Grafana. Les deux nouveaux panels
+(\texttt{infra/grafana/dashboards/monitoring\_lake.json}) ont été
+interrogés via l'API \texttt{/api/ds/query} avec les identifiants
+\texttt{bi\_reader} réels -- données réelles retournées, pas seulement
+un tableau de bord qui s'affiche sans erreur. Vérifié en conditions
+réelles de bout en bout (requête réelle sur le flux SSE mock, scraping
+réel des 40 colis du portail), pas simulé.
 
 \section{Rejouer le remplissage des données et les pipelines}
 

@@ -77,12 +77,13 @@ def releves():
     return {"nb_entrees_catalogue": nb_entrees, "sante": sante}
 
 
-def test_dashboard_monitoring_lake_provisionne_avec_ses_4_panels():
+def test_dashboard_monitoring_lake_provisionne_avec_ses_6_panels():
+    """4 panels initiaux + débit SSE (série temporelle) + scraping (table), issue #104."""
     url = f"{GRAFANA_URL}/api/dashboards/uid/monitoring-lake"
     reponse = requests.get(url, auth=AUTH, timeout=5)
     assert reponse.status_code == 200
     panels = reponse.json()["dashboard"]["panels"]
-    assert len(panels) == 4
+    assert len(panels) == 6
 
 
 def test_point_de_contact_webhook_alerting_provisionne():
@@ -149,6 +150,58 @@ def test_releve_sante_infrastructure_reflete_letat_reel_de_minio(releves):
     le relevé doit donc l'enregistrer comme tel."""
     assert releves["sante"]["minio_accessible"] is True
     assert releves["sante"]["capacite_utilisee_octets"] is not None
+
+
+def test_releve_sse_recent_est_bien_dans_la_fenetre_timefilter_de_grafana():
+    """Non-régression (issue #104, trouvé en répétition) : un relevé fait
+    "maintenant" doit tomber dans la fenêtre `$__timeFilter` de Grafana.
+
+    `monitoring.debit_flux_sse.releve_le` est un TIMESTAMP sans fuseau,
+    comparé en UTC par `$__timeFilter` -- écrire en heure locale (CET)
+    le faisait paraître dans le futur par rapport au `now` UTC de
+    Grafana, et il sortait silencieusement de toute fenêtre récente
+    (voir `monitoring._maintenant_utc()`).
+    """
+    import datetime
+
+    import psycopg2
+
+    from datacore.config import OMEGA_BI_DB_DSN
+    from datacore.storage.lake.monitoring import enregistrer_evenements_fenetre
+
+    flux_test = "flux_test_non_regression_utc"
+    releve_le = datetime.datetime.now(datetime.UTC).replace(tzinfo=None)
+    enregistrer_evenements_fenetre(flux_test, 1, releve_le)
+    try:
+        reponse = requests.post(
+            f"{GRAFANA_URL}/api/ds/query",
+            auth=AUTH,
+            json={
+                "queries": [{
+                    "refId": "A",
+                    "datasource": {"type": "postgres", "uid": "omega_bi_reader"},
+                    "rawSql": (
+                        "SELECT releve_le AS \"time\", nb_evenements "
+                        "FROM monitoring.debit_flux_sse "
+                        f"WHERE flux = '{flux_test}' AND $__timeFilter(releve_le)"
+                    ),
+                    "format": "time_series",
+                }],
+                "from": "now-5m",
+                "to": "now",
+            },
+            timeout=5,
+        )
+        reponse.raise_for_status()
+        valeurs = reponse.json()["results"]["A"]["frames"][0]["data"]["values"]
+        assert valeurs and valeurs[0], (
+            "le relevé vient d'être écrit mais n'apparaît pas dans la fenêtre now-5m/now"
+        )
+    finally:
+        # Nettoyage : ce relevé de test ne doit pas polluer le panel Grafana
+        # réel (sa requête n'a pas de filtre sur `flux`, voir le dashboard).
+        with psycopg2.connect(OMEGA_BI_DB_DSN) as conn, conn.cursor() as cur:
+            cur.execute("DELETE FROM monitoring.debit_flux_sse WHERE flux = %s", (flux_test,))
 
 
 def test_bi_reader_peut_lire_le_schema_monitoring():

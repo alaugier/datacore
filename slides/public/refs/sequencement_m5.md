@@ -1,0 +1,1 @@
+../../../docs/architecture/sequencement_m5.md

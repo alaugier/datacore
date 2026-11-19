@@ -17,7 +17,7 @@
       "targets": [
         {
           "datasource": { "type": "postgres", "uid": "omega_bi_reader" },
-          "rawSql": "SELECT CASE WHEN minio_accessible THEN 'Accessible' ELSE 'Injoignable' END AS etat FROM monitoring.sante_infrastructure ORDER BY releve_le DESC LIMIT 1",
+          "rawSql": "SELECT minio_accessible::int AS etat FROM monitoring.sante_infrastructure ORDER BY releve_le DESC LIMIT 1",
           "format": "table",
           "editorMode": "code",
           "rawQuery": true,
@@ -27,8 +27,13 @@
       "fieldConfig": {
         "defaults": {
           "mappings": [
-            { "type": "value", "options": { "Accessible": { "color": "green" } } },
-            { "type": "value", "options": { "Injoignable": { "color": "red" } } }
+            {
+              "type": "value",
+              "options": {
+                "1": { "text": "Accessible", "color": "green" },
+                "0": { "text": "Injoignable", "color": "red" }
+              }
+            }
           ]
         },
         "overrides": []
@@ -97,8 +102,48 @@
       ],
       "fieldConfig": { "defaults": {}, "overrides": [] },
       "options": {}
+    },
+    {
+      "id": 5,
+      "type": "timeseries",
+      "title": "Débit du flux SSE par fenêtre (monitoring.debit_flux_sse)",
+      "description": "Nombre d'évènements reçus par fenêtre de dépôt (issue #104) -- débit réel, pas seulement la fraîcheur/volumétrie cumulée du panel ci-dessus (table distincte : réutiliser catalogue_lake mélangeait les deux significations sous la même clé flux/zone).",
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 23 },
+      "datasource": { "type": "postgres", "uid": "omega_bi_reader" },
+      "targets": [
+        {
+          "datasource": { "type": "postgres", "uid": "omega_bi_reader" },
+          "rawSql": "SELECT releve_le AS \"time\", nb_evenements AS \"Évènements / fenêtre\" FROM monitoring.debit_flux_sse WHERE $__timeFilter(releve_le) ORDER BY releve_le",
+          "format": "time_series",
+          "editorMode": "code",
+          "rawQuery": true,
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": { "defaults": { "unit": "short" }, "overrides": [] },
+      "options": {}
+    },
+    {
+      "id": 6,
+      "type": "table",
+      "title": "Scraping du portail transporteur (monitoring.scraping_portail)",
+      "description": "Issue #104 : table dédiée, réservée à Grafana -- le journal d'audit de référence reste gouvernance.journal_operations (extraction_portail_scraping), inaccessible à bi_reader par choix délibéré (voir gestion_operationnelle_omega_bi.md §3.5/§4).",
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 31 },
+      "datasource": { "type": "postgres", "uid": "omega_bi_reader" },
+      "targets": [
+        {
+          "datasource": { "type": "postgres", "uid": "omega_bi_reader" },
+          "rawSql": "SELECT releve_le, nb_colis_scrapes, nb_erreurs_http, duree_ms FROM monitoring.scraping_portail ORDER BY releve_le DESC LIMIT 20",
+          "format": "table",
+          "editorMode": "code",
+          "rawQuery": true,
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": { "defaults": {}, "overrides": [] },
+      "options": {}
     }
   ],
-  "time": { "from": "now-24h", "to": "now" },
+  "time": { "from": "now-7d", "to": "now" },
   "refresh": "1m"
 }

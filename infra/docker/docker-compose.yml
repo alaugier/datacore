@@ -45,6 +45,10 @@ services:
       # reseau Docker Compose, la base est joignable via le nom du
       # service "db", pas localhost.
       STAGING_DB_DSN: postgresql://${POSTGRES_USER:-datacore}:${POSTGRES_PASSWORD:-datacore}@db:5432/${POSTGRES_DB:-datacore_staging}
+      # Authentification JWT (C12, depuis le 19/11/2026) -- voir .env
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:?JWT_SECRET_KEY doit etre definie dans .env (voir .env.example) -- requise par l'authentification JWT (C12)}
+      JWT_ALGORITHM: ${JWT_ALGORITHM:-HS256}
+      JWT_ACCESS_TOKEN_EXPIRE_MINUTES: ${JWT_ACCESS_TOKEN_EXPIRE_MINUTES:-480}
     ports:
       - "${OMEGA_DATA_API_PORT:-8000}:8000"
     healthcheck:
@@ -139,6 +143,27 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+
+  # Gestionnaire de base de donnees en navigateur (Adminer) : alternative
+  # 100% web a DBeaver pour montrer schemas/tables/donnees en demo, sans
+  # rien installer sous WSL -- localhost:<port> depuis n'importe quel
+  # navigateur. Image officielle, un seul fichier PHP (~500 Ko) -- meme
+  # principe de sobriete que MailHog/Grafana (auto-heberge, pas de
+  # service tiers). Connexion a la base au login (pas d'identifiants
+  # presaisis) : Systeme "PostgreSQL", Serveur "db", identifiants dans
+  # .env (POSTGRES_USER/PASSWORD), Base "datacore_staging" ou
+  # "datacore_omega_bi" selon ce qu'on veut montrer.
+  adminer:
+    image: adminer:latest
+    container_name: datacore-adminer
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      ADMINER_DEFAULT_SERVER: db
+    ports:
+      - "${ADMINER_PORT:-8081}:8080"
 
   # Capteur SMTP local (C20bis) : recoit les e-mails d'alerte envoyes
   # par alerting-webhook (smtplib) sans jamais les faire sortir vers un

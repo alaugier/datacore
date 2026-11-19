@@ -104,20 +104,45 @@ Column("tracking_number", String(20), nullable=False),
 
 L'API Omega Data (FastAPI, choisie pour la génération automatique de
 la spécification OpenAPI exigée par le livrable) expose le jeu de
-données consolidé, avec authentification par clé et autorisation par
-rôle -- les référents clients externes sont systématiquement
-restreints à leur propre client, règle reprise directement du registre
-\hyperref[gloss:rgpd]{RGPD} établi en C11. Le comportement le plus
-important n'est pas visible dans un diagramme d'architecture statique :
-un référent client n'est pas seulement \textit{rejeté} s'il demande les
-données d'un autre client, il est \textit{silencieusement ramené} à son
-propre périmètre -- vérifié en conditions réelles
+données consolidé, avec autorisation par rôle -- les référents clients
+externes sont systématiquement restreints à leur propre client, règle
+reprise directement du registre \hyperref[gloss:rgpd]{RGPD} établi en
+C11. Le comportement le plus important n'est pas visible dans un
+diagramme d'architecture statique : un référent client n'est pas
+seulement \textit{rejeté} s'il demande les données d'un autre client,
+il est \textit{silencieusement ramené} à son propre périmètre --
+vérifié en conditions réelles
 (\filepath{notebooks/demo_omega_data_api.ipynb}).
+
+Le mécanisme d'authentification a évolué en deux temps, documentés
+tels quels plutôt que présentés comme acquis dès le départ. Jusqu'à la
+soutenance orale du jalon M6 (19/11/2026), l'accès reposait sur une
+clé API statique transmise dans l'en-tête \texttt{X-API-Key} --
+mécanisme simple, suffisant pour démontrer l'autorisation par rôle qui
+est la véritable exigence de la compétence C12, mais avec des limites
+connues et assumées (clé en clair, pas de durée de vie, pas de révocation
+unitaire). À l'issue de la soutenance, et une fois le risque de
+perturber une démonstration en direct écarté, ce mécanisme a été
+remplacé par une authentification par jeton \textbf{JWT}
+(\textit{JSON Web Token}, bibliothèque \texttt{python-jose}, signature
+HMAC \texttt{HS256}) : le client échange désormais sa clé API contre un
+jeton via \texttt{POST~/auth/token} (durée de vie~: 8h), puis
+l'utilise dans l'en-tête \texttt{Authorization:~Bearer} de chaque
+requête. L'autorisation par rôle et la restriction silencieuse au
+périmètre client, elles, n'ont pas changé -- seul le moyen de prouver
+son identité initiale a évolué. Important pour ne pas surévaluer ce
+changement : le JWT garantit l'intégrité du jeton (non falsifiable
+sans la clé de signature) mais pas la confidentialité des échanges en
+transit, ni une protection contre les attaques par force brute sur
+l'émission du jeton -- seuls un chiffrement TLS et une limitation de
+débit, non implémentés à ce stade, fermeraient ces deux risques
+restants. Détail complet, schémas et justifications dans
+\filepath{docs/architecture/evolution_authentification_jwt.md}.
 
 \begin{figure}[htbp]
   \centering
   \includegraphics[width=\textwidth]{diagrammes_techniques_api_sequence_autorisation}
-  \caption{Séquence d'autorisation de l'API Omega Data (\filepath{docs/architecture/diagrammes_techniques.md})}
+  \caption{Séquence d'autorisation de l'API Omega Data, flux JWT depuis le 19/11/2026 (\filepath{docs/architecture/diagrammes_techniques.md})}
 \end{figure}
 
 \section{Point ouvert transmis au bloc suivant}

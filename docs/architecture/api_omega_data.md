@@ -36,9 +36,22 @@ pas en cause l'usage de Flask ailleurs dans le projet.
 
 ### 2.1 Authentification
 
-Chaque requête (hors `/health`) doit porter l'en-tête `X-API-Key`, sur le
-même principe que l'API mock TransFlow fournie. Clés à usage pédagogique
-(voir `src/datacore/api/config.py`) :
+**Depuis le 19/11/2026**, authentification par JWT (python-jose),
+documentée en détail dans
+[`evolution_authentification_jwt.md`](evolution_authentification_jwt.md) —
+remplace l'authentification directe par clé API en en-tête `X-API-Key`
+utilisée jusqu'à cette date. Deux temps :
+
+1. **Émission** : `POST /auth/token`, en échangeant une clé API (champ
+   `username` du formulaire ; `password` n'est pas utilisé, laissez-le
+   vide) contre un jeton signé, valable 8h par défaut
+   (`JWT_ACCESS_TOKEN_EXPIRE_MINUTES`).
+2. **Vérification** : chaque requête suivante porte le jeton en en-tête
+   `Authorization: Bearer <jeton>`. Vérifié localement (signature +
+   expiration), sans relire le registre de clés ci-dessous.
+
+Clés à usage pédagogique, inchangées dans leur forme et leur rôle (voir
+`src/datacore/api/config.py`) :
 
 | Clé | Rôle | Périmètre |
 |---|---|---|
@@ -114,28 +127,40 @@ pour joindre la base via le nom de service Docker (`db`) plutôt que
 
 ## 5. Exemples réels
 
-Vérifiés de bout en bout (Docker Compose + C8 + C10 + C11 peuplés) :
+Vérifiés de bout en bout (Docker Compose + C8 + C10 + C11 peuplés),
+avec le flux JWT du 19/11/2026 :
 
 ```bash
-# Rejeté sans clé API
+# Rejeté sans jeton
 curl http://localhost:8000/commandes-clients
-# -> 401
+# -> 401 {"detail":"Not authenticated"}
 
-# Data Engineer : consulte n'importe quel client
-curl -H "X-API-Key: omega-data-engineer-2026" \
+# 1. Émission : échanger la clé Data Engineer contre un jeton
+TOKEN=$(curl -s -X POST http://localhost:8000/auth/token \
+  -d "username=omega-data-engineer-2026&password=" \
+  | python3 -c "import json,sys; print(json.load(sys.stdin)['access_token'])")
+
+# 2. Vérification : le jeton remplace la clé sur toutes les requêtes suivantes
+curl -H "Authorization: Bearer $TOKEN" \
   "http://localhost:8000/commandes-clients?client=NordDrive&limit=2"
 
 # Référent NordDrive demandant FreshMarket -> ramené à son périmètre
-curl -H "X-API-Key: omega-norddrive-2026" \
+TOKEN_ND=$(curl -s -X POST http://localhost:8000/auth/token \
+  -d "username=omega-norddrive-2026&password=" \
+  | python3 -c "import json,sys; print(json.load(sys.stdin)['access_token'])")
+curl -H "Authorization: Bearer $TOKEN_ND" \
   "http://localhost:8000/commandes-clients?client=FreshMarket"
 # -> renvoie les commandes NordDrive, pas FreshMarket
 
 # Référent client sur /livraisons -> 403
-curl -H "X-API-Key: omega-norddrive-2026" http://localhost:8000/livraisons
+curl -H "Authorization: Bearer $TOKEN_ND" http://localhost:8000/livraisons
 # -> 403
 
 # KPI taux de service, tous clients (Data Analyst)
-curl -H "X-API-Key: omega-data-analyst-2026" http://localhost:8000/kpis/taux-service
+TOKEN_AN=$(curl -s -X POST http://localhost:8000/auth/token \
+  -d "username=omega-data-analyst-2026&password=" \
+  | python3 -c "import json,sys; print(json.load(sys.stdin)['access_token'])")
+curl -H "Authorization: Bearer $TOKEN_AN" http://localhost:8000/kpis/taux-service
 # -> [{"client":"FreshMarket","nb_expeditions":245,"taux_service_pct":90.6}, ...]
 ```
 

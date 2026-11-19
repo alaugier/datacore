@@ -1,0 +1,1 @@
+../../../docs/architecture/communication_lancement.md

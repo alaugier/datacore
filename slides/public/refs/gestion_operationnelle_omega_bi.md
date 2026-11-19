@@ -1,0 +1,1 @@
+../../../docs/architecture/gestion_operationnelle_omega_bi.md

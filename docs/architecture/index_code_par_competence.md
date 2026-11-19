@@ -62,7 +62,7 @@ qui n'existe pas.
 
 **C12 — Partager le jeu de données** : [`src/datacore/api/`](../../src/datacore/api/)
 - [`main.py`](../../src/datacore/api/main.py) — routes FastAPI.
-- [`auth.py`](../../src/datacore/api/auth.py) — `get_current_principal()` + `_resolve_client_scope()` : un référent client qui demande un autre client est **silencieusement ramené** à son périmètre, pas juste rejeté. **Déjà dans le rapport (diagramme de séquence).**
+- [`auth.py`](../../src/datacore/api/auth.py) — authentification JWT depuis le 19/11/2026 (`principal_pour_cle()` + `creer_token()` pour l'émission, `get_current_principal()` pour la vérification — voir [`evolution_authentification_jwt.md`](evolution_authentification_jwt.md)) ; `_resolve_client_scope()` (dans `main.py`) : un référent client qui demande un autre client est **silencieusement ramené** à son périmètre, pas juste rejeté. **Déjà dans le rapport (diagramme de séquence, mécanisme pré-19/11).**
 - [`db.py`](../../src/datacore/api/db.py) — une connexion Postgres par requête (dépendance FastAPI), fermée en `finally` ; pas de pool — à mentionner si on demande pourquoi.
 - [`repository.py`](../../src/datacore/api/repository.py) / [`schemas.py`](../../src/datacore/api/schemas.py) — accès SQL / modèles Pydantic (→ spec OpenAPI auto-générée).
 
@@ -95,6 +95,11 @@ qui n'existe pas.
 - [`ingestion_batch.py`](../../src/datacore/storage/lake/ingestion_batch.py) — `ingerer_flux_batch()` : dépôt `boto3` des 4 flux IoT batch dans `raw/`, copie fidèle octet pour octet.
 - [`sse_consumer.py`](../../src/datacore/storage/lake/sse_consumer.py) — consommateur du flux temps réel, fenêtré par intervalle de 5 minutes ; testé par coupure brutale réelle (`kill -9`). Processus continu, pas un script à exécution unique — à préciser si on vous demande de le lancer en direct. Le flux consommé est généré aléatoirement par `api-mock` (voir § dédié plus bas), pas par de vrais capteurs.
 - [`transform.py`](../../src/datacore/storage/lake/transform.py) — jointure DuckDB `raw/`→`staging/`→`curated/`. **Déjà dans le rapport** (pourquoi `boto3` et pas DuckDB pour `raw/`, chapitre 4 §C19).
+- `boto3`, les 4 méthodes réellement appelées dans tout le programme (si le jury demande « montrez-moi où boto3 est utilisé, pas juste le concept ») :
+  [`upload_file()`](../../src/datacore/storage/lake/ingestion_batch.py#L82) (dépôt `raw/`, `ingestion_batch.py`),
+  [`put_object()`](../../src/datacore/storage/lake/sse_consumer.py#L94) (écriture directe d'une fenêtre SSE déjà en mémoire, `sse_consumer.py`),
+  [`list_objects_v2()`](../../src/datacore/storage/lake/catalogue.py#L75) (lister les clés présentes — catalogue C20 et repérage des clés à purger, `catalogue.py`/`purge.py`),
+  [`delete_object()`](../../src/datacore/storage/lake/purge.py#L91) (suppression effective lors de la purge RGPD, `purge.py`, C21).
 
 **C20 — Catalogue de données** : [`src/datacore/storage/lake/catalogue.py`](../../src/datacore/storage/lake/catalogue.py)
 - `construire_catalogue()` / `catalogue_entree()` : génération par introspection réelle (`boto3` pour lister, `DESCRIBE` DuckDB pour le schéma), pas de catalogue maintenu à la main.
@@ -111,6 +116,7 @@ qui n'existe pas.
 
 **C20bis — Monitorage du data lake** : [`src/datacore/storage/lake/monitoring.py`](../../src/datacore/storage/lake/monitoring.py)
 - `enregistrer_catalogue()` / `enregistrer_purge()` / `verifier_sante_infrastructure()` : 3 relevés en ajout seul (append-only) vers le schéma `monitoring`.
+- `enregistrer_evenements_fenetre()` / `enregistrer_scraping_portail()` (issue #104, après M6) : 2 tables dédiées (`debit_flux_sse`, `scraping_portail`), pas une réutilisation de `catalogue_lake` ni un accès donné à `bi_reader` sur `gouvernance` — voir les docstrings pour le raisonnement. 2 panels Grafana ajoutés dans [`infra/grafana/dashboards/monitoring_lake.json`](../../infra/grafana/dashboards/monitoring_lake.json) (débit SSE en série temporelle, scraping en table).
 
 Chaîne d'alerte : [`src/datacore/alerting/webhook.py`](../../src/datacore/alerting/webhook.py)
 - `require_webhook_secret()` — authentification par secret partagé (`X-Webhook-Secret`), ajoutée après relecture de sécurité.

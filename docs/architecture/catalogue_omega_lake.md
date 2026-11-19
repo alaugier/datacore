@@ -85,24 +85,27 @@ l'issue #65 : **source**, **zone**, **format**, **schéma**,
 
 ### Extrait réel (`python3 -m datacore.storage.lake.catalogue`)
 
-15 entrées (5 flux × 3 zones, toutes réellement présentes) :
+15 entrées (5 flux × 3 zones, toutes réellement présentes). Relevé le
+18/11/2026 — les volumétries augmentent entre deux relevés (simulateur
+IoT batch + flux SSE tournent en continu), c'est attendu, pas une
+incohérence :
 
 ```
-raw      capteurs_temperature   csv       2592 lignes  [timestamp, entrepot, zone, temperature_c, alerte, date]
-staging  capteurs_temperature   parquet   2592 lignes  [timestamp, entrepot, zone, temperature_c, alerte, date]
-curated  capteurs_temperature   parquet   2592 lignes  [timestamp, entrepot, zone, temperature_c, alerte, date, entrepot_nom, entrepot_ville]
-raw      geoloc_flotte          csv       2160 lignes  [timestamp, vehicule_id, lat, lon, vitesse_kmh, date]
-staging  geoloc_flotte          parquet   2160 lignes  [timestamp, vehicule_id, lat, lon, vitesse_kmh, date]
-curated  geoloc_flotte          parquet   2160 lignes  [timestamp, vehicule_id, lat, lon, vitesse_kmh, date]
-raw      camera_comptage        csv        432 lignes  [timestamp, entrepot, zone, nb_passages, sens, date]
-staging  camera_comptage        parquet    432 lignes  [timestamp, entrepot, zone, nb_passages, sens, date]
-curated  camera_comptage        parquet    432 lignes  [timestamp, entrepot, zone, nb_passages, sens, date, entrepot_nom, entrepot_ville]
-raw      rfid_scans             json      3000 lignes  [scan_id, timestamp, palette_id, entrepot, zone, produit_sku, date]
-staging  rfid_scans             parquet   3000 lignes  [scan_id, timestamp, palette_id, entrepot, zone, produit_sku, date]
-curated  rfid_scans             parquet   3000 lignes  [scan_id, timestamp, palette_id, entrepot, zone, produit_sku, date, entrepot_nom, produit_libelle, temperature_dirigee]
-raw      flux_sse_capteurs      ndjson       6 lignes  [timestamp, entrepot, zone, temperature_c, vehicule_id, lat, lon, date]
-staging  flux_sse_capteurs      parquet      6 lignes  [timestamp, entrepot, zone, temperature_c, vehicule_id, lat, lon, date]
-curated  flux_sse_capteurs      parquet      6 lignes  [timestamp, entrepot, zone, temperature_c, vehicule_id, lat, lon, date]
+raw      capteurs_temperature   csv      20736 lignes  [timestamp, entrepot, zone, temperature_c, alerte, date]
+staging  capteurs_temperature   parquet  20736 lignes  [timestamp, entrepot, zone, temperature_c, alerte, date]
+curated  capteurs_temperature   parquet  20736 lignes  [timestamp, entrepot, zone, temperature_c, alerte, date, entrepot_nom, entrepot_ville]
+raw      geoloc_flotte          csv      17280 lignes  [timestamp, vehicule_id, lat, lon, vitesse_kmh, date]
+staging  geoloc_flotte          parquet  17280 lignes  [timestamp, vehicule_id, lat, lon, vitesse_kmh, date]
+curated  geoloc_flotte          parquet  17280 lignes  [timestamp, vehicule_id, lat, lon, vitesse_kmh, date]
+raw      camera_comptage        csv       3456 lignes  [timestamp, entrepot, zone, nb_passages, sens, date]
+staging  camera_comptage        parquet   3456 lignes  [timestamp, entrepot, zone, nb_passages, sens, date]
+curated  camera_comptage        parquet   3456 lignes  [timestamp, entrepot, zone, nb_passages, sens, date, entrepot_nom, entrepot_ville]
+raw      rfid_scans             json     24000 lignes  [scan_id, timestamp, palette_id, entrepot, zone, produit_sku, date]
+staging  rfid_scans             parquet  24000 lignes  [scan_id, timestamp, palette_id, entrepot, zone, produit_sku, date]
+curated  rfid_scans             parquet  24000 lignes  [scan_id, timestamp, palette_id, entrepot, zone, produit_sku, date, entrepot_nom, produit_libelle, temperature_dirigee]
+raw      flux_sse_capteurs      ndjson     347 lignes  [timestamp, entrepot, zone, temperature_c, vehicule_id, lat, lon, date]
+staging  flux_sse_capteurs      parquet    347 lignes  [timestamp, entrepot, zone, temperature_c, vehicule_id, lat, lon, date]
+curated  flux_sse_capteurs      parquet    347 lignes  [timestamp, entrepot, zone, temperature_c, vehicule_id, lat, lon, date]
 ```
 
 On y lit directement, sans avoir besoin de relire le code : les

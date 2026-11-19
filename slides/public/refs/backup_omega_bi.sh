@@ -1,0 +1,1 @@
+../../../scripts/backup_omega_bi.sh

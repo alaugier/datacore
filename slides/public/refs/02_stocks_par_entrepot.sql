@@ -1,0 +1,1 @@
+../../../sql/extraction/02_stocks_par_entrepot.sql
