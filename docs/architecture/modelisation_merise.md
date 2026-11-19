@@ -57,20 +57,20 @@ erDiagram
     PRODUITS |o..o{ LIGNES_COMMANDE_CLIENTS : "sku (cle metier, non FK)"
 
     CLIENTS {
-        int id PK
+        int id "identifiant"
         string code
         string nom
         string secteur
     }
     ENTREPOTS {
-        int id PK
+        int id "identifiant"
         string code
         string nom
         string ville
         int capacite_palettes
     }
     PRODUITS {
-        int id PK
+        int id "identifiant"
         string sku
         string libelle
         int client_id FK
@@ -79,20 +79,20 @@ erDiagram
         bool temperature_dirigee
     }
     COMMANDES {
-        int id PK
+        int id "identifiant"
         int client_id FK
         int entrepot_id FK
         date date_commande
         string statut
     }
     LIGNES_COMMANDE {
-        int id PK
+        int id "identifiant"
         int commande_id FK
         int produit_id FK
         int quantite
     }
     EXPEDITIONS {
-        int id PK
+        int id "identifiant"
         int commande_id FK
         string tracking_number
         string transporteur
@@ -102,26 +102,26 @@ erDiagram
         string statut
     }
     STOCKS {
-        int id PK
+        int id "identifiant"
         int entrepot_id FK
         int produit_id FK
         int quantite
         date date_maj
     }
     TRANSPORTEURS {
-        int id PK
+        int id "identifiant"
         string nom
         string contact
     }
     TOURNEES {
-        int id PK
+        int id "identifiant"
         int transporteur_id FK
         date date
         string vehicule_id
         string chauffeur "donnee personnelle"
     }
     LIVRAISONS {
-        int id PK
+        int id "identifiant"
         int tournee_id FK
         string tracking_number
         string adresse_livraison "donnee personnelle"
@@ -129,20 +129,20 @@ erDiagram
         string heure_reelle
     }
     COMMANDES_CLIENTS {
-        int id PK
+        int id "identifiant"
         string client
         string commande_id "cle metier, non FK vers FluxPro"
         date date_commande
         string entrepot
     }
     LIGNES_COMMANDE_CLIENTS {
-        int id PK
+        int id "identifiant"
         int commande_client_id FK
         string sku "cle metier vers produits.sku"
         int quantite
     }
     HISTORIQUE_EXPEDITIONS {
-        int id PK
+        int id "identifiant"
         string client "texte libre, non FK"
         string entrepot "texte libre, non FK"
         string categorie_produit
