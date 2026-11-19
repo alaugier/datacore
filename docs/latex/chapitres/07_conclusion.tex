@@ -72,6 +72,16 @@ pour les besoins de ce rapport :
     démonstration, jamais démarré par défaut) -- les deux déjà
     justifiés comme des choix de sobriété délibérés plutôt que des
     manques non identifiés (chapitre~\ref{chap:m4}).
+  \item \textbf{Authentification de l'API Omega Data sans chiffrement
+    en transit ni limitation de débit} -- le passage d'une clé API
+    statique à un jeton \textbf{JWT} signé (chapitre~\ref{chap:bloc2}
+    §C12), décidé après la soutenance du 19/11/2026, ferme le risque de
+    falsification mais pas celui d'interception (pas de TLS) ni de
+    force brute sur \texttt{POST~/auth/token} (pas de limitation de
+    débit) -- deux mesures indépendantes, non implémentées à ce stade,
+    documentées comme telles plutôt que confondues avec ce que le JWT
+    apporte réellement
+    (\filepath{docs/architecture/evolution_authentification_jwt.md}).
 \end{itemize}
 
 \section{Apprentissages}
