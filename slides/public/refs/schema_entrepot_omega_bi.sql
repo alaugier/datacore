@@ -1,0 +1,1 @@
+../../../sql/schema_entrepot_omega_bi.sql

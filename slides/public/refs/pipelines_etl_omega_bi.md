@@ -1,0 +1,1 @@
+../../../docs/architecture/pipelines_etl_omega_bi.md

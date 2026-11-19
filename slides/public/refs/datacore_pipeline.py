@@ -1,0 +1,1 @@
+../../../infra/airflow/dags/datacore_pipeline.py

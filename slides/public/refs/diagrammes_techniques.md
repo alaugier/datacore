@@ -1,0 +1,1 @@
+../../../docs/architecture/diagrammes_techniques.md

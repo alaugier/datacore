@@ -1,0 +1,1 @@
+../../../docs/architecture/historisation_dim_client_scd2.md

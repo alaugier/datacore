@@ -8,6 +8,14 @@ from typing import Literal
 
 from pydantic import BaseModel, Field
 
+
+class Token(BaseModel):
+    """Réponse de `POST /auth/token` (C12, authentification JWT, 19/11/2026)."""
+
+    access_token: str
+    token_type: str = "bearer"
+
+
 StatutLivraison = Literal["Livree", "En cours"]
 """Les deux seules valeurs que peut prendre `statut` (voir la vue
 `livraisons_avec_statut`, C11 §3.3 : dérivé de `heure_reelle`, pas de

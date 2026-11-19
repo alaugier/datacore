@@ -1,0 +1,1 @@
+../../../docs/architecture/sequencement_bloc3.md

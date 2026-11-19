@@ -1,0 +1,115 @@
+\documentclass[tikz, border=8pt]{standalone}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+\usetikzlibrary{positioning, arrows.meta, shapes.geometric, calc, shapes.multipart}
+
+\definecolor{dbblue}{RGB}{10, 22, 40}
+
+\tikzset{
+  entity/.style={
+    draw=dbblue, line width=0.9pt,
+    rectangle split, rectangle split parts=2,
+    rectangle split part fill={dbblue, white},
+    rectangle split part align={center, left},
+    text width=5.7cm, font=\footnotesize,
+    inner sep=4pt,
+  },
+  rel/.style={draw=black!60, line width=0.9pt, -{Stealth[length=6pt]}},
+  relD/.style={draw=black!60, line width=0.8pt, dash pattern=on 3pt off 2pt},
+  lbl/.style={font=\scriptsize\itshape, fill=white, inner sep=1pt},
+}
+\newcommand{\eh}[1]{\textcolor{white}{\normalfont\bfseries\small #1}}
+\newcommand{\ea}[1]{\textcolor{black}{\small #1}}
+\newcommand{\id}[1]{\underline{#1}}
+\newcommand{\fk}[1]{#1}
+
+\begin{document}
+\begin{tikzpicture}[>=Stealth]
+
+\node[entity] (transp) at (0,9) {\eh{TRANSPORTEURS}
+\nodepart{two}\ea{
+\id{id} : Entier (PK)\\
+nom : Chaine\\
+contact : Chaine}};
+
+\node[entity] (tournees) at (0,5.0) {\eh{TOURNEES}
+\nodepart{two}\ea{
+\id{id} : Entier (PK)\\
+\fk{transporteur\_id} : Entier (FK)\\
+date : Date\\
+vehicule\_id : Chaine\\
+chauffeur : Chaine}};
+
+\node[entity] (livraisons) at (0,0.2) {\eh{LIVRAISONS}
+\nodepart{two}\ea{
+\id{id} : Entier (PK)\\
+\fk{tournee\_id} : Entier (FK)\\
+tracking\_number : Chaine\\
+adresse\_livraison : Chaine\\
+heure\_estimee : Chaine\\
+heure\_reelle : Chaine}};
+
+\node[entity] (expeditions) at (11.2,0.2) {\eh{EXPEDITIONS}
+\nodepart{two}\ea{
+\id{id} : Entier (PK)\\
+commande\_id : Entier (FK externe)\\
+tracking\_number : Chaine\\
+transporteur : Chaine\\
+date\_expedition : Date\\
+date\_livraison\_prevue : Date\\
+date\_livraison\_reelle : Date\\
+statut : Chaine}};
+
+\node[entity] (cc) at (8.0,9) {\eh{COMMANDES\_CLIENTS}
+\nodepart{two}\ea{
+\id{id} : Entier (PK)\\
+client : Chaine\\
+commande\_id : Chaine (metier)\\
+date\_commande : Date\\
+entrepot : Chaine}};
+
+\node[entity] (lcc) at (8.0,5.0) {\eh{LIGNES\_COMMANDE\_\\CLIENTS}
+\nodepart{two}\ea{
+\id{id} : Entier (PK)\\
+\fk{commande\_client\_id} : Entier (FK)\\
+sku : Chaine (metier)\\
+quantite : Entier}};
+
+\node[entity] (produits) at (18.0,9) {\eh{PRODUITS}
+\nodepart{two}\ea{
+\id{id} : Entier (PK)\\
+sku : Chaine\\
+libelle : Chaine\\
+categorie : Chaine\\
+poids\_kg : Decimal\\
+temperature\_dirigee : Booleen}};
+
+% --- FK formelles (fleche vers la PK referencee) ---
+\draw[rel] (tournees.north) -- (transp.south)
+  node[lbl, pos=0.5, right=2pt] {FK transporteur\_id -> id};
+
+\draw[rel] (livraisons.north) -- (tournees.south)
+  node[lbl, pos=0.5, right=2pt] {FK tournee\_id -> id};
+
+\draw[rel] (lcc.north) -- (cc.south)
+  node[lbl, pos=0.5, right=2pt] {FK commande\_client\_id -> id};
+
+% --- Rapprochements par cle metier, sans contrainte FK ---
+\draw[relD] (livraisons) -- (expeditions)
+  node[lbl, pos=0.5, above=2pt] {tracking\_number (cle metier, pas de FK)};
+
+\draw[relD] (produits.south west) -- (lcc.north east)
+  node[lbl, pos=0.78, above right=1pt] {sku (cle metier, pas de FK)};
+
+\node[font=\footnotesize, align=left, below=1.3cm of livraisons, xshift=6.0cm] (legend) {
+  \tikz[baseline=-0.5ex]{\draw[rel] (0,0) -- (0.9,0);} contrainte FK (SGBD) \qquad
+  \tikz[baseline=-0.5ex]{\draw[relD] (0,0) -- (0.7,0);} rapprochement par cle metier (pas de FK)
+};
+
+\node[font=\footnotesize\itshape, align=left, below=0.35cm of legend] {
+  Memes 7 tables que le MCD en regard -- types generiques (MLD), encore independants de PostgreSQL (MPD reel : schema\_base\_travail.sql)
+};
+
+\end{tikzpicture}
+\end{document}

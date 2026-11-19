@@ -71,9 +71,10 @@ interrogent des sources externes (API, HTML, fichiers).
 ```mermaid
 flowchart TB
     Client["Client HTTP<br/>(équipes BI, data science, notebook de démo)"]
-    Client -->|"GET + en-tête X-API-Key"| Main["main.py<br/>(routes FastAPI)"]
-    Main --> Auth["auth.py<br/>(authentification + autorisation)"]
-    Auth --> Config["config.py<br/>(clés API -> Principal)"]
+    Client -->|"1. POST /auth/token<br/>(clé API en username)"| Main["main.py<br/>(routes FastAPI)"]
+    Client -->|"2. GET + en-tête<br/>Authorization: Bearer jeton"| Main
+    Main --> Auth["auth.py<br/>(JWT, depuis le 19/11/2026 :<br/>émission + vérification)"]
+    Auth --> Config["config.py<br/>(clés API -> Principal ;<br/>JWT_SECRET_KEY)"]
     Main --> Db["db.py<br/>(connexion par requête)"]
     Main --> Repo["repository.py<br/>(accès SQL)"]
     Main --> Schemas["schemas.py<br/>(modèles Pydantic -> spec OpenAPI)"]
@@ -89,7 +90,11 @@ diagramme de modules ci-dessus : un référent client n'est pas seulement
 *silencieusement ramené* à son propre périmètre. Ce diagramme de
 séquence illustre ce cas réel (vérifié en conditions réelles, voir
 [`api_omega_data.md` §5](api_omega_data.md#5-exemples-réels) et
-[`notebooks/demo_omega_data_api.ipynb`](../../notebooks/demo_omega_data_api.ipynb)).
+[`notebooks/demo_omega_data_api.ipynb`](../../notebooks/demo_omega_data_api.ipynb)),
+avec l'authentification JWT en place depuis le 19/11/2026 (voir
+[`evolution_authentification_jwt.md`](evolution_authentification_jwt.md)) —
+l'échange de la clé contre un jeton (étape 0, une seule fois) précède
+la requête de données elle-même.
 
 ```mermaid
 sequenceDiagram
@@ -99,9 +104,15 @@ sequenceDiagram
     participant R as repository.py
     participant DB as Base de staging
 
-    C->>M: GET /commandes-clients?client=FreshMarket<br/>X-API-Key: omega-norddrive-2026
-    M->>A: get_current_principal(api_key)
+    C->>M: POST /auth/token<br/>username=omega-norddrive-2026
+    M->>A: principal_pour_cle(cle)
     A-->>M: Principal(role=CLIENT_REFERENT, client="NordDrive")
+    M->>A: creer_token(principal)
+    A-->>M: jeton JWT signé (exp +8h)
+    M-->>C: 200 — access_token
+    C->>M: GET /commandes-clients?client=FreshMarket<br/>Authorization: Bearer jeton
+    M->>A: get_current_principal(jeton)
+    A-->>M: Principal(role=CLIENT_REFERENT, client="NordDrive")<br/>(signature vérifiée localement, pas de relecture de clé)
     M->>M: _resolve_client_scope(principal, "FreshMarket")<br/>-> "NordDrive" (paramètre demandé ignoré)
     M->>R: list_commandes_clients(db, client="NordDrive")
     R->>DB: SELECT ... WHERE client = 'NordDrive'
