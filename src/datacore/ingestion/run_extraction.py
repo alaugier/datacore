@@ -15,6 +15,7 @@ from datacore.config import INTERIM_DIR
 from datacore.governance.journal import journaliser
 from datacore.ingestion import clients_files, fluxpro, historique, portail_scraping, transflow
 from datacore.ingestion.landing import write_records
+from datacore.storage.lake.monitoring import _maintenant_utc, enregistrer_scraping_portail
 
 
 def extract_transflow() -> None:
@@ -33,7 +34,15 @@ def extract_portail() -> None:
     durée (début/fin déjà suivis par `journaliser()`). Avant ce relevé,
     aucun suivi du scraping ne survivait à l'exécution (voir
     `synthese_technique_oral.md`).
+
+    Duplique aussi ce relevé dans `monitoring.scraping_portail`, lisible
+    par Grafana (`bi_reader`) contrairement à `gouvernance.journal_operations`
+    -- voir le docstring de `monitoring.enregistrer_scraping_portail()`.
+    Le journal d'audit ci-dessus reste la trace de référence, inchangée.
     """
+    # UTC, pas l'heure locale : releve_le alimente monitoring.scraping_portail,
+    # comparé en UTC par $__timeFilter côté Grafana (voir monitoring._maintenant_utc).
+    debut = _maintenant_utc()
     with journaliser("extraction_portail_scraping") as contexte:
         tracking_numbers = portail_scraping.scrape_colis_list()
         details = []
@@ -45,6 +54,10 @@ def extract_portail() -> None:
                 erreurs += 1
         write_records(details, INTERIM_DIR / "portail_colis.json")
         contexte["details"] = f"{len(details)} colis scrapés, {erreurs} erreur(s) HTTP"
+
+    fin = _maintenant_utc()
+    duree_ms = int((fin - debut).total_seconds() * 1000)
+    enregistrer_scraping_portail(len(details), erreurs, duree_ms, fin)
 
 
 def extract_fluxpro() -> None:

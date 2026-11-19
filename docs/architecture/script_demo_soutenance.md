@@ -128,12 +128,21 @@ commande. »
 ## Visualiser les bases (staging, entrepôt) si le jury le demande
 
 Hors script minuté (pas un moment prévu par défaut, seulement si
-demandé) : DBeaver sous Windows, connecté à `localhost:5432` — WSL2
-redirige `localhost` entre Windows et WSL2 automatiquement, aucune
-configuration réseau supplémentaire nécessaire. Deux connexions
-distinctes et nommées (`DATA CORE — Staging`, base `datacore_staging` ;
-`DATA CORE — Entrepôt OMEGA BI`, base `datacore_omega_bi`), mêmes
-identifiants (`datacore`/`datacore`) — testé et fonctionnel.
+demandé). Deux options, toutes deux testées et fonctionnelles :
+
+- **DBeaver sous Windows**, connecté à `localhost:5432` — WSL2 redirige
+  `localhost` entre Windows et WSL2 automatiquement, aucune
+  configuration réseau supplémentaire nécessaire. Deux connexions
+  distinctes et nommées (`DATA CORE — Staging`, base
+  `datacore_staging` ; `DATA CORE — Entrepôt OMEGA BI`, base
+  `datacore_omega_bi`), mêmes identifiants (`datacore`/`datacore`).
+- **Adminer, 100% navigateur** (`localhost:8081`, aucune installation,
+  lancé avec le reste de la stack) : Système « PostgreSQL » (changer la
+  valeur par défaut « MySQL/MariaDB »), Serveur `db` (déjà prérempli),
+  identifiants `datacore`/`datacore`, Base `datacore_staging` ou
+  `datacore_omega_bi`. Alternative pratique si DBeaver n'est pas
+  disponible ou si on préfère rester dans le navigateur, cohérent avec
+  les autres outils de la démo (Swagger, Grafana, MinIO, Airflow).
 
 ## Si une question très technique porte sur « ce qui s'exécute réellement »
 

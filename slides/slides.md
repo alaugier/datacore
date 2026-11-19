@@ -1552,6 +1552,7 @@ layout: default
 <div class="flex gap-2 flex-wrap">
 <span class="inline-flex items-center gap-1 text-sm px-2 py-1 rounded-full bg-green-500/15 text-green-700"><b>✓</b> Fraîcheur/volumétrie</span>
 <span class="inline-flex items-center gap-1 text-sm px-2 py-1 rounded-full bg-green-500/15 text-green-700"><b>✓</b> Débit par fenêtre / détection de déconnexion</span>
+<span class="inline-flex items-center gap-1 text-sm px-2 py-1 rounded-full bg-blue-500/10" style="color:#1c7ed6"><b>▤</b> Visible dans Grafana</span>
 </div>
 </div>
 <div class="flex items-center gap-4 p-3 rounded border border-gray-400/30">
@@ -1559,6 +1560,7 @@ layout: default
 <div class="text-sm font-bold" style="width: 190px;">Scraping portail transporteur</div>
 <div class="flex gap-2 flex-wrap">
 <span class="inline-flex items-center gap-1 text-sm px-2 py-1 rounded-full bg-green-500/15 text-green-700"><b>✓</b> Suivi persisté — <code class="text-xs">gouvernance.journal_operations</code></span>
+<span class="inline-flex items-center gap-1 text-sm px-2 py-1 rounded-full bg-blue-500/10" style="color:#1c7ed6"><b>▤</b> Visible dans Grafana</span>
 </div>
 </div>
 </div>
@@ -1567,13 +1569,13 @@ layout: default
 Lacune identifiée en relisant le code (issue #104) : le monitorage
 (<code>monitoring</code>, C20bis) avait été construit spécifiquement
 pour C20 (data lake, Bloc 4) — le Bloc 2 n'avait jamais eu d'équivalent.
-Comblée après la clôture de M6 en réutilisant les mécanismes existants
-(pas un nouveau système) — vérifié en conditions réelles, pas simulé.
+Comblée après la clôture de M6, dashboard Grafana compris — vérifié en
+conditions réelles, pas simulé.
 </div>
 
 <!--
-- Assumer directement, ne pas attendre la question : les deux volets sont désormais couverts
-- Bien insister sur "réutilise les mécanismes existants" si le jury demande le détail technique -- monitoring.catalogue_lake pour le débit SSE, gouvernance.journal_operations pour le scraping (même principe que C16)
+- Assumer directement, ne pas attendre la question : les deux volets sont désormais couverts, visualisés
+- Si le jury demande le détail technique : 2 tables dédiées (monitoring.debit_flux_sse, monitoring.scraping_portail), pas une réutilisation de catalogue_lake (aurait mélangé deux significations sous la même clé) ni un accès donné à bi_reader sur gouvernance (exclu par choix délibéré) -- le journal d'audit gouvernance.journal_operations reste la trace de référence pour le scraping, le relevé monitoring ne sert qu'à Grafana
 - Mentionner l'issue #104 (fermée) — montre que la lacune a été tracée puis réellement traitée, pas juste repérée
 -->
 

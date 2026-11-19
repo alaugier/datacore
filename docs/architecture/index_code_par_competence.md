@@ -111,6 +111,7 @@ qui n'existe pas.
 
 **C20bis — Monitorage du data lake** : [`src/datacore/storage/lake/monitoring.py`](../../src/datacore/storage/lake/monitoring.py)
 - `enregistrer_catalogue()` / `enregistrer_purge()` / `verifier_sante_infrastructure()` : 3 relevés en ajout seul (append-only) vers le schéma `monitoring`.
+- `enregistrer_evenements_fenetre()` / `enregistrer_scraping_portail()` (issue #104, après M6) : 2 tables dédiées (`debit_flux_sse`, `scraping_portail`), pas une réutilisation de `catalogue_lake` ni un accès donné à `bi_reader` sur `gouvernance` — voir les docstrings pour le raisonnement. 2 panels Grafana ajoutés dans [`infra/grafana/dashboards/monitoring_lake.json`](../../infra/grafana/dashboards/monitoring_lake.json) (débit SSE en série temporelle, scraping en table).
 
 Chaîne d'alerte : [`src/datacore/alerting/webhook.py`](../../src/datacore/alerting/webhook.py)
 - `require_webhook_secret()` — authentification par secret partagé (`X-Webhook-Secret`), ajoutée après relecture de sécurité.
