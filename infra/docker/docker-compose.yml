@@ -45,6 +45,10 @@ services:
       # reseau Docker Compose, la base est joignable via le nom du
       # service "db", pas localhost.
       STAGING_DB_DSN: postgresql://${POSTGRES_USER:-datacore}:${POSTGRES_PASSWORD:-datacore}@db:5432/${POSTGRES_DB:-datacore_staging}
+      # Authentification JWT (C12, depuis le 19/11/2026) -- voir .env
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:?JWT_SECRET_KEY doit etre definie dans .env (voir .env.example) -- requise par l'authentification JWT (C12)}
+      JWT_ALGORITHM: ${JWT_ALGORITHM:-HS256}
+      JWT_ACCESS_TOKEN_EXPIRE_MINUTES: ${JWT_ACCESS_TOKEN_EXPIRE_MINUTES:-480}
     ports:
       - "${OMEGA_DATA_API_PORT:-8000}:8000"
     healthcheck:

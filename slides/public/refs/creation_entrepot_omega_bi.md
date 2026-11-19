@@ -1,0 +1,1 @@
+../../../docs/architecture/creation_entrepot_omega_bi.md

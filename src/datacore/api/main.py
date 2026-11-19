@@ -1,13 +1,16 @@
 """Omega Data API (C12) : expose le jeu de données consolidé (C8-C11) aux
 équipes BI et data science, avec authentification et autorisation par groupe.
 
-Authentification par clé API (en-tête `X-API-Key`) ; autorisation par
-rôle (Data Engineer, Data Analyst, référent client externe) — modèle
-d'accès défini dans `docs/architecture/registre_rgpd.md` §4 : les
-référents clients externes sont systématiquement restreints à leur
-propre client, et n'ont pas accès aux données de transport (livraisons),
-qui portent des données personnelles (chauffeur, adresse) hors de leur
-périmètre.
+Authentification par JWT (en-tête `Authorization: Bearer ...`), émis par
+`POST /auth/token` en échange d'une clé API (voir `auth.py` et
+`docs/architecture/evolution_authentification_jwt.md` — remplace
+l'authentification directe par clé API en en-tête `X-API-Key` utilisée
+jusqu'au 19/11/2026) ; autorisation par rôle (Data Engineer, Data
+Analyst, référent client externe) — modèle d'accès défini dans
+`docs/architecture/registre_rgpd.md` §4 : les référents clients externes
+sont systématiquement restreints à leur propre client, et n'ont pas
+accès aux données de transport (livraisons), qui portent des données
+personnelles (chauffeur, adresse) hors de leur périmètre.
 
 Lancement :
     uvicorn datacore.api.main:app --reload
@@ -20,7 +23,13 @@ from typing import Any
 from fastapi import Depends, FastAPI, HTTPException, Query
 
 from datacore.api import repository
-from datacore.api.auth import get_current_principal, require_internal
+from datacore.api.auth import (
+    CleAPIForm,
+    creer_token,
+    get_current_principal,
+    principal_pour_cle,
+    require_internal,
+)
 from datacore.api.config import Principal, Role
 from datacore.api.db import get_db
 from datacore.api.schemas import (
@@ -29,6 +38,7 @@ from datacore.api.schemas import (
     Livraison,
     StatutLivraison,
     TauxServiceClient,
+    Token,
 )
 
 app = FastAPI(
@@ -47,6 +57,25 @@ app = FastAPI(
 def health() -> dict[str, str]:
     """Vérifie la disponibilité du service (sans authentification)."""
     return {"status": "ok", "service": "Omega Data API"}
+
+
+@app.post("/auth/token", response_model=Token, tags=["Authentification"])
+def login(form_data: CleAPIForm = Depends()) -> Token:
+    """Échange une clé API contre un jeton JWT (C12, depuis le 19/11/2026).
+
+    Entrez votre clé API dans le champ **username** du formulaire
+    (le bouton "Authorize" de Swagger l'affiche automatiquement) ;
+    le champ **password** n'est pas utilisé, laissez-le vide — ce
+    programme n'a pas de mot de passe séparé de la clé, voir
+    `docs/architecture/evolution_authentification_jwt.md` pour le choix.
+
+    Le jeton renvoyé est valable `JWT_ACCESS_TOKEN_EXPIRE_MINUTES`
+    (8h par défaut) et doit ensuite être envoyé dans l'en-tête
+    `Authorization: Bearer <jeton>` sur toutes les autres requêtes —
+    la clé API elle-même n'est plus jamais envoyée après cet échange.
+    """
+    principal = principal_pour_cle(form_data.username)
+    return Token(access_token=creer_token(principal))
 
 
 def _resolve_client_scope(principal: Principal, requested_client: str | None) -> str | None:

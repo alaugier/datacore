@@ -1,0 +1,1 @@
+../../../docs/architecture/registre_rgpd_entrepot.md

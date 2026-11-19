@@ -1,0 +1,1 @@
+../../../docs/architecture/requetes_sql_extraction.md

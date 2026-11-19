@@ -1,0 +1,1 @@
+../../../docs/architecture/modelisation_omega_bi.md

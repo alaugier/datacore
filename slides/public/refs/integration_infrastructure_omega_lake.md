@@ -1,0 +1,1 @@
+../../../docs/architecture/integration_infrastructure_omega_lake.md

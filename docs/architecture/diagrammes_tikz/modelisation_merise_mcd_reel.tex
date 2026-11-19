@@ -1,0 +1,82 @@
+\documentclass[tikz, border=8pt]{standalone}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+\usetikzlibrary{positioning, arrows.meta, shapes.geometric, calc, shapes.multipart}
+
+\definecolor{dbblue}{RGB}{10, 22, 40}
+
+\tikzset{
+  entity/.style={
+    draw=dbblue, line width=0.9pt,
+    rectangle split, rectangle split parts=2,
+    rectangle split part fill={dbblue, white},
+    rectangle split part align={center, left},
+    text width=4.4cm, font=\footnotesize,
+    inner sep=4pt,
+  },
+  rel/.style={draw=black!60, line width=0.8pt},
+  relD/.style={draw=black!60, line width=0.8pt, dash pattern=on 3pt off 2pt},
+  card/.style={font=\scriptsize\bfseries, fill=white, inner sep=1.5pt},
+  lbl/.style={font=\scriptsize\itshape, fill=white, inner sep=1pt},
+}
+\newcommand{\eh}[1]{\textcolor{white}{\normalfont\bfseries\small #1}}
+\newcommand{\ea}[1]{\textcolor{black}{\small #1}}
+\newcommand{\id}[1]{\underline{#1}}
+
+\begin{document}
+\begin{tikzpicture}[>=Stealth]
+
+\node[entity] (transp) at (0,9) {\eh{TRANSPORTEURS}
+\nodepart{two}\ea{\id{id}\\nom\\contact}};
+
+\node[entity] (tournees) at (0,5.3) {\eh{TOURNEES}
+\nodepart{two}\ea{\id{id}\\date\\vehicule\_id\\chauffeur}};
+
+\node[entity] (livraisons) at (0,0.8) {\eh{LIVRAISONS}
+\nodepart{two}\ea{\id{id}\\tracking\_number\\adresse\_livraison\\heure\_estimee\\heure\_reelle}};
+
+\node[entity] (expeditions) at (8.4,0.8) {\eh{EXPEDITIONS}
+\nodepart{two}\ea{\id{id}\\tracking\_number\\transporteur\\date\_expedition\\date\_livraison\_prevue\\date\_livraison\_reelle\\statut}};
+
+\node[entity] (cc) at (7.3,9) {\eh{COMMANDES\_\\CLIENTS}
+\nodepart{two}\ea{\id{id}\\client\\commande\_id (metier)\\date\_commande\\entrepot}};
+
+\node[entity] (lcc) at (7.3,5.3) {\eh{LIGNES\_COMMANDE\_\\CLIENTS}
+\nodepart{two}\ea{\id{id}\\sku (metier)\\quantite}};
+
+\node[entity] (produits) at (14.2,9) {\eh{PRODUITS}
+\nodepart{two}\ea{\id{id}\\sku\\libelle\\categorie\\poids\_kg\\temperature\_dirigee}};
+
+% --- Relations avec cardinalites Merise (min,max) ---
+\draw[rel] (transp) -- (tournees)
+  node[card, pos=0.14, right] {(0,n)} node[card, pos=0.86, right] {(1,1)}
+  node[lbl, pos=0.5, left=2pt] {effectue};
+
+\draw[rel] (tournees) -- (livraisons)
+  node[card, pos=0.14, right] {(0,n)} node[card, pos=0.86, right] {(1,1)}
+  node[lbl, pos=0.5, left=2pt] {contient};
+
+\draw[relD] (livraisons) -- (expeditions)
+  node[card, pos=0.12, above] {(0,1)} node[card, pos=0.88, above] {(0,1)}
+  node[lbl, pos=0.5, above=2pt] {tracking\_number (cle metier)};
+
+\draw[rel] (cc) -- (lcc)
+  node[card, pos=0.14, right] {(0,n)} node[card, pos=0.86, right] {(1,1)}
+  node[lbl, pos=0.5, left=2pt] {contient};
+
+\draw[relD] (produits.south west) -- (lcc.north east)
+  node[card, pos=0.12, above right] {(0,n)} node[card, pos=0.86, below left] {(0,1)}
+  node[lbl, pos=0.5, above right=1pt] {sku (cle metier)};
+
+\node[font=\footnotesize, align=left, below=1.1cm of livraisons, xshift=4.5cm] (legend) {
+  \tikz[baseline=-0.5ex]{\draw[rel] (0,0) -- (0.7,0);} association / FK formelle \qquad
+  \tikz[baseline=-0.5ex]{\draw[relD] (0,0) -- (0.7,0);} rapprochement par cle metier (non FK)
+};
+
+\node[font=\footnotesize\itshape, align=left, below=0.35cm of legend] {
+  Extrait centre sur les entites modelisees en C11 -- modele complet (14 entites) : modelisation\_merise.md \S2
+};
+
+\end{tikzpicture}
+\end{document}

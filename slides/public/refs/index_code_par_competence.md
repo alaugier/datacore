@@ -1,0 +1,1 @@
+../../../docs/architecture/index_code_par_competence.md

@@ -1,0 +1,1 @@
+../../../docs/architecture/architecture_omega_lake.md
